@@ -1,12 +1,15 @@
-package com.thingai.model;
+package org.thingai.vrc.scoringsystem.model;
 
-import com.thingai.core.DaoField;
+import org.thingai.vrc.scoringsystem.annotations.DaoField;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class BaseModel {
+public abstract class BaseModel<T> {
+
+    @DaoField(name = "id")
+    protected String id;
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
@@ -14,22 +17,38 @@ public abstract class BaseModel {
 
         for (Field field : fields) {
             String key;
+
+            map.put("id", this.id); // Always include the id field
+
             if (field.isAnnotationPresent(DaoField.class)) {
                 DaoField daoField = field.getAnnotation(DaoField.class);
                 key = daoField.name();
-            } else {
-                key = field.getName();
-            }
+            } else continue;
 
             try {
                 field.setAccessible(true);
                 Object value = field.get(this);
+
+                if (value == null) {
+                    continue; // Skip null values
+                }
+
                 map.put(key, value);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
         return map;
+    }
+
+    public abstract T fromMap(Map<String, Object> map);
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
 }
