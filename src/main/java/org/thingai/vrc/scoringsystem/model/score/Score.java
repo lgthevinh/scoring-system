@@ -3,11 +3,9 @@ package org.thingai.vrc.scoringsystem.model.score;
 import org.thingai.vrc.scoringsystem.annotations.DaoField;
 import org.thingai.vrc.scoringsystem.model.BaseModel;
 
-import java.util.Map;
-
 public abstract class Score extends BaseModel<Score> {
 
-    @DaoField(name = "score_id")
+    @DaoField(name = "alliance_id")
     protected int allianceId;
 
     public abstract int getScore();
