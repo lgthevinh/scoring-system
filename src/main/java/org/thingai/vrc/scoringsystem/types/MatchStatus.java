@@ -1,4 +1,4 @@
-package com.thingai.core;
+package org.thingai.vrc.scoringsystem.types;
 
 public enum MatchStatus {
     NOT_STARTED("Not Started"),
