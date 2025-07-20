@@ -1,4 +1,4 @@
-package com.thingai.core;
+package org.thingai.vrc.scoringsystem.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,4 +13,16 @@ public @interface DaoField {
     boolean primaryKey() default false;
 
     boolean nullable() default true;
+
+    boolean autoIncrement() default false;
+
+    String defaultValue() default "";
+
+    String foreignKey() default "";
+
+    String foreignKeyReference() default "";
+
+    String foreignKeyOnDelete() default "";
+
+    String foreignKeyOnUpdate() default "";
 }
