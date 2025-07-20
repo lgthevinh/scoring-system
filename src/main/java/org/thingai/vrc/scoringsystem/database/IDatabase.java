@@ -1,10 +1,10 @@
-package com.thingai.database;
+package org.thingai.vrc.scoringsystem.database;
 
-import com.thingai.model.BaseModel;
+import org.thingai.vrc.scoringsystem.model.BaseModel;
 import java.util.List;
 
 public interface IDatabase<T extends BaseModel> {
-    void create();
+    void insert(T model);
     void read(String id);
     void update(T model);
     void delete(String id);
