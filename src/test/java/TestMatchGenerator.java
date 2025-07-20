@@ -7,6 +7,8 @@ import org.thingai.vrc.scoringsystem.types.MatchType;
 
 public class TestMatchGenerator {
 
+    private static final MatchGenerator matchGenerator = new MatchGenerator();
+
     @BeforeAll
     public static void setup() {
         // Set the season code for the ScoreFactory
@@ -20,7 +22,7 @@ public class TestMatchGenerator {
         // The actual implementation of match generation is not provided in the original code
         // Assuming a MatchGenerator class exists with a method to generate matches
 
-        MatchGenerator.generateTemplateMatches(MatchType.QUALIFICATION, 70, 7, 0);
+        matchGenerator.generateMatches();
     }
 
 }

@@ -2,6 +2,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.thingai.vrc.scoringsystem.database.Database;
 
+import org.thingai.vrc.scoringsystem.database.IDatabase;
 import org.thingai.vrc.scoringsystem.model.match.Match;
 import org.thingai.vrc.scoringsystem.model.score.ScoreFactory;
 import org.thingai.vrc.scoringsystem.service.IdGenerator;
@@ -41,7 +42,7 @@ public class TestDatabase {
 
         setupMatch(); // Ensure match is set up before inserting
 
-        Database<Match> database = new Database<>(Match.class, Database.DB_URL);
+        IDatabase<Match> database = Database.getInstance(Match.class); // Get the database instance for Match
         database.insert(match); // Insert the match into the database
 
         System.out.println("Match inserted with ID: " + match.getId());
