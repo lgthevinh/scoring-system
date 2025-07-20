@@ -1,10 +1,13 @@
-package com.thingai.model.team;
+package org.thingai.vrc.scoringsystem.model.team;
 
-import com.thingai.core.DaoField;
-import com.thingai.core.DaoName;
+import org.thingai.vrc.scoringsystem.annotations.DaoField;
+import org.thingai.vrc.scoringsystem.annotations.DaoName;
+import org.thingai.vrc.scoringsystem.model.BaseModel;
+
+import java.util.Map;
 
 @DaoName(name = "team_stats")
-public class TeamStats {
+public class TeamStats extends BaseModel<TeamStats> {
 
     @DaoField(name = "team_id")
     private String teamId;
@@ -27,6 +30,16 @@ public class TeamStats {
         this.totalMatchesPlayed = totalMatchesPlayed;
         this.totalWins = totalWins;
         this.totalScore = totalScore;
+    }
+
+    @Override
+    public TeamStats fromMap(Map<String, Object> map) {
+        TeamStats teamStats = new TeamStats();
+        teamStats.setId((String) map.get("team_id"));
+        teamStats.setTotalMatchesPlayed((Integer) map.get("total_matches_played"));
+        teamStats.setTotalWins((Integer) map.get("total_wins"));
+        teamStats.setTotalScore((Integer) map.get("total_score"));
+        return teamStats;
     }
 
     public String getTeamId() {

@@ -1,14 +1,13 @@
-package com.thingai.model.team;
+package org.thingai.vrc.scoringsystem.model.team;
 
-import com.thingai.core.DaoField;
-import com.thingai.core.DaoName;
-import com.thingai.model.BaseModel;
+import org.thingai.vrc.scoringsystem.annotations.DaoField;
+import org.thingai.vrc.scoringsystem.annotations.DaoName;
+import org.thingai.vrc.scoringsystem.model.BaseModel;
+
+import java.util.Map;
 
 @DaoName(name = "team")
-public class Team extends BaseModel {
-
-    @DaoField(name = "team_id")
-    private String teamId;
+public class Team extends BaseModel<Team> {
 
     @DaoField(name = "team_name")
     private String teamName;
@@ -23,19 +22,14 @@ public class Team extends BaseModel {
         // Default constructor
     }
 
-    public Team(String teamId, String teamName, String teamSchool, String teamRegion) {
-        this.teamId = teamId;
-        this.teamName = teamName;
-        this.teamSchool = teamSchool;
-        this.teamRegion = teamRegion;
-    }
-
-    public String getTeamId() {
-        return teamId;
-    }
-
-    public void setTeamId(String teamId) {
-        this.teamId = teamId;
+    @Override
+    public Team fromMap(Map<String, Object> map) {
+        Team team = new Team();
+        team.setId((String) map.get("team_id"));
+        team.setTeamName((String) map.get("team_name"));
+        team.setTeamSchool((String) map.get("team_school"));
+        team.setTeamRegion((String) map.get("team_region"));
+        return team;
     }
 
     public String getTeamName() {
