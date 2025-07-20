@@ -9,7 +9,7 @@ import java.util.Map;
 public abstract class BaseModel<T> {
 
     @DaoField(name = "id")
-    protected String id;
+    protected int id;
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
@@ -43,11 +43,11 @@ public abstract class BaseModel<T> {
 
     public abstract T fromMap(Map<String, Object> map);
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 

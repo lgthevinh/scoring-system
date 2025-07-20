@@ -18,4 +18,11 @@ public enum AllianceColor {
     public String toString() {
         return colorName;
     }
+
+    public byte toByte() {
+        return switch (this) {
+            case RED -> 1;
+            case BLUE -> 2;
+        };
+    }
 }

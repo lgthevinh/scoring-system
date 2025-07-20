@@ -8,7 +8,6 @@ import java.util.Map;
 @DaoName(name = "season_demo_score")
 public class DemoScore extends Score {
 
-
     private int gateOpened;
     private int ballCollected;
     private boolean parked;
@@ -38,7 +37,7 @@ public class DemoScore extends Score {
     @Override
     public DemoScore fromMap(Map<String, Object> map) {
         DemoScore score = new DemoScore();
-        score.setAllianceId((String) map.get("alliance_id"));
+        score.setAllianceId((int) map.get("alliance_id"));
         return score;
     }
 }

@@ -19,9 +19,9 @@ public class Database<T extends BaseModel> implements IDatabase<T> {
         this.modelClass = modelClass; // Store the model class type
         DB_URL = dbUrl; // Set the database URL
         try (Connection connection = DriverManager.getConnection(DB_URL)) {
-            ; // Initialize connection
-            connection.setAutoCommit(false); // Set auto-commit to false for transaction management
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE); // Set transaction isolation level
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -42,17 +42,26 @@ public class Database<T extends BaseModel> implements IDatabase<T> {
                 continue; // Skip null values
             }
 
+            columns.append(fieldName).append(", ");
             if (fieldValue instanceof BaseModel) {
-                columns.append(fieldName).append(", ");
                 placeholders.append("'").append(((BaseModel) fieldValue).getId()).append("', ");
             } else {
-                columns.append(fieldName).append(", ");
                 placeholders.append("'").append(fieldValue).append("', ");
             }
         }
 
-        System.out.println(query + columns.substring(0, columns.length() - 2) + ") VALUES ("
-                + placeholders.substring(0, placeholders.length() - 2) + ")");
+        try (Connection connection = DriverManager.getConnection(DB_URL)) {
+            if (columns.length() > 0) {
+                columns.setLength(columns.length() - 2); // Remove trailing comma and space
+                placeholders.setLength(placeholders.length() - 2); // Remove trailing comma and space
+            }
+
+            query += columns + ") VALUES (" + placeholders + ")";
+            connection.createStatement().execute(query);
+            connection.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error inserting record: " + model, e);
+        }
     }
 
     @Override
@@ -88,5 +97,13 @@ public class Database<T extends BaseModel> implements IDatabase<T> {
             throw new IllegalStateException("Database URL is not set. Please set the database URL before accessing the database instance.");
         }
         return new Database<>(modelClass, DB_URL);
+    }
+
+    public static void insertQuery(String query) {
+        try (Connection connection = DriverManager.getConnection(DB_URL)) {
+            connection.createStatement().execute(query);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error executing insert query: " + query, e);
+        }
     }
 }
