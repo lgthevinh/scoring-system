@@ -1,14 +1,11 @@
 package org.thingai.vrc.scoringsystem.model.match;
 
 import org.thingai.vrc.scoringsystem.model.BaseModel;
-import org.thingai.vrc.scoringsystem.model.score.ScoreFactory;
 import org.thingai.vrc.scoringsystem.types.AllianceColor;
 import org.thingai.vrc.scoringsystem.annotations.DaoField;
 import org.thingai.vrc.scoringsystem.annotations.DaoName;
-import org.thingai.vrc.scoringsystem.model.score.Score;
 import org.thingai.vrc.scoringsystem.model.team.Team;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +17,6 @@ public class Alliance extends BaseModel<Alliance> {
 
     @DaoField(name = "alliance_color")
     private AllianceColor color;
-
-    @DaoField(name = "score_id")
-    private int scoreId;
 
     private List<Team> teams;
 
@@ -46,14 +40,6 @@ public class Alliance extends BaseModel<Alliance> {
         this.color = color;
     }
 
-
-    public int getScore() {
-        return scoreId;
-    }
-
-    public void setScore(int score) {
-        this.scoreId = score;
-    }
 
     @Override
     public Alliance fromMap(Map<String, Object> map) {
