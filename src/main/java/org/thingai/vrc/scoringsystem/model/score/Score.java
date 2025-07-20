@@ -8,17 +8,17 @@ import java.util.Map;
 public abstract class Score extends BaseModel<Score> {
 
     @DaoField(name = "score_id")
-    protected String allianceId;
+    protected int allianceId;
 
     public abstract int getScore();
     public abstract int getPenalties();
     public abstract int getTotalScore();
 
-    public String getAllianceId() {
+    public int getAllianceId() {
         return allianceId;
     }
 
-    public void setAllianceId(String allianceId) {
+    public void setAllianceId(int allianceId) {
         this.allianceId = allianceId;
     }
 }

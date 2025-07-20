@@ -16,13 +16,13 @@ import java.util.Map;
 public class Alliance extends BaseModel<Alliance> {
 
     @DaoField(name = "match_id")
-    private String matchId;
+    private int matchId;
 
     @DaoField(name = "alliance_color")
     private AllianceColor color;
 
     @DaoField(name = "score_id")
-    private Score score;
+    private int scoreId;
 
     private List<Team> teams;
 
@@ -30,11 +30,11 @@ public class Alliance extends BaseModel<Alliance> {
         // Default constructor for serialization/deserialization
     }
 
-    public String getMatchId() {
+    public int getMatchId() {
         return matchId;
     }
 
-    public void setMatchId(String matchId) {
+    public void setMatchId(int matchId) {
         this.matchId = matchId;
     }
 
@@ -47,34 +47,20 @@ public class Alliance extends BaseModel<Alliance> {
     }
 
 
-    public Score getScore() {
-        return score;
+    public int getScore() {
+        return scoreId;
     }
 
-    public void setScore(Score score) {
-        this.score = score;
+    public void setScore(int score) {
+        this.scoreId = score;
     }
 
     @Override
     public Alliance fromMap(Map<String, Object> map) {
         Alliance alliance = new Alliance();
-        alliance.setId((String) map.get("id"));
-        alliance.setMatchId((String) map.get("match_id"));
+        alliance.setId((int) map.get("id"));
+        alliance.setMatchId((int) map.get("match_id"));
         alliance.setColor(AllianceColor.valueOf((String) map.get("alliance_color")));
-
-        List<Team> teams = new ArrayList<>();
-        List<Map<String, Object>> teamMaps = (List<Map<String, Object>>) map.get("teams");
-        if (teamMaps != null) {
-            for (Map<String, Object> teamMap : teamMaps) {
-                Team team = new Team();
-                team.fromMap(teamMap);
-                teams.add(team);
-            }
-        }
-
-        Score score = ScoreFactory.createScore();
-        score.fromMap((Map<String, Object>) map.get("score"));
-        alliance.setScore(score);
 
         return alliance;
     }

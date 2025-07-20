@@ -25,7 +25,7 @@ public class Team extends BaseModel<Team> {
     @Override
     public Team fromMap(Map<String, Object> map) {
         Team team = new Team();
-        team.setId((String) map.get("team_id"));
+        team.setId((int) map.get("team_id"));
         team.setTeamName((String) map.get("team_name"));
         team.setTeamSchool((String) map.get("team_school"));
         team.setTeamRegion((String) map.get("team_region"));

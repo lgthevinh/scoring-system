@@ -8,43 +8,43 @@ import java.util.Map;
 public class AllianceTeam extends BaseModel<AllianceTeam> {
 
     @DaoField(name = "team_id")
-    private String teamId;
+    private int teamId;
 
     @DaoField(name = "alliance_id")
-    private String allianceId;
+    private int allianceId;
 
     public AllianceTeam() {
         // Default constructor for serialization/deserialization
     }
 
-    public AllianceTeam(String teamId, String allianceId) {
+    public AllianceTeam(int teamId, int allianceId) {
         this.teamId = teamId;
         this.allianceId = allianceId;
     }
 
-    public String getTeamId() {
+    public int getTeamId() {
         return teamId;
     }
 
-    public void setTeamId(String teamId) {
+    public void setTeamId(int teamId) {
         this.teamId = teamId;
     }
 
-    public String getAllianceId() {
+    public int getAllianceId() {
         return allianceId;
     }
 
-    public void setAllianceId(String allianceId) {
+    public void setAllianceId(int allianceId) {
         this.allianceId = allianceId;
     }
 
     @Override
     public AllianceTeam fromMap(Map<String, Object> map) {
         AllianceTeam allianceTeam = new AllianceTeam(
-            (String) map.get("team_id"),
-            (String) map.get("alliance_id")
+            (int) map.get("team_id"),
+            (int) map.get("alliance_id")
         );
-        allianceTeam.setId((String) map.get("id")); // Assuming 'id' is a field in the map
+        allianceTeam.setId((int) map.get("id")); // Assuming 'id' is a field in the map
         return allianceTeam;
     }
 }

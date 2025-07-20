@@ -24,10 +24,10 @@ public class Match extends BaseModel<Match> {
     private MatchStatus matchStatus = MatchStatus.NOT_STARTED;
 
     @DaoField(name = "alliance_red_id")
-    private Alliance allianceRed;
+    private int allianceRedId;
 
     @DaoField(name = "alliance_blue_id")
-    private Alliance allianceBlue;
+    private int allianceBlueId;
 
     public Match() {
         // Default constructor for serialization/deserialization
@@ -65,43 +65,32 @@ public class Match extends BaseModel<Match> {
         this.matchName = matchName;
     }
 
-    public Alliance getAllianceRed() {
-        return allianceRed;
+    public int getAllianceRed() {
+        return allianceRedId;
     }
 
-    public void setAllianceRed(Alliance allianceRed) {
-        this.allianceRed = allianceRed;
+    public void setAllianceRed(int allianceRed) {
+        this.allianceRedId = allianceRed;
     }
 
-    public Alliance getAllianceBlue() {
-        return allianceBlue;
+    public int getAllianceBlue() {
+        return allianceBlueId;
     }
 
-    public void setAllianceBlue(Alliance allianceBlue) {
-        this.allianceBlue = allianceBlue;
+    public void setAllianceBlue(int allianceBlue) {
+        this.allianceBlueId = allianceBlue;
     }
 
     @Override
     public Match fromMap(Map<String, Object> map) {
         Match match = new Match();
-        match.setId((String) map.get("id"));
+        match.setId((int) map.get("id"));
         match.setMatchName((String) map.get("match_name"));
         match.setMatchStartTime((String) map.get("match_start_time"));
         match.setMatchType(MatchType.valueOf((String) map.get("match_type")));
         match.setMatchStatus(MatchStatus.valueOf((String) map.get("match_status")));
-
-        // Deserialize alliances
-        if (map.containsKey("alliance_red_id")) {
-            Alliance allianceRed = new Alliance();
-            allianceRed.fromMap((Map<String, Object>) map.get("alliance_red_id"));
-            match.setAllianceRed(allianceRed);
-        }
-
-        if (map.containsKey("alliance_blue_id")) {
-            Alliance allianceBlue = new Alliance();
-            allianceBlue.fromMap((Map<String, Object>) map.get("alliance_blue_id"));
-            match.setAllianceBlue(allianceBlue);
-        }
+        match.setAllianceRed((int) map.get("alliance_red_id"));
+        match.setAllianceBlue((int) map.get("alliance_blue_id"));
 
         return match;
     }

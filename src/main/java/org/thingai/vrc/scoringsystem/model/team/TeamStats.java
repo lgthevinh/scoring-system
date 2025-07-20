@@ -35,7 +35,7 @@ public class TeamStats extends BaseModel<TeamStats> {
     @Override
     public TeamStats fromMap(Map<String, Object> map) {
         TeamStats teamStats = new TeamStats();
-        teamStats.setId((String) map.get("team_id"));
+        teamStats.setId((int) map.get("team_id"));
         teamStats.setTotalMatchesPlayed((Integer) map.get("total_matches_played"));
         teamStats.setTotalWins((Integer) map.get("total_wins"));
         teamStats.setTotalScore((Integer) map.get("total_score"));
