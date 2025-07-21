@@ -5,7 +5,7 @@ import org.thingai.vrc.scoringsystem.model.BaseModel;
 import java.sql.PreparedStatement;
 import java.util.List;
 
-public interface IDatabase<T extends BaseModel> {
+public interface IDatabase<T> {
     void insert(T model);
     void read(String id);
     void update(T model);

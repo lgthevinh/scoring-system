@@ -3,20 +3,29 @@ package org.thingai.vrc.scoringsystem.database;
 import org.thingai.vrc.scoringsystem.annotations.DaoField;
 import org.thingai.vrc.scoringsystem.annotations.DaoName;
 import org.thingai.vrc.scoringsystem.model.BaseModel;
+import org.thingai.vrc.scoringsystem.model.score.Score;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Database<T extends BaseModel> implements IDatabase<T> {
     private static final String TAG = "DB" + Database.class.getSimpleName(); // Tag for logging
     private final Class<T> modelClass; // Class type of the model
 
     public static String DB_URL; // Example database URL
+
+    private Field[] getAllFields(Class<?> clazz) {
+        List<Field> fields = new ArrayList<>();
+        while (clazz != null) {
+            fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+            clazz = clazz.getSuperclass();
+        }
+        return fields.toArray(new Field[0]);
+    }
 
     private Database(Class<T> modelClass) {
         this.modelClass = modelClass; // Store the model class type
@@ -27,13 +36,25 @@ public class Database<T extends BaseModel> implements IDatabase<T> {
 
             // Create the table if it does not exist
             String tableName = modelClass.getAnnotation(DaoName.class).name();
-            String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName + " (id INT PRIMARY KEY, ";
+            String createTableQuery = "CREATE TABLE IF NOT EXISTS " + tableName + " (";
 
-            Field[] fields = modelClass.getDeclaredFields();
+            Field[] fields = getAllFields(modelClass);
             for (Field field : fields) {
+                System.out.println("Processing field: " + field.getName() + " of type: " + field.getType().getSimpleName());
+
                 if (field.isAnnotationPresent(DaoField.class)) {
                     DaoField daoField = field.getAnnotation(DaoField.class);
                     String fieldName = daoField.name();
+
+                    System.out.println("Field name from DaoField annotation: " + fieldName);
+
+                    if (Objects.equals(fieldName, "id")) {
+                        System.out.println("Detected id field, setting as primary key.");
+
+                        createTableQuery += "id INT PRIMARY KEY"; // Primary key field
+                        continue; // Skip the id field as it is already handled
+                    }
+
                     String fieldType;
 
                     if (field.getType() == String.class) {
@@ -56,6 +77,8 @@ public class Database<T extends BaseModel> implements IDatabase<T> {
                 createTableQuery = createTableQuery.substring(0, createTableQuery.length() - 2);
             }
             createTableQuery += ");";
+
+            System.out.println("Executing create table query: " + createTableQuery);
 
             connection.createStatement().execute(createTableQuery);
             connection.commit();
@@ -135,14 +158,6 @@ public class Database<T extends BaseModel> implements IDatabase<T> {
             throw new IllegalStateException("Database URL is not set. Please set the database URL before accessing the database instance.");
         }
         return new Database<>(modelClass);
-    }
-
-    public static void insertQuery(String query) {
-        try (Connection connection = DriverManager.getConnection(DB_URL)) {
-            connection.createStatement().execute(query);
-        } catch (SQLException e) {
-            throw new RuntimeException("Error executing insert query: " + query, e);
-        }
     }
 
     @Override
