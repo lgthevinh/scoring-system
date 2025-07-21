@@ -1,6 +1,4 @@
-package org.thingai.vrc.scoringsystem.database;
-
-import org.thingai.vrc.scoringsystem.model.BaseModel;
+package org.thingai.base.database;
 
 import java.sql.PreparedStatement;
 import java.util.List;

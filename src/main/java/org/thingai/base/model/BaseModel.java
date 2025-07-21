@@ -1,6 +1,6 @@
-package org.thingai.vrc.scoringsystem.model;
+package org.thingai.base.model;
 
-import org.thingai.vrc.scoringsystem.annotations.DaoField;
+import org.thingai.base.database.annotations.DaoField;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

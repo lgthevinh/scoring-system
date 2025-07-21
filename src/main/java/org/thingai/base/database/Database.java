@@ -1,9 +1,8 @@
-package org.thingai.vrc.scoringsystem.database;
+package org.thingai.base.database;
 
-import org.thingai.vrc.scoringsystem.annotations.DaoField;
-import org.thingai.vrc.scoringsystem.annotations.DaoName;
-import org.thingai.vrc.scoringsystem.model.BaseModel;
-import org.thingai.vrc.scoringsystem.model.score.Score;
+import org.thingai.base.database.annotations.DaoField;
+import org.thingai.base.database.annotations.DaoName;
+import org.thingai.base.model.BaseModel;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;

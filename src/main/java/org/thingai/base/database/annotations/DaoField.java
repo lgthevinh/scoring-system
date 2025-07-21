@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.annotations;
+package org.thingai.base.database.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
