@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.thingai.vrc.scoringsystem.annotations.DaoField;
-import org.thingai.vrc.scoringsystem.database.Database;
+import org.thingai.base.database.annotations.DaoField;
+import org.thingai.base.database.Database;
 import org.thingai.vrc.scoringsystem.model.score.Score;
 import org.thingai.vrc.scoringsystem.model.score.ScoreFactory;
 import org.thingai.vrc.scoringsystem.service.MatchGenerator;

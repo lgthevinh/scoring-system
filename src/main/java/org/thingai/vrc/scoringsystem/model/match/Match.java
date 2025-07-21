@@ -1,10 +1,10 @@
 package org.thingai.vrc.scoringsystem.model.match;
 
-import org.thingai.vrc.scoringsystem.annotations.DaoField;
-import org.thingai.vrc.scoringsystem.annotations.DaoName;
+import org.thingai.base.database.annotations.DaoField;
+import org.thingai.base.database.annotations.DaoName;
 import org.thingai.vrc.scoringsystem.types.MatchStatus;
 import org.thingai.vrc.scoringsystem.types.MatchType;
-import org.thingai.vrc.scoringsystem.model.BaseModel;
+import org.thingai.base.model.BaseModel;
 
 import java.util.Map;
 

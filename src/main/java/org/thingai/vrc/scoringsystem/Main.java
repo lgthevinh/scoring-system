@@ -1,6 +1,6 @@
 package org.thingai.vrc.scoringsystem;
 
-import org.thingai.vrc.scoringsystem.database.Database;
+import org.thingai.base.database.Database;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

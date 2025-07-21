@@ -1,7 +1,7 @@
 package org.thingai.vrc.scoringsystem.model.match;
 
-import org.thingai.vrc.scoringsystem.annotations.DaoField;
-import org.thingai.vrc.scoringsystem.model.BaseModel;
+import org.thingai.base.database.annotations.DaoField;
+import org.thingai.base.model.BaseModel;
 
 import java.util.Map;
 

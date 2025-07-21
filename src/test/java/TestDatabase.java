@@ -1,8 +1,8 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.thingai.vrc.scoringsystem.database.Database;
+import org.thingai.base.database.Database;
 
-import org.thingai.vrc.scoringsystem.database.IDatabase;
+import org.thingai.base.database.IDatabase;
 import org.thingai.vrc.scoringsystem.model.match.Match;
 import org.thingai.vrc.scoringsystem.model.score.ScoreFactory;
 import org.thingai.vrc.scoringsystem.service.IdGenerator;

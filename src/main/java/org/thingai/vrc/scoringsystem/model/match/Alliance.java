@@ -1,9 +1,9 @@
 package org.thingai.vrc.scoringsystem.model.match;
 
-import org.thingai.vrc.scoringsystem.model.BaseModel;
+import org.thingai.base.model.BaseModel;
 import org.thingai.vrc.scoringsystem.types.AllianceColor;
-import org.thingai.vrc.scoringsystem.annotations.DaoField;
-import org.thingai.vrc.scoringsystem.annotations.DaoName;
+import org.thingai.base.database.annotations.DaoField;
+import org.thingai.base.database.annotations.DaoName;
 import org.thingai.vrc.scoringsystem.model.team.Team;
 
 import java.util.List;

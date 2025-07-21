@@ -1,7 +1,7 @@
 package org.thingai.vrc.scoringsystem.service;
 
-import org.thingai.vrc.scoringsystem.database.Database;
-import org.thingai.vrc.scoringsystem.database.IDatabase;
+import org.thingai.base.database.Database;
+import org.thingai.base.database.IDatabase;
 import org.thingai.vrc.scoringsystem.model.match.Alliance;
 import org.thingai.vrc.scoringsystem.model.match.Match;
 import org.thingai.vrc.scoringsystem.model.score.Score;
