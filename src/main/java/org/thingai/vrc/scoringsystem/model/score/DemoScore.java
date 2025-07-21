@@ -8,11 +8,19 @@ import java.util.Map;
 @DaoName(name = "season_demo_score")
 public class DemoScore extends Score {
 
+    @DaoField(name = "gate_opened")
     private int gateOpened;
+
+    @DaoField(name = "ball_collected")
     private int ballCollected;
+
+    @DaoField(name = "parked")
     private boolean parked;
 
+    @DaoField(name = "major_fault")
     private int majorFault;
+
+    @DaoField(name = "minor_fault")
     private int minorFault;
 
     public DemoScore() {
