@@ -12,4 +12,11 @@ public class ScoreFactory {
         };
     }
 
+    public static Class<? extends Score> getScoreClass() {
+        return switch (seasonCode) {
+            case DEMO -> DemoScore.class;
+            default -> throw new IllegalArgumentException("Unsupported score type: " + seasonCode);
+        };
+    }
+
 }

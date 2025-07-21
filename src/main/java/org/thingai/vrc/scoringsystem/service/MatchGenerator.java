@@ -4,6 +4,8 @@ import org.thingai.vrc.scoringsystem.database.Database;
 import org.thingai.vrc.scoringsystem.database.IDatabase;
 import org.thingai.vrc.scoringsystem.model.match.Alliance;
 import org.thingai.vrc.scoringsystem.model.match.Match;
+import org.thingai.vrc.scoringsystem.model.score.Score;
+import org.thingai.vrc.scoringsystem.model.score.ScoreFactory;
 import org.thingai.vrc.scoringsystem.types.AllianceColor;
 import org.thingai.vrc.scoringsystem.types.MatchType;
 
@@ -18,6 +20,7 @@ public class MatchGenerator {
     private void generateTemplateMatches(MatchType matchType, int numberOfMatches, int cycleTime, int startTime) {
         IDatabase<Match> matchDb = Database.getInstance(Match.class);
         IDatabase<Alliance> allianceDb = Database.getInstance(Alliance.class);
+        IDatabase<? extends Score> scoreDb = Database.getInstance(ScoreFactory.getScoreClass());
 
         int matchId = IdGenerator.generateMatchId(matchType, 1);
 
