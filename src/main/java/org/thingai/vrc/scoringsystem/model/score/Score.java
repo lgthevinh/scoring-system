@@ -1,16 +1,22 @@
 package org.thingai.vrc.scoringsystem.model.score;
 
-import org.thingai.base.database.annotations.DaoField;
-import org.thingai.base.model.BaseModel;
+public abstract class Score {
+    private String matchId;
+    private int allianceId;
 
-public abstract class Score extends BaseModel<Score> {
+    protected int totalScore;
+    protected int penaltiesScore;
 
-    @DaoField(name = "alliance_id")
-    protected int allianceId;
+    public abstract void calculateTotalScore();
+    public abstract void calculatePenalties();
 
-    public abstract int getScore();
-    public abstract int getPenalties();
-    public abstract int getTotalScore();
+    public String getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(String matchId) {
+        this.matchId = matchId;
+    }
 
     public int getAllianceId() {
         return allianceId;
