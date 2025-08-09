@@ -7,22 +7,14 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface DaoField {
+public @interface DaoColumn {
     String name() default "";
-
     boolean primaryKey() default false;
-
     boolean nullable() default true;
-
     boolean autoIncrement() default false;
-
     String defaultValue() default "";
-
     String foreignKey() default "";
-
     String foreignKeyReference() default "";
-
     String foreignKeyOnDelete() default "";
-
     String foreignKeyOnUpdate() default "";
 }
