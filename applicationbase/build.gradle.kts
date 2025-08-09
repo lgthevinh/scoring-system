@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "org.thingai"
-version = "1.0-SNAPSHOT"
+version = ""
 
 repositories {
     mavenCentral()

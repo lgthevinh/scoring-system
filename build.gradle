@@ -16,6 +16,7 @@ dependencies {
     implementation("org.xerial:sqlite-jdbc:3.43.2.0") // Essential for DAO
     implementation("org.slf4j:slf4j-api:2.0.9") // Logging interface of jdbc
     implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation(files("/applicationbase/build/libs/applicationbase.jar")) // ApplicationBase library for common functionality
 }
 
 test {

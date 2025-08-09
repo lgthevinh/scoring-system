@@ -1,8 +1,5 @@
 package org.thingai.scoringsystem.entity.score;
 
-import org.thingai.base.dao.annotations.DaoTable;
-
-@DaoTable(name = "game_specific_score")
 public class ScoreSeasonDemo extends Score {
     private int robotParked; // 0, 1, 2, 3 for robots parked
     private int robotHanged;
