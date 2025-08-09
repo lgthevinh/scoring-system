@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.model.score;
+package org.thingai.vrc.scoringsystem.entity.score;
 
 public abstract class Score {
     private String matchId;

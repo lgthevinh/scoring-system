@@ -1,8 +1,8 @@
 package org.thingai.vrc.scoringsystem.viewmodel;
 
-import org.thingai.vrc.scoringsystem.model.match.Match;
-import org.thingai.vrc.scoringsystem.model.match.MatchAlliance;
-import org.thingai.vrc.scoringsystem.model.score.Score;
+import org.thingai.vrc.scoringsystem.entity.match.Match;
+import org.thingai.vrc.scoringsystem.entity.match.MatchAlliance;
+import org.thingai.vrc.scoringsystem.entity.score.Score;
 
 public class MatchVM {
     private Match match;

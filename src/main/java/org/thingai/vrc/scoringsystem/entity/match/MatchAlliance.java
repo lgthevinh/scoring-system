@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.model.match;
+package org.thingai.vrc.scoringsystem.entity.match;
 
 public class MatchAlliance {
     private String matchId;

@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.model.score;
+package org.thingai.vrc.scoringsystem.entity.score;
 
 public class ScoreFactory {
     public static String scoreType;

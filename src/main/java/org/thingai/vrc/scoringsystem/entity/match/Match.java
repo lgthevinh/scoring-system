@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.model.match;
+package org.thingai.vrc.scoringsystem.entity.match;
 
 public class Match {
     // Base information

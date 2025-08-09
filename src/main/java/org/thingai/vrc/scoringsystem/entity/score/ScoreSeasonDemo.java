@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.model.score;
+package org.thingai.vrc.scoringsystem.entity.score;
 
 public class ScoreSeasonDemo extends Score {
     private int robotParked; // 0, 1, 2, 3 for robots parked
