@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem.entity.score;
+package org.thingai.scoringsystem.entity.score;
 
 import org.thingai.base.dao.annotations.DaoTable;
 

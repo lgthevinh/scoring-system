@@ -1,4 +1,4 @@
-package org.thingai.vrc.scoringsystem;
+package org.thingai.scoringsystem;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
