@@ -67,6 +67,9 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
                     if (!daoColumn.nullable()) {
                         query += "NOT NULL ";
                     }
+                    if (daoColumn.unique()) {
+                        query += "UNIQUE ";
+                    }
                     if (daoColumn.autoIncrement()) {
                         query += "AUTOINCREMENT ";
                     }

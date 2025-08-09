@@ -12,5 +12,6 @@ public @interface DaoColumn {
     boolean primaryKey() default false;
     boolean nullable() default true;
     boolean autoIncrement() default false;
+    boolean unique() default false;
     String defaultValue() default "";
 }
