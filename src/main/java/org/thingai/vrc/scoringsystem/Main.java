@@ -1,7 +1,5 @@
 package org.thingai.vrc.scoringsystem;
 
-import org.thingai.base.database.Database;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,6 +26,5 @@ public class Main {
             return;
         }
 
-        Database.DB_URL = "jdbc:sqlite:" + databaseFile.toAbsolutePath();
     }
 }
