@@ -8,12 +8,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public abstract class Application {
-    public String name;
-    public String version;
-    public String appDirName;
-    public String configFile;
-    public String logFile;
-    public String daoType;
+    public static String name;
+    public static String version;
+    public static String appDirName;
+    public static String configFile;
+    public static String logFile;
+    public static String daoType;
+    public static Dao dao;
 
     protected String appDir;
 
@@ -47,6 +48,11 @@ public abstract class Application {
             }
             if (daoType.equals(Dao.SQLITE)) {
                 Path dbFile = Paths.get(appDir, appDirName + ".db");
+
+                DaoFactory.type = daoType; // Set the DAO type for the factory
+                DaoFactory.url = "jdbc:sqlite:" + Paths.get(appDir, appDirName + ".db"); // Set the URL for SQLite
+                dao = DaoFactory.getDao();
+
                 if (!Files.exists(dbFile)) {
                     Files.createFile(dbFile);
                 }
@@ -57,8 +63,6 @@ public abstract class Application {
         } catch (Exception e) {
             System.err.println("Error creating application directories or files: " + e.getMessage());
         }
-
-        DaoFactory.type = daoType; // Set the DAO type for the factory
 
         initImpl();
     }

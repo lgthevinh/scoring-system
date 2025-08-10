@@ -13,6 +13,10 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
     private static Connection connection;
     private Class<T> clazz;
 
+    public DaoSqlite(Connection connection) {
+        DaoSqlite.connection = connection;
+    }
+
     private static Field[] getAllFields(Class clazz) {
         List<Field> fields = new ArrayList<>();
         while (clazz != null) {
@@ -26,7 +30,8 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
         return fields.toArray(new Field[0]);
     }
 
-    public static void createTables(Class[] classes) {
+    @Override
+    public void facDao(Class[] classes) {
         for (Class clazz : classes) {
             DaoTable daoTable = (DaoTable) clazz.getAnnotation(DaoTable.class);
             String query = "CREATE TABLE IF NOT EXISTS ";
@@ -62,18 +67,18 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
 
                     // constrains
                     if (daoColumn.primaryKey()) {
-                        query += "PRIMARY KEY ";
+                        query += " PRIMARY KEY";
                     }
                     if (!daoColumn.nullable()) {
-                        query += "NOT NULL ";
+                        query += " NOT NULL";
                     }
                     if (daoColumn.unique()) {
-                        query += "UNIQUE ";
+                        query += " UNIQUE";
                     }
                     if (daoColumn.autoIncrement()) {
-                        query += "AUTOINCREMENT ";
+                        query += " AUTOINCREMENT";
                     }
-                    if (daoColumn.defaultValue() != null) {
+                    if (!daoColumn.defaultValue().isEmpty()) {
                         query += "DEFAULT " + daoColumn.defaultValue() + " ";
                     }
                 }
@@ -85,6 +90,7 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
                 query = query.substring(0, query.length() - 2);
             }
             query += ");";
+            System.out.println("Executing query: " + query);
 
             // execute query
             try {
