@@ -181,6 +181,52 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
     }
 
     @Override
+    public List<T> read(String[] column, String[] value) {
+        if (column == null || value == null) {
+            throw new IllegalArgumentException("Cannot read with null column or value.");
+        }
+
+        String query = "SELECT * FROM " + clazz.getAnnotation(DaoTable.class).name() + " WHERE ";
+        StringBuilder whereClause = new StringBuilder();
+        for (int i = 0; i < column.length; i++) {
+            whereClause.append(column[i]).append(" = ?");
+            if (i < column.length - 1) {
+                whereClause.append(" AND ");
+            }
+        }
+        query += whereClause + ";";
+
+        List<T> results = new ArrayList<>();
+        try {
+            if (connection != null && !connection.isClosed()) {
+                var preparedStatement = connection.prepareStatement(query);
+                for (int i = 0; i < value.length; i++) {
+                    preparedStatement.setObject(i + 1, value[i]);
+                }
+                var resultSet = preparedStatement.executeQuery();
+                while (resultSet.next()) {
+                    T instance = clazz.getDeclaredConstructor().newInstance();
+                    Field[] fields = getAllFields(clazz);
+                    for (Field field : fields) {
+                        DaoColumn daoColumn = field.getAnnotation(DaoColumn.class);
+                        if (daoColumn != null) {
+                            field.setAccessible(true);
+                            field.set(instance, resultSet.getObject(daoColumn.name().isEmpty() ? field.getName() : daoColumn.name()));
+                        }
+                    }
+                    results.add(instance);
+                }
+                return results;
+            } else {
+                throw new IllegalStateException("Database connection is not established.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null; // or throw an exception if not found
+    }
+
+    @Override
     public void update(K id, T t) {
         if (id == null || t == null) {
             throw new IllegalArgumentException("Cannot update with null id or object.");
