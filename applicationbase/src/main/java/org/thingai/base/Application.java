@@ -1,0 +1,80 @@
+package org.thingai.base;
+
+import org.thingai.base.dao.Dao;
+import org.thingai.base.dao.DaoFactory;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+public abstract class Application {
+    public String name;
+    public String version;
+    public String appDirName;
+    public String configFile;
+    public String logFile;
+    public String daoType;
+
+    protected String appDir;
+
+    public void init() {
+        this.name = name != null ? name : "Default ThingAI Application"; // Default name if not set
+        this.version = version != null ? version : "1.0.0"; // Default version if not set
+        this.appDirName = appDirName;
+        this.configFile = configFile;
+        this.logFile = logFile;
+        this.daoType = daoType; // Default DAO type, can be overridden
+
+        String home = System.getProperty("user.home");
+        if (appDirName == null || appDirName.isEmpty()) {
+            appDir = Paths.get(home, ".thingai", "application").toString();
+        } else {
+            appDir = Paths.get(home, ".thingai", appDirName).toString();
+        }
+
+        Path appDirPath = Paths.get(appDir);
+        Path configFilePath = Paths.get(appDir, "config.properties");
+        Path logFilePath = Paths.get(appDir, "application.log");
+        try {
+            if (!Files.exists(appDirPath)) {
+                Files.createDirectories(appDirPath);
+            }
+            if (!Files.exists(configFilePath)) {
+                Files.createFile(configFilePath);
+            }
+            if (!Files.exists(logFilePath)) {
+                Files.createFile(logFilePath);
+            }
+            if (daoType.equals(Dao.SQLITE)) {
+                Path dbFile = Paths.get(appDir, appDirName + ".db");
+                if (!Files.exists(dbFile)) {
+                    Files.createFile(dbFile);
+                }
+            } else {
+                throw new IllegalArgumentException("Unsupported DAO type: " + daoType);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error creating application directories or files: " + e.getMessage());
+        }
+
+        DaoFactory.type = daoType; // Set the DAO type for the factory
+
+        initImpl();
+    }
+
+    public void start() {
+        System.out.println("Starting application: " + name + " (Version: " + version + ")");
+        // Additional startup logic can be added here
+
+        System.out.println("Application directory: " + appDir);
+        System.out.println("Configuration file: " + configFile);
+        System.out.println("Log file: " + logFile);
+        System.out.println("DAO Type: " + daoType);
+        startImpl();
+    }
+
+    public abstract void initImpl();
+    public abstract void startImpl();
+
+}
