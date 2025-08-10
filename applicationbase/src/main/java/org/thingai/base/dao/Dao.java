@@ -4,6 +4,10 @@ import java.util.List;
 
 public abstract class Dao<T, K> {
     public static final String SQLITE = "sqlite";
+    public static final String MYSQL = "mysql";
+    public static final String POSTGRESQL = "postgresql";
+    public static final String MONGODB = "mongodb";
+    public static final String IN_MEMORY = "in_memory";
 
     public abstract void insert(T t);
     public abstract T read(K id);
