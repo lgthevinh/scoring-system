@@ -1,6 +1,10 @@
 package org.thingai.scoringsystem;
 
 import org.thingai.base.dao.Dao;
+import org.thingai.scoringsystem.entity.match.Match;
+import org.thingai.scoringsystem.entity.match.MatchAlliance;
+import org.thingai.scoringsystem.entity.score.ScoreSeasonDemo;
+import org.thingai.scoringsystem.entity.team.Team;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,5 +21,12 @@ public class Main {
 
         scoringApplication.init();
         scoringApplication.start();
+
+        scoringApplication.dao.facDao(new Class[] {
+                Match.class,
+                MatchAlliance.class,
+                ScoreSeasonDemo.class,
+                Team.class,
+        });
     }
 }
