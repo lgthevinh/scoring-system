@@ -2,7 +2,7 @@ package org.thingai.scoringsystem.entity.score;
 
 public abstract class Score {
     private String matchId;
-    private int allianceId;
+    private int allianceColor; // 0 for red, 1 for blue
 
     protected int totalScore;
     protected int penaltiesScore;
@@ -18,11 +18,11 @@ public abstract class Score {
         this.matchId = matchId;
     }
 
-    public int getAllianceId() {
-        return allianceId;
+    public int setAllianceColor() {
+        return allianceColor;
     }
 
-    public void setAllianceId(int allianceId) {
-        this.allianceId = allianceId;
+    public void setAllianceColor(int allianceColor) {
+        this.allianceColor = allianceColor;
     }
 }
