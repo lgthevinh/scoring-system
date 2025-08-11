@@ -21,17 +21,13 @@ public abstract class Application {
     public void init() {
         this.name = name != null ? name : "Default ThingAI Application"; // Default name if not set
         this.version = version != null ? version : "1.0.0"; // Default version if not set
-        this.appDirName = appDirName;
-        this.configFile = configFile;
-        this.logFile = logFile;
-        this.daoType = daoType; // Default DAO type, can be overridden
+        this.appDirName = appDirName != null ? appDirName : "default_app"; // Default app directory name if not set
+        this.configFile = configFile != null ? configFile : "config.properties"; // Default config file name if not set
+        this.logFile = logFile != null ? logFile : "application.log"; // Default log file name if not set
+        this.daoType = daoType != null ? daoType : Dao.SQLITE; // Default DAO type, can be overridden
 
         String home = System.getProperty("user.home");
-        if (appDirName == null || appDirName.isEmpty()) {
-            appDir = Paths.get(home, ".thingai", "application").toString();
-        } else {
-            appDir = Paths.get(home, ".thingai", appDirName).toString();
-        }
+        appDir = Paths.get(home, ".thingai", appDirName).toString();
 
         Path appDirPath = Paths.get(appDir);
         Path configFilePath = Paths.get(appDir, "config.properties");
