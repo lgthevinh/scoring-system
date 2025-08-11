@@ -6,7 +6,7 @@ import org.thingai.scoringsystem.entity.match.Match;
 import org.thingai.scoringsystem.entity.match.MatchAlliance;
 import org.thingai.scoringsystem.entity.score.Score;
 
-public class MatchDetailVM {
+public class MatchVM {
     private Match match;
 
     private MatchAlliance redAlliance;
@@ -15,14 +15,18 @@ public class MatchDetailVM {
     private Score redScore;
     private Score blueScore;
 
+    public static MatchVMBuilder builder() {
+        return new MatchVMBuilder();
+    }
+
     public static class MatchVMBuilder {
-        private final MatchDetailVM matchVM;
+        private final MatchVM matchVM;
         private String matchId;
         private boolean withTeamInfos = false;
         private boolean withScores = false;
 
         public MatchVMBuilder() {
-            matchVM = new MatchDetailVM();
+            matchVM = new MatchVM();
         }
 
         public MatchVMBuilder withMatch(String id) {
@@ -40,7 +44,7 @@ public class MatchDetailVM {
             return this;
         }
 
-        public MatchDetailVM build() {
+        public MatchVM build() {
             Dao<Match, String> matchDao = DaoFactory.getDao();
 
             matchVM.match = matchDao.read(matchId);
