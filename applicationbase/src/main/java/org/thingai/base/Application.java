@@ -20,12 +20,11 @@ public abstract class Application {
 
     public void init() {
         // Default values for the application properties
-        this.name = name != null ? name : "Default ThingAI Application";
-        this.version = version != null ? version : "1.0.0";
-        this.appDirName = appDirName != null ? appDirName : "default_app";
-        this.configFile = configFile != null ? configFile : "config.properties";
-        this.logFile = logFile != null ? logFile : "application.log";
-        this.daoType = daoType != null ? daoType : Dao.SQLITE;
+        version = version != null ? version : "1.0.0";
+        appDirName = appDirName != null ? appDirName : "default_app";
+        configFile = configFile != null ? configFile : "config.properties";
+        logFile = logFile != null ? logFile : "application.log";
+        daoType = daoType != null ? daoType : Dao.SQLITE;
 
         String home = System.getProperty("user.home");
         appDir = Paths.get(home, ".thingai", appDirName).toString();
