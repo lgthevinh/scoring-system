@@ -14,9 +14,9 @@ public abstract class Application {
     public static String configFile;
     public static String logFile;
     public static String daoType;
-    public static Dao dao;
 
     protected String appDir;
+    protected static Dao dao;
 
     public void init() {
         // Default values for the application properties
@@ -73,6 +73,13 @@ public abstract class Application {
         System.out.println("Log file: " + logFile);
         System.out.println("DAO Type: " + daoType);
         startImpl();
+    }
+
+    public void facDao(Class<?>[] entityClasses) {
+        if (dao == null) {
+            throw new IllegalStateException("DAO is not initialized. Call init() before accessing the DAO.");
+        }
+        dao.facDao(entityClasses);
     }
 
     public abstract void initImpl();
