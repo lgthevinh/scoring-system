@@ -15,31 +15,31 @@ public class MatchVM {
     private Score redScore;
     private Score blueScore;
 
-    public static MatchVMBuilder builder() {
-        return new MatchVMBuilder();
+    public static MatchVMGetter builder() {
+        return new MatchVMGetter();
     }
 
-    public static class MatchVMBuilder {
+    public static class MatchVMGetter {
         private final MatchVM matchVM;
         private String matchId;
         private boolean withTeamInfos = false;
         private boolean withScores = false;
 
-        public MatchVMBuilder() {
+        public MatchVMGetter() {
             matchVM = new MatchVM();
         }
 
-        public MatchVMBuilder withMatch(String id) {
+        public MatchVMGetter withMatch(String id) {
             this.matchId = id;
             return this;
         }
 
-        public MatchVMBuilder withTeamInfos() {
+        public MatchVMGetter withTeamInfos() {
             this.withTeamInfos = true;
             return this;
         }
 
-        public MatchVMBuilder withScores() {
+        public MatchVMGetter withScores() {
             this.withScores = true;
             return this;
         }
