@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public abstract class Application {
+public class Application {
     public static String name;
     public static String version;
     public static String appDirName;
@@ -59,8 +59,6 @@ public abstract class Application {
         } catch (Exception e) {
             System.err.println("Error creating application directories or files: " + e.getMessage());
         }
-
-        initImpl();
     }
 
     public void start() {
@@ -71,7 +69,6 @@ public abstract class Application {
         System.out.println("Configuration file: " + configFile);
         System.out.println("Log file: " + logFile);
         System.out.println("DAO Type: " + daoType);
-        startImpl();
     }
 
     public void facDao(Class<?>[] entityClasses) {
@@ -80,8 +77,4 @@ public abstract class Application {
         }
         dao.facDao(entityClasses);
     }
-
-    public abstract void initImpl();
-    public abstract void startImpl();
-
 }
