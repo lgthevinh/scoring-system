@@ -1,9 +1,12 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'org.thingai.vrc.scoringsystem'
 version = '1.0-SNAPSHOT'
+description = 'Scoring System for Robotics Competitions'
 
 repositories {
     mavenCentral()
@@ -12,11 +15,14 @@ repositories {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation("org.xerial:sqlite-jdbc:3.43.2.0") // Essential for DAO
     implementation("org.slf4j:slf4j-api:2.0.9") // Logging interface of jdbc
-    implementation("org.slf4j:slf4j-simple:2.0.9")
     implementation(files("/applicationbase/build/libs/applicationbase.jar")) // ApplicationBase library for common functionality
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
 }
 
 test {
