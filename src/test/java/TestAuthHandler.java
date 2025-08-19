@@ -20,25 +20,6 @@ public class TestAuthHandler {
     }
 
     @Test
-    public void testHandleAuthenticate() {
-        String username = "testUser";
-        String password = "testPassword";
-
-        new AuthHandler().handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
-            @Override
-            public void onSuccess(String token, String successMessage) {
-                System.out.println("Authentication successful: " + successMessage);
-                System.out.println("Token: " + token);
-            }
-
-            @Override
-            public void onFailure(String errorMessage) {
-                System.err.println(errorMessage);
-            }
-        });
-    }
-
-    @Test
     public void testHandleCreateAuth() {
         String username = "newUser";
         String password = "newPassword";
@@ -55,5 +36,29 @@ public class TestAuthHandler {
                 System.err.println("User creation failed: " + errorMessage);
             }
         });
+    }
+
+    @Test
+    public void testHandleAuthenticate() {
+        String username = "newUser";
+        String password = "newPassword";
+
+        new AuthHandler().handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String token, String successMessage) {
+                System.out.println("Authentication successful: " + successMessage);
+                System.out.println("Token: " + token);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println(errorMessage);
+            }
+        });
+    }
+
+    @Test
+    public void testHandleCreateAuthWithExistingUser() {
+
     }
 }
