@@ -6,9 +6,9 @@ public class DaoFactory {
     public static String type;
     public static String url;
 
-    public static <T, ID> Dao<T, ID> getDao() {
+    public static <T, ID> Dao<T, ID> getDao(Class<T> clazz) {
         return switch (type) {
-            case "sqlite" -> new DaoSqlite<>(getSqliteConnection());
+            case "sqlite" -> new DaoSqlite<>(getSqliteConnection(), clazz);
             default -> throw new IllegalArgumentException("Unsupported DAO type: " + type);
         };
     }

@@ -13,8 +13,9 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
     private static Connection connection;
     private Class<T> clazz;
 
-    public DaoSqlite(Connection connection) {
+    public DaoSqlite(Connection connection, Class<T> clazz) {
         DaoSqlite.connection = connection;
+        this.clazz = clazz;
     }
 
     private static Field[] getAllFields(Class clazz) {
@@ -187,7 +188,7 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
     }
 
     @Override
-    public List<T> read(String[] column, String[] value) {
+    public List<T> query(String[] column, String[] value) {
         if (column == null || value == null) {
             throw new IllegalArgumentException("Cannot read with null column or value.");
         }
