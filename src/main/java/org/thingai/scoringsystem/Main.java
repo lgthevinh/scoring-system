@@ -27,7 +27,7 @@ public class Main {
         scoringApplication.facDao(new Class[] {
                 Match.class,
                 MatchAlliance.class,
-                ScoreSeasonDemo.class,
+//                ScoreSeasonDemo.class,
                 Team.class,
                 AuthData.class,
                 DbMap.class

@@ -45,7 +45,7 @@ public class MatchVM {
         }
 
         public MatchVM build() {
-            Dao<Match, String> matchDao = DaoFactory.getDao();
+            Dao<Match, String> matchDao = DaoFactory.getDao(Match.class);
 
             matchVM.match = matchDao.read(matchId);
             if (matchVM.match == null) {
@@ -53,7 +53,7 @@ public class MatchVM {
             }
 
             if (withTeamInfos) {
-                Dao<MatchAlliance, String> allianceDao = DaoFactory.getDao();
+                Dao<MatchAlliance, String> allianceDao = DaoFactory.getDao(MatchAlliance.class);
                 matchVM.redAlliance = allianceDao
                         .query("SELECT * FROM match_alliance WHERE match_id = '" + matchId + "' AND color = 0")
                         .get(0);
@@ -62,15 +62,16 @@ public class MatchVM {
                         .get(0);
             }
 
-            if (withScores) {
-                Dao<Score, String> scoreDao = DaoFactory.getDao();
-                matchVM.redScore = scoreDao
-                        .query("SELECT * FROM score WHERE match_id = '" + matchId + "' AND alliance_color = 0")
-                        .get(0);
-                matchVM.blueScore = scoreDao
-                        .query("SELECT * FROM score WHERE match_id = '" + matchId + "' AND alliance_color = 1")
-                        .get(0);
-            }
+            // Implement later due to score abstraction and inheritance
+//            if (withScores) {
+//                Dao<Score, String> scoreDao = DaoFactory.getDao(Score.class);
+//                matchVM.redScore = scoreDao
+//                        .query("SELECT * FROM score WHERE match_id = '" + matchId + "' AND alliance_color = 0")
+//                        .get(0);
+//                matchVM.blueScore = scoreDao
+//                        .query("SELECT * FROM score WHERE match_id = '" + matchId + "' AND alliance_color = 1")
+//                        .get(0);
+//            }
 
             return matchVM;
         }

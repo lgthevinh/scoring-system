@@ -47,7 +47,7 @@ public class Application {
 
                 DaoFactory.type = daoType; // Set the DAO type for the factory
                 DaoFactory.url = "jdbc:sqlite:" + Paths.get(appDir, appDirName + ".db"); // Set the URL for SQLite
-                dao = DaoFactory.getDao();
+                dao = DaoFactory.getDao(null);
 
                 if (!Files.exists(dbFile)) {
                     Files.createFile(dbFile);
