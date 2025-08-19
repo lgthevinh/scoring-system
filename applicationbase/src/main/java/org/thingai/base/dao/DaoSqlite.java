@@ -119,7 +119,7 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
         Field[] fields = getAllFields(clazz);
         for (Field field : fields) {
             DaoColumn daoColumn = field.getAnnotation(DaoColumn.class);
-            if (daoColumn != null && !daoColumn.primaryKey()) {
+            if (daoColumn != null) {
                 columns.append(daoColumn.name().isEmpty() ? field.getName() : daoColumn.name()).append(", ");
                 placeholders.append("?, ");
             }
@@ -139,12 +139,14 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
                 int index = 1;
                 for (Field field : fields) {
                     DaoColumn daoColumn = field.getAnnotation(DaoColumn.class);
-                    if (daoColumn != null && !daoColumn.primaryKey()) {
+                    if (daoColumn != null) {
                         field.setAccessible(true);
                         Object value = field.get(t);
                         preparedStatement.setObject(index++, value);
                     }
                 }
+                System.out.println("Executing query: " + preparedStatement.toString());
+
                 preparedStatement.executeUpdate();
             } else {
                 throw new IllegalStateException("Database connection is not established.");
