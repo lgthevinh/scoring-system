@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 
 import static org.thingai.scoringsystem.util.ByteUtil.bytesToHex;
@@ -15,7 +16,7 @@ import static org.thingai.scoringsystem.util.ByteUtil.hexToBytes;
 
 public class AuthHandler {
     private static final String SECRET_KEY = "secret_key";
-    private static final int TOKEN_EXPIRATION_TIME = 3600 * 1000; // 1 hour in milliseconds
+    private static final int TOKEN_EXPIRATION_TIME = 3600 * 1000 * 24; // 1 day in milliseconds
 
     private Dao<AuthData, String> authDataDao;
 
@@ -59,6 +60,16 @@ public class AuthHandler {
     }
 
     public void handleCreateAuth(String username, String password, AuthHandlerCallback callback) {
+        if (authDataDao == null) {
+            authDataDao = DaoFactory.getDao(AuthData.class);
+        }
+        // Check if the user already exists
+        List<AuthData> existingUsers = authDataDao.query(new String[]{"username"}, new String[] {username});
+        if (!existingUsers.isEmpty()) {
+            callback.onFailure("User already exists.");
+            return;
+        }
+
         // Hash password with salt
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[16];
@@ -92,21 +103,41 @@ public class AuthHandler {
         }
     }
 
+    public void handleValidateToken(String token, AuthHandlerCallback callback) {
+        if (validateToken(token)) {
+            callback.onSuccess(token, "Token is valid.");
+        } else {
+            callback.onFailure("Invalid or expired token.");
+        }
+    }
+
+    public void handleRefreshToken(String token, AuthHandlerCallback callback) {
+        if (validateToken(token)) {
+            String[] parts = token.split(":");
+            String username = parts[0];
+            String newToken = generateToken(username);
+            callback.onSuccess(newToken, "Token refreshed successfully.");
+        } else {
+            callback.onFailure("Invalid or expired token.");
+        }
+    }
+
     private String generateToken(String username) {
         long timestamp = System.currentTimeMillis();
         String tokenData = username + ":" + timestamp + ":" + SECRET_KEY;
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] tokenBytes = md.digest(tokenData.getBytes(StandardCharsets.UTF_8));
-            return bytesToHex(tokenBytes);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error generating token: " + e.getMessage());
-        }
+        // encode the token data using SHA-256
+        Base64.Encoder encoder = Base64.getEncoder();
+        return encoder.encodeToString(tokenData.getBytes(StandardCharsets.UTF_8));
     }
 
     private boolean validateToken(String token) {
         try {
-            String[] parts = token.split(":");
+            // Decode the token
+            Base64.Decoder decoder = Base64.getDecoder();
+            String decodedToken = new String(decoder.decode(token), StandardCharsets.UTF_8);
+
+            String[] parts = decodedToken.split(":");
+
             if (parts.length != 3) {
                 return false;
             }

@@ -58,7 +58,123 @@ public class TestAuthHandler {
     }
 
     @Test
-    public void testHandleCreateAuthWithExistingUser() {
+    public void testHandleAuthenticateWithWrongPassword() {
+        String username = "newUser";
+        String password = "wrongPassword";
 
+        new AuthHandler().handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String token, String successMessage) {
+                System.out.println("Authentication should not succeed with wrong password.");
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println("Expected failure: " + errorMessage);
+            }
+        });
     }
+
+    @Test
+    public void testHandleValidateToken() {
+        String username = "newUser";
+        String password = "newPassword";
+
+        AuthHandler authHandler = new AuthHandler();
+        final String[] newToken = new String[1];
+
+        authHandler.handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String token, String successMessage) {
+                System.out.println(successMessage);
+                System.out.println("Token: " + token);
+                newToken[0] = token; // Store the token for validation
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println(errorMessage);
+            }
+        });
+
+        // Now validate the token
+        authHandler.handleValidateToken(newToken[0], new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String validToken, String successMessage) {
+                System.out.println("Token validation successful: " + successMessage);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println("Token validation failed: " + errorMessage);
+            }
+        });
+    }
+
+    @Test
+    public void testHandleValidateTokenWithInvalidToken() {
+        String invalidToken = "invalid:token";
+        new AuthHandler().handleValidateToken(invalidToken, new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String validToken, String successMessage) {
+                System.out.println("This should not succeed with an invalid token.");
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println("Expected failure: " + errorMessage);
+            }
+        });
+    }
+
+    @Test
+    public void testRefreshToken() {
+        String username = "newUser";
+        String password = "newPassword";
+
+        AuthHandler authHandler = new AuthHandler();
+        final String[] newToken = new String[1];
+
+        authHandler.handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String token, String successMessage) {
+                System.out.println(successMessage);
+                System.out.println("Token: " + token);
+                newToken[0] = token; // Store the token for refreshing
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println(errorMessage);
+            }
+        });
+
+        // Now refresh the token
+        authHandler.handleRefreshToken(newToken[0], new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String refreshedToken, String successMessage) {
+                System.out.println("Token refresh successful: " + successMessage);
+                System.out.println("Refreshed Token: " + refreshedToken);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println("Token refresh failed: " + errorMessage);
+            }
+        });
+
+        // Validate the refreshed token
+        authHandler.handleValidateToken(newToken[0], new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String validToken, String successMessage) {
+                System.out.println("Refreshed token validation successful: " + successMessage);
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                System.err.println("Refreshed token validation failed: " + errorMessage);
+            }
+        });
+    }
+
 }

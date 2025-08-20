@@ -1,10 +1,7 @@
 package org.thingai.scoringsystem.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.thingai.scoringsystem.handler.AuthHandler;
 
 import java.util.Map;
@@ -35,4 +32,22 @@ public class AuthController {
         return responseEntity;
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<Map<String, String>> refreshToken(@RequestHeader Map<String, String> requestHeaders) {
+        String token = requestHeaders.get("Authorization");
+
+        new AuthHandler().handleRefreshToken(token, new AuthHandler.AuthHandlerCallback() {
+            @Override
+            public void onSuccess(String refreshedToken, String successMessage) {
+                responseEntity = ResponseEntity.ok(Map.of("token", refreshedToken, "message", successMessage));
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                responseEntity = ResponseEntity.status(401).body(Map.of("error", errorMessage));
+            }
+        });
+
+        return responseEntity;
+    }
 }
