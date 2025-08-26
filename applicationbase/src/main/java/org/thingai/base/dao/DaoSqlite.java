@@ -13,9 +13,23 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
     private static Connection connection;
     private Class<T> clazz;
 
-    public DaoSqlite(Connection connection, Class<T> clazz) {
-        DaoSqlite.connection = connection;
+    public DaoSqlite(Class<T> clazz) {
         this.clazz = clazz;
+    }
+
+    public DaoSqlite() {
+    }
+
+    public static void setupConnection(String dbPath) {
+        try {
+            if (connection == null || connection.isClosed()) {
+                Class.forName("org.sqlite.JDBC");
+                connection = java.sql.DriverManager.getConnection("jdbc:sqlite:" + dbPath);
+                System.out.println("SQLite connection established to " + dbPath);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static Field[] getAllFields(Class clazz) {
@@ -32,7 +46,7 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
     }
 
     @Override
-    public void facDao(Class[] classes) {
+    public void initDao(Class[] classes) {
         for (Class clazz : classes) {
             DaoTable daoTable = (DaoTable) clazz.getAnnotation(DaoTable.class);
             String query = "CREATE TABLE IF NOT EXISTS ";

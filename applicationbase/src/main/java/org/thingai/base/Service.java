@@ -1,7 +1,6 @@
 package org.thingai.base;
 
 import org.thingai.base.dao.Dao;
-import org.thingai.base.dao.DaoFactory;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +15,6 @@ public abstract class Service {
     public static String daoType;
 
     protected String appDir;
-    protected Dao dao;
 
     public void init() {
         // Default values for the application properties
@@ -24,7 +22,6 @@ public abstract class Service {
         appDirName = appDirName != null ? appDirName : "default_app";
         configFile = configFile != null ? configFile : "config.properties";
         logFile = logFile != null ? logFile : "application.log";
-        daoType = daoType != null ? daoType : Dao.SQLITE;
 
         String home = System.getProperty("user.home");
         appDir = Paths.get(home, ".thingai", appDirName).toString();
@@ -42,32 +39,12 @@ public abstract class Service {
             if (!Files.exists(logFilePath)) {
                 Files.createFile(logFilePath);
             }
-            if (daoType.equals(Dao.SQLITE)) {
-                Path dbFile = Paths.get(appDir, appDirName + ".db");
-
-                DaoFactory.type = daoType; // Set the DAO type for the factory
-                DaoFactory.url = "jdbc:sqlite:" + Paths.get(appDir, appDirName + ".db"); // Set the URL for SQLite
-                dao = DaoFactory.getDao(null);
-
-                if (!Files.exists(dbFile)) {
-                    Files.createFile(dbFile);
-                }
-            } else {
-                throw new IllegalArgumentException("Unsupported DAO type: " + daoType);
-            }
 
         } catch (Exception e) {
             System.err.println("Error creating application directories or files: " + e.getMessage());
         }
 
         onServiceInit();
-    }
-
-    public void facDao(Class<?>[] entityClasses) {
-        if (dao == null) {
-            throw new IllegalStateException("DAO is not initialized. Call init() before accessing the DAO.");
-        }
-        dao.facDao(entityClasses);
     }
 
     public void shutdown() {

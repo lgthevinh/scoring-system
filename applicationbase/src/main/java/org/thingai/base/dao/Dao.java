@@ -8,8 +8,9 @@ public abstract class Dao<T, K> {
     public static final String POSTGRESQL = "postgresql";
     public static final String MONGODB = "mongodb";
     public static final String IN_MEMORY = "in_memory";
+    public static final String FILE = "file";
 
-    public abstract void facDao(Class[] classes);
+    public abstract void initDao(Class[] classes);
     public abstract void insert(T t);
     public abstract T read(K id);
     public abstract void update(K id, T t);
