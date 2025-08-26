@@ -22,6 +22,11 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
         this.dbPath = dbPath;
     }
 
+    public DaoSqlite(Class<T> clazz, String dbPath) {
+        this.clazz = clazz;
+        this.dbPath = dbPath;
+    }
+
     private static void setupConnection(String dbPath) {
         try {
             if (connection == null || connection.isClosed()) {

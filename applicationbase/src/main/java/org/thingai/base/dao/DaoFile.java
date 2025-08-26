@@ -33,6 +33,13 @@ public class DaoFile<T, K> extends Dao<T, String> {
         this.entityDir = rootDir.resolve(entityClass.getSimpleName().toLowerCase());
     }
 
+    public DaoFile(String rootDir, Class<T> entityClass) {
+        this.rootDir = Path.of(rootDir);
+        this.entityClass = entityClass;
+        this.entityDir = this.rootDir.resolve(entityClass.getSimpleName().toLowerCase());
+        this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    }
+
     @Override
     public void initDao(Class[] classes) {
         try {
