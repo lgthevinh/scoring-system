@@ -10,12 +10,10 @@ import org.thingai.scoringsystem.entity.match.Match;
 import org.thingai.scoringsystem.entity.match.MatchAlliance;
 import org.thingai.scoringsystem.entity.team.Team;
 
-import java.nio.file.Path;
-
 public class ScoringService extends Service {
 
     @Override
-    public void onServiceInit() {
+    protected void onServiceInit() {
         Dao daoSqlite = new DaoSqlite(appDir + "/scoring_system.db");
         Dao daoFile = new DaoFile(appDir + "/data");
 
@@ -36,6 +34,6 @@ public class ScoringService extends Service {
     }
 
     @Override
-    public void run() {
+    protected void onServiceRun() {
     }
 }
