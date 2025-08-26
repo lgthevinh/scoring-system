@@ -23,13 +23,14 @@ public class DaoFile<T, K> extends Dao<T, String> {
     private Class<T> entityClass;
     private ObjectMapper objectMapper;
 
-    public DaoFile(Path rootDir) {
-        this.rootDir = rootDir;
+    public DaoFile(String rootDir) {
+        this.rootDir = Path.of(rootDir);
         this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     public DaoFile(Class<T> entityClass) {
         this.entityClass = entityClass;
+        this.entityDir = rootDir.resolve(entityClass.getSimpleName().toLowerCase());
     }
 
     @Override

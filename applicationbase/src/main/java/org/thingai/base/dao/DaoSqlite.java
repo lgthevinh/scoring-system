@@ -11,16 +11,18 @@ import java.util.List;
 
 public class DaoSqlite<T, K> extends Dao<T, K> {
     private static Connection connection;
+    private static String dbPath;
     private Class<T> clazz;
 
     public DaoSqlite(Class<T> clazz) {
         this.clazz = clazz;
     }
 
-    public DaoSqlite() {
+    public DaoSqlite(String dbPath) {
+        this.dbPath = dbPath;
     }
 
-    public static void setupConnection(String dbPath) {
+    private static void setupConnection(String dbPath) {
         try {
             if (connection == null || connection.isClosed()) {
                 Class.forName("org.sqlite.JDBC");
@@ -47,6 +49,8 @@ public class DaoSqlite<T, K> extends Dao<T, K> {
 
     @Override
     public void initDao(Class[] classes) {
+        setupConnection(dbPath);
+
         for (Class clazz : classes) {
             DaoTable daoTable = (DaoTable) clazz.getAnnotation(DaoTable.class);
             String query = "CREATE TABLE IF NOT EXISTS ";
