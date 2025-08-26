@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.thingai.base.dao.Dao;
-import org.thingai.base.dao.DaoFactory;
+import org.thingai.base.dao.DaoSqlite;
 import org.thingai.scoringsystem.entity.AuthData;
 import org.thingai.scoringsystem.handler.AuthHandler;
 
@@ -11,10 +11,9 @@ public class TestAuthHandler {
     @BeforeAll
     public static void setup() {
         // Set up the DAO factory with SQLite configuration
-        DaoFactory.type = "sqlite";
-        DaoFactory.url = "jdbc:sqlite:src/test/resources/test.db"; // Adjust the path as needed
-        Dao<AuthData, String> authDao = DaoFactory.getDao(AuthData.class); // Initialize the DAO
-        authDao.facDao(new Class[] {
+        String url = "jdbc:sqlite:src/test/resources/test.db"; // Adjust the path as needed
+        Dao<AuthData, String> authDao = new DaoSqlite<>(AuthData.class, url);
+        authDao.initDao(new Class[] {
             AuthData.class
         }); // Ensure the DAO is ready for use
     }
