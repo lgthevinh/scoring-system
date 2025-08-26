@@ -18,6 +18,10 @@ public abstract class Service {
 
     private Thread serviceThread;
 
+    protected Service() {
+
+    }
+
     public void init() {
         // Default values for the application properties
         version = version != null ? version : "1.0.0";
@@ -50,9 +54,7 @@ public abstract class Service {
     }
 
     public void run() {
-        serviceThread = new Thread(() -> {
-            this.onServiceRun();
-        });
+        serviceThread = new Thread(this::onServiceRun);
         serviceThread.start();
     }
 
