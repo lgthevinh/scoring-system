@@ -1,7 +1,7 @@
 package org.thingai.scoringsystem.handler;
 
 import org.thingai.base.dao.Dao;
-import org.thingai.base.dao.DaoFactory;
+import org.thingai.base.dao.DaoSqlite;
 import org.thingai.scoringsystem.entity.AuthData;
 
 import java.nio.charset.StandardCharsets;
@@ -27,7 +27,7 @@ public class AuthHandler {
 
     public void handleAuthenticate(String username, String password, AuthHandlerCallback callback) {
         if (authDataDao == null) {
-            authDataDao = DaoFactory.getDao(AuthData.class);
+            authDataDao = new DaoSqlite(AuthData.class);
         }
 
         try {
@@ -61,7 +61,7 @@ public class AuthHandler {
 
     public void handleCreateAuth(String username, String password, AuthHandlerCallback callback) {
         if (authDataDao == null) {
-            authDataDao = DaoFactory.getDao(AuthData.class);
+            authDataDao = new DaoSqlite(AuthData.class);
         }
         // Check if the user already exists
         List<AuthData> existingUsers = authDataDao.query(new String[]{"username"}, new String[] {username});
@@ -92,7 +92,7 @@ public class AuthHandler {
 
         // Save AuthData to database
         if (authDataDao == null) {
-            authDataDao = DaoFactory.getDao(AuthData.class);
+            authDataDao = new DaoSqlite(AuthData.class);
         }
         try {
             authDataDao.insert(authData);

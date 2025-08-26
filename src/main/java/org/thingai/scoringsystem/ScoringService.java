@@ -13,22 +13,23 @@ import org.thingai.scoringsystem.entity.team.Team;
 import java.nio.file.Path;
 
 public class ScoringService extends Service {
-    private final Dao daoSqlite = new DaoSqlite();
-    private final Dao daoFile = new DaoFile(Path.of(appDir, "datafile"));
 
     @Override
     public void onServiceInit() {
-        this.daoSqlite.initDao(new Class[]{
-                Match.class,
-                MatchAlliance.class,
-                // ScoreSeasonDemo.class,
-                Team.class,
-                AuthData.class,
-                DbMap.class
+        Dao daoSqlite = new DaoSqlite(appDir + "/scoring_system.db");
+        Dao daoFile = new DaoFile(appDir + "/data");
+
+        daoSqlite.initDao(new Class[]{
+            Match.class,
+            MatchAlliance.class,
+            // ScoreSeasonDemo.class,
+            Team.class,
+            AuthData.class,
+            DbMap.class
         });
 
-        this.daoFile.initDao(new Class[]{
-
+        daoFile.initDao(new Class[]{
+            // Match.class,
         });
 
         System.out.println("Service initialized with app directory: " + appDir);
