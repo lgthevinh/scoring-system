@@ -16,6 +16,8 @@ public abstract class Service {
 
     protected String appDir;
 
+    private Thread serviceThread;
+
     public void init() {
         // Default values for the application properties
         version = version != null ? version : "1.0.0";
@@ -47,9 +49,24 @@ public abstract class Service {
         onServiceInit();
     }
 
-    public void shutdown() {
+    public void run() {
+        serviceThread = new Thread(() -> {
+            this.onServiceRun();
+        });
+        serviceThread.start();
     }
 
-    public abstract void onServiceInit();
-    public abstract void run();
+    public void shutdown() {
+        if (serviceThread != null && serviceThread.isAlive()) {
+            serviceThread.interrupt();
+            try {
+                serviceThread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    protected abstract void onServiceInit();
+    protected abstract void onServiceRun();
 }
