@@ -7,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class Application {
+public abstract class Service {
     public static String name;
     public static String version;
     public static String appDirName;
@@ -16,7 +16,7 @@ public class Application {
     public static String daoType;
 
     protected String appDir;
-    protected static Dao dao;
+    protected Dao dao;
 
     public void init() {
         // Default values for the application properties
@@ -59,16 +59,8 @@ public class Application {
         } catch (Exception e) {
             System.err.println("Error creating application directories or files: " + e.getMessage());
         }
-    }
 
-    public void start() {
-        System.out.println("Starting application: " + name + " (Version: " + version + ")");
-        // Additional startup logic can be added here
-
-        System.out.println("Application directory: " + appDir);
-        System.out.println("Configuration file: " + configFile);
-        System.out.println("Log file: " + logFile);
-        System.out.println("DAO Type: " + daoType);
+        onServiceInit();
     }
 
     public void facDao(Class<?>[] entityClasses) {
@@ -77,4 +69,10 @@ public class Application {
         }
         dao.facDao(entityClasses);
     }
+
+    public void shutdown() {
+    }
+
+    public abstract void onServiceInit();
+    public abstract void run();
 }
