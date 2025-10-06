@@ -19,9 +19,10 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:3.43.2.0") // Essential for DAO
     implementation("org.slf4j:slf4j-api:2.0.9") // Logging interface of jdbc
-    implementation(files("/applicationbase/build/libs/applicationbase.jar")) // ApplicationBase library for common functionality
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    implementation files('libs/applicationbase.jar')
 
 }
 

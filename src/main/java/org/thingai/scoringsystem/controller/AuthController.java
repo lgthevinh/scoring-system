@@ -16,7 +16,6 @@ public class AuthController {
         String username = request.get("username");
         String password = request.get("password");
 
-
         new AuthHandler().handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String token, String successMessage) {

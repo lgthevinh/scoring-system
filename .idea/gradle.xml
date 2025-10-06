@@ -13,11 +13,10 @@
         </option>
       </GradleProjectSettings>
       <GradleProjectSettings>
-        <option name="externalProjectPath" value="$PROJECT_DIR$/applicationbase" />
-        <option name="gradleHome" value="" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$/../../thingai-app-sdk/applicationbase" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/applicationbase" />
+            <option value="$PROJECT_DIR$/../../thingai-app-sdk/applicationbase" />
           </set>
         </option>
       </GradleProjectSettings>
