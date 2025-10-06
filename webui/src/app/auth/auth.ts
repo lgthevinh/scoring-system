@@ -13,12 +13,17 @@ export class Auth {
   authForm: FormGroup;
   errorMessage: string = '';
   loading: boolean = false;
+  passwordVisible: boolean = false; // <-- add this
 
   constructor(private fb: FormBuilder) {
     this.authForm = this.fb.group({
       username: ['', Validators.required],
       password: ['', Validators.required]
     });
+  }
+
+  togglePasswordVisibility() {
+    this.passwordVisible = !this.passwordVisible;
   }
 
   onSubmit() {

@@ -1,15 +1,28 @@
-<div class="auth-container">
-  <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
-    <h2>Login to Scoring System</h2>
-    <div>
-      <label>Username</label>
-      <input formControlName="username" type="text" required />
-    </div>
-    <div>
-      <label>Password</label>
-      <input formControlName="password" type="password" required />
-    </div>
-    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
-    <button type="submit" [disabled]="loading">Login</button>
-  </form>
+<div class="auth-bg vh-100 d-flex justify-content-center align-items-center">
+  <div class="card shadow-lg p-4">
+    <h3 class="mb-4 text-center fw-bold" style="font-family: 'Inter', Arial, sans-serif;">Login to Scoring System</h3>
+    <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label class="form-label fw-semibold" for="username">Username</label>
+        <input formControlName="username" id="username" type="text" class="form-control" required />
+      </div>
+
+      <!-- Updated Password Field -->
+      <div class="mb-3 position-relative">
+        <label class="form-label fw-semibold" for="password">Password</label>
+        <input [type]="passwordVisible ? 'text' : 'password'"
+               formControlName="password"
+               id="password"
+               class="form-control"
+               required />
+        <span class="password-toggle-icon" (click)="togglePasswordVisibility()">
+          <i class="bi" [ngClass]="{'bi-eye-slash-fill': !passwordVisible, 'bi-eye-fill': passwordVisible}"></i>
+        </span>
+      </div>
+      <!-- End of Updated Field -->
+
+      <div *ngIf="errorMessage" class="alert alert-danger py-2">{{ errorMessage }}</div>
+      <button type="submit" class="btn btn-primary w-100" [disabled]="loading">Login</button>
+    </form>
+  </div>
 </div>
