@@ -1,4 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+:root {
+  --picton-blue: #00a6fbff;
+  --steel-blue: #0582caff;
+  --lapis-lazuli: #006494ff;
+}
+
 body {
   font-family: 'Inter', Arial, sans-serif;
 }

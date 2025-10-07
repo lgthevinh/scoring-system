@@ -1,6 +1,6 @@
 .auth-bg {
-  /* Angular-themed gradient background */
-  background: linear-gradient(90deg, #7f3ffb 0%, #23a7fa 100%);  min-height: 100vh;
+  background: #f8f9fa; /* Light gray background */
+  min-height: 100vh; /* Full viewport height */
   font-family: 'Inter', Arial, sans-serif;
 }
 .card {
