@@ -5,8 +5,11 @@ import org.thingai.base.dao.annotations.DaoTable;
 
 @DaoTable(name = "match")
 public class Match {
-    @DaoColumn(name = "id", primaryKey = true, autoIncrement = true)
-    private String matchId;
+    @DaoColumn(name = "id", primaryKey = true)
+    private String id;
+
+    @DaoColumn(name = "matchCode", unique = true)
+    private String matchCode;
 
     @DaoColumn(name = "matchType")
     private int matchType;
@@ -20,12 +23,12 @@ public class Match {
     @DaoColumn(name = "matchEndTime")
     private String matchEndTime;
 
-    public String getMatchId() {
-        return matchId;
+    public String getId() {
+        return id;
     }
 
-    public void setMatchId(String matchId) {
-        this.matchId = matchId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public int getMatchType() {
@@ -58,5 +61,13 @@ public class Match {
 
     public void setMatchEndTime(String matchEndTime) {
         this.matchEndTime = matchEndTime;
+    }
+
+    public String getMatchCode() {
+        return matchCode;
+    }
+
+    public void setMatchCode(String matchCode) {
+        this.matchCode = matchCode;
     }
 }

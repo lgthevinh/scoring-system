@@ -4,7 +4,7 @@ import org.thingai.base.dao.annotations.DaoColumn;
 
 public abstract class Score {
 
-    @DaoColumn(name = "id", primaryKey = true, autoIncrement = true)
+    @DaoColumn(name = "id", primaryKey = true)
     private String id;
 
     @DaoColumn(name = "allianceId")

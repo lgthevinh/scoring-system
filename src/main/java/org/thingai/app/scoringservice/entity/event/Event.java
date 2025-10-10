@@ -5,8 +5,8 @@ import org.thingai.base.dao.annotations.DaoTable;
 
 @DaoTable(name = "event")
 public class Event {
-    @DaoColumn(name = "id", primaryKey = true)
-    private String id;
+    @DaoColumn(name = "uuid", primaryKey = true)
+    private String uuid;
 
     @DaoColumn(name = "name")
     private String name;
@@ -17,12 +17,12 @@ public class Event {
     @DaoColumn(name = "location")
     private String location;
 
-    public String getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {

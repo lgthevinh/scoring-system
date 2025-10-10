@@ -7,7 +7,7 @@ import org.thingai.base.dao.DaoSqlite;
 import org.thingai.app.scoringservice.entity.event.Event;
 import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.app.scoringservice.entity.config.AuthData;
-import org.thingai.app.scoringservice.entity.config.DbMap;
+import org.thingai.app.scoringservice.entity.config.DbMapEntity;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.match.MatchAlliance;
 import org.thingai.app.scoringservice.handler.AuthHandler;
@@ -37,7 +37,7 @@ public class ScoringService extends Service {
 
                 // System entities
                 AuthData.class,
-                DbMap.class
+                DbMapEntity.class
         });
         // Initialize handler
         authHandler = new AuthHandler(daoSqlite);

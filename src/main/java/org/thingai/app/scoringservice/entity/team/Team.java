@@ -6,7 +6,7 @@ import org.thingai.base.dao.annotations.DaoTable;
 @DaoTable(name = "team")
 public class Team {
     @DaoColumn(name = "id", primaryKey = true)
-    private int teamId;
+    private String teamId;
 
     @DaoColumn(name = "name")
     private String teamName;
@@ -17,11 +17,11 @@ public class Team {
     @DaoColumn(name = "region")
     private String teamRegion;
 
-    public int getTeamId() {
+    public String getTeamId() {
         return teamId;
     }
 
-    public void setTeamId(int teamId) {
+    public void setTeamId(String teamId) {
         this.teamId = teamId;
     }
 
