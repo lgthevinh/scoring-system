@@ -1,0 +1,62 @@
+package org.thingai.app.scoringservice.entity.match;
+
+import org.thingai.base.dao.annotations.DaoColumn;
+import org.thingai.base.dao.annotations.DaoTable;
+
+@DaoTable(name = "match")
+public class Match {
+    @DaoColumn(name = "id", primaryKey = true, autoIncrement = true)
+    private String matchId;
+
+    @DaoColumn(name = "matchType")
+    private int matchType;
+
+    @DaoColumn(name = "matchNumber")
+    private int matchNumber;
+
+    @DaoColumn(name = "matchStartTime")
+    private String matchStartTime;
+
+    @DaoColumn(name = "matchEndTime")
+    private String matchEndTime;
+
+    public String getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(String matchId) {
+        this.matchId = matchId;
+    }
+
+    public int getMatchType() {
+        return matchType;
+    }
+
+    public void setMatchType(int matchType) {
+        this.matchType = matchType;
+    }
+
+    public int getMatchNumber() {
+        return matchNumber;
+    }
+
+    public void setMatchNumber(int matchNumber) {
+        this.matchNumber = matchNumber;
+    }
+
+    public String getMatchStartTime() {
+        return matchStartTime;
+    }
+
+    public void setMatchStartTime(String matchStartTime) {
+        this.matchStartTime = matchStartTime;
+    }
+
+    public String getMatchEndTime() {
+        return matchEndTime;
+    }
+
+    public void setMatchEndTime(String matchEndTime) {
+        this.matchEndTime = matchEndTime;
+    }
+}

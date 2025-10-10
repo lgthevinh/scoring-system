@@ -2,20 +2,21 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoSqlite;
-import org.thingai.scoringsystem.entity.AuthData;
-import org.thingai.scoringsystem.handler.AuthHandler;
+import org.thingai.app.scoringservice.entity.config.AuthData;
+import org.thingai.app.scoringservice.handler.AuthHandler;
 
 public class TestAuthHandler {
-    private final AuthHandler authHandler = new AuthHandler();
+    private static AuthHandler authHandler;
 
     @BeforeAll
     public static void setup() {
         // Set up the DAO factory with SQLite configuration
-        String url = "jdbc:sqlite:src/test/resources/test.db"; // Adjust the path as needed
-        Dao<AuthData, String> authDao = new DaoSqlite<>(AuthData.class, url);
-        authDao.initDao(new Class[] {
+        String url = "src/test/resources/test.db";
+        Dao dao = new DaoSqlite(url);
+        dao.initDao(new Class[] {
             AuthData.class
         }); // Ensure the DAO is ready for use
+        authHandler = new AuthHandler(dao);
     }
 
     @Test
@@ -23,7 +24,7 @@ public class TestAuthHandler {
         String username = "newUser";
         String password = "newPassword";
 
-        new AuthHandler().handleCreateAuth(username, password, new AuthHandler.AuthHandlerCallback() {
+        authHandler.handleCreateAuth(username, password, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String token, String successMessage) {
                 System.out.println("User created successfully: " + successMessage);
@@ -42,7 +43,7 @@ public class TestAuthHandler {
         String username = "newUser";
         String password = "newPassword";
 
-        new AuthHandler().handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
+        authHandler.handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String token, String successMessage) {
                 System.out.println("Authentication successful: " + successMessage);
@@ -61,7 +62,7 @@ public class TestAuthHandler {
         String username = "newUser";
         String password = "wrongPassword";
 
-        new AuthHandler().handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
+        authHandler.handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String token, String successMessage) {
                 System.out.println("Authentication should not succeed with wrong password.");
@@ -79,7 +80,6 @@ public class TestAuthHandler {
         String username = "newUser";
         String password = "newPassword";
 
-        AuthHandler authHandler = new AuthHandler();
         final String[] newToken = new String[1];
 
         authHandler.handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
@@ -113,7 +113,7 @@ public class TestAuthHandler {
     @Test
     public void testHandleValidateTokenWithInvalidToken() {
         String invalidToken = "invalid:token";
-        new AuthHandler().handleValidateToken(invalidToken, new AuthHandler.AuthHandlerCallback() {
+        authHandler.handleValidateToken(invalidToken, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String validToken, String successMessage) {
                 System.out.println("This should not succeed with an invalid token.");
@@ -131,7 +131,6 @@ public class TestAuthHandler {
         String username = "newUser";
         String password = "newPassword";
 
-        AuthHandler authHandler = new AuthHandler();
         final String[] newToken = new String[1];
 
         authHandler.handleAuthenticate(username, password, new AuthHandler.AuthHandlerCallback() {
