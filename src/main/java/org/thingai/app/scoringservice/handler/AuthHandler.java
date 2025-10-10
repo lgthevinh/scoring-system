@@ -16,7 +16,7 @@ public class AuthHandler {
     private static final String SECRET_KEY = "secret_key";
     private static final int TOKEN_EXPIRATION_TIME = 3600 * 1000 * 24; // 1 day in milliseconds
 
-    private Dao authDataDao;
+    private final Dao authDataDao;
 
     public AuthHandler(Dao authDataDao ) {
         this.authDataDao = authDataDao;

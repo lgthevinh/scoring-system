@@ -1,7 +1,6 @@
 package org.thingai.app.scoringservice.handler;
 
 import org.thingai.app.scoringservice.callback.RequestCallback;
-import org.thingai.app.scoringservice.define.AllianceColor;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.MatchType;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;

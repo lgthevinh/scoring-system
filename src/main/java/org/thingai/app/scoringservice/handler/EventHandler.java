@@ -7,8 +7,8 @@ import org.thingai.app.scoringservice.entity.event.Event;
 import org.thingai.base.dao.Dao;
 
 public class EventHandler {
-    private Dao dao;
-    private Dao daoFile;
+    private final Dao dao;
+    private final Dao daoFile;
 
     public EventHandler(Dao dao, Dao daoFile) {
         this.dao = dao;
@@ -66,5 +66,8 @@ public class EventHandler {
         } catch (Exception e) {
             callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to set system event: " + e.getMessage());
         }
+    }
+    public void syncEventFromCloud(String eventId, RequestCallback<Event> callback) {
+
     }
 }
