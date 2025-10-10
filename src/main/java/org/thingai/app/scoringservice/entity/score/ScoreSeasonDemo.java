@@ -1,25 +1,18 @@
 package org.thingai.app.scoringservice.entity.score;
 
-import org.thingai.base.dao.annotations.DaoColumn;
-import org.thingai.base.dao.annotations.DaoTable;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
-@DaoTable(name = "game_specific_score")
 public class ScoreSeasonDemo extends Score {
-
-    @DaoColumn(name = "robot_parked")
     private int robotParked; // 0, 1, 2, 3 for robots parked
-
-    @DaoColumn(name = "robot_hanged")
     private int robotHanged;
-
-    @DaoColumn(name = "ball_entered")
     private int ballEntered; // number of ball entered
-
-    @DaoColumn(name = "minor_fault")
     private int minorFault;
-
-    @DaoColumn(name = "major_fault")
     private int majorFault;
+
+    public ScoreSeasonDemo() {
+        super();
+    }
 
     @Override
     public void calculateTotalScore() {
@@ -29,5 +22,24 @@ public class ScoreSeasonDemo extends Score {
     @Override
     public void calculatePenalties() {
         penaltiesScore = minorFault * 5 + majorFault * 10;
+    }
+
+    @Override
+    public void fromJson(String json) {
+        Gson gson = new Gson();
+
+        JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
+
+        this.robotParked = jsonObject.get("robotParked").getAsInt();
+        this.robotHanged = jsonObject.get("robotHanged").getAsInt();
+        this.ballEntered = jsonObject.get("ballEntered").getAsInt();
+        this.minorFault = jsonObject.get("minorFault").getAsInt();
+        this.majorFault = jsonObject.get("majorFault").getAsInt();
+    }
+
+    @Override
+    public String getRawScoreData() {
+        Gson gson = new Gson();
+        return gson.toJson(this);
     }
 }

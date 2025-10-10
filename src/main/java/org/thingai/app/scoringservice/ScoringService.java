@@ -1,5 +1,6 @@
 package org.thingai.app.scoringservice;
 
+import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.base.Service;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
@@ -9,7 +10,6 @@ import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.app.scoringservice.entity.config.AuthData;
 import org.thingai.app.scoringservice.entity.config.DbMapEntity;
 import org.thingai.app.scoringservice.entity.match.Match;
-import org.thingai.app.scoringservice.entity.match.MatchAlliance;
 import org.thingai.app.scoringservice.handler.AuthHandler;
 import org.thingai.app.scoringservice.handler.ScoreHandler;
 
@@ -32,8 +32,8 @@ public class ScoringService extends Service {
         daoSqlite.initDao(new Class[]{
                 Event.class,
                 Match.class,
-                MatchAlliance.class,
                 Team.class,
+                Score.class,
 
                 // System entities
                 AuthData.class,

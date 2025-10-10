@@ -1,8 +1,11 @@
 package org.thingai.app.scoringservice.handler;
 
 import org.thingai.app.scoringservice.callback.RequestCallback;
+import org.thingai.app.scoringservice.define.AllianceColor;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.MatchType;
+import org.thingai.app.scoringservice.entity.match.AllianceTeam;
+import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.match.Match;
 
@@ -13,8 +16,9 @@ public class MatchHandler {
         this.dao = dao;
     }
 
-    public void createMatch(int matchType, int matchNumber, String matchStartTime, int[] redTeamIds, int[] blueTeamIds, RequestCallback<Match> callback) {
+    public void createMatch(int matchType, int matchNumber, String matchStartTime, String[] redTeamIds, String[] blueTeamIds, RequestCallback<Match> callback) {
         try {
+            // Create match entity
             Match match = new Match();
             match.setMatchType(matchType);
             match.setMatchNumber(matchNumber);
@@ -27,8 +31,46 @@ public class MatchHandler {
                 default -> "";
             };
             match.setMatchCode(matchCode);
+            match.setId(matchCode);
+
+            String blueAllianceId = matchCode + "_B";
+            String redAllianceId = matchCode + "_R";
+            
+            // Create team alliances
+            AllianceTeam[] blueTeams = new AllianceTeam[blueTeamIds.length];
+            for (int i = 0; i < blueTeamIds.length; i++) {
+                AllianceTeam team = new AllianceTeam();
+                team.setTeamId(blueTeamIds[i]);
+                team.setAllianceId(blueAllianceId);
+                blueTeams[i] = team;
+            }
+
+            AllianceTeam[] redTeams = new AllianceTeam[redTeamIds.length];
+            for (int i = 0; i < redTeamIds.length; i++) {
+                AllianceTeam team = new AllianceTeam();
+                team.setTeamId(redTeamIds[i]);
+                team.setAllianceId(redAllianceId);
+                redTeams[i] = team;
+            }
+
+
+            // Create scores
+            Score redScore = ScoreHandler.factoryScore();
+            redScore.setAllianceId(redAllianceId);
+
+            Score blueScore = ScoreHandler.factoryScore();
+            blueScore.setAllianceId(blueAllianceId);
 
             dao.insert(Match.class, match);
+            for (AllianceTeam team : redTeams) {
+                dao.insert(AllianceTeam.class, team);
+            }
+            for (AllianceTeam team : blueTeams) {
+                dao.insert(AllianceTeam.class, team);
+            }
+            dao.insert(Score.class, redScore);
+            dao.insert(Score.class, blueScore);
+
             callback.onSuccess(match, "Match created successfully.");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.CREATE_FAILED, "Failed to create match: " + e.getMessage());

@@ -23,7 +23,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     implementation files('libs/applicationbase.jar')
-
+    implementation 'com.google.code.gson:gson:2.13.2'
 }
 
 test {

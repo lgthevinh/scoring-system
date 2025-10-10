@@ -4,12 +4,20 @@ import org.thingai.base.dao.annotations.DaoColumn;
 import org.thingai.base.dao.annotations.DaoTable;
 
 @DaoTable(name = "db_map")
-public class DbMap {
+public class DbMapEntity {
     @DaoColumn(primaryKey = true, unique = true)
     private String key;
 
     @DaoColumn(nullable = false)
     private String value;
+
+    public DbMapEntity() {
+    }
+
+    public DbMapEntity(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
 
     public String getKey() {
         return key;
