@@ -6,7 +6,7 @@ import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.base.dao.Dao;
 
 public class TeamHandler {
-    private Dao dao;
+    private final Dao dao;
 
     public TeamHandler(Dao dao) {
         this.dao = dao;
@@ -21,6 +21,15 @@ public class TeamHandler {
             team.setTeamSchool(teamSchool);
             team.setTeamRegion(teamRegion);
 
+            dao.insert(Team.class, team);
+            callback.onSuccess(team, "Team added successfully");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.CREATE_FAILED, e.getMessage());
+        }
+    }
+
+    public void addTeam(Team team, RequestCallback<Team> callback) {
+        try {
             dao.insert(Team.class, team);
             callback.onSuccess(team, "Team added successfully");
         } catch (Exception e) {

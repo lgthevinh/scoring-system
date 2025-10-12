@@ -15,8 +15,8 @@ public class Main {
         ScoringService scoringService = new ScoringService();
 
         scoringService.init();
-
         scoringService.run();
+
         SpringApplication.run(Main.class, args);
     }
 

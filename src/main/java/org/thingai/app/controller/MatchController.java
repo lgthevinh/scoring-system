@@ -1,0 +1,164 @@
+package org.thingai.app.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.thingai.app.scoringservice.ScoringService;
+import org.thingai.app.scoringservice.callback.RequestCallback;
+import org.thingai.app.scoringservice.entity.match.Match;
+import org.thingai.app.scoringservice.entity.time.TimeBlock;
+import org.thingai.app.scoringservice.handler.MatchHandler;
+import org.thingai.base.dao.Dao;
+import org.thingai.base.dao.DaoSqlite;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
+@RestController
+@RequestMapping("/api/match")
+public class MatchController {
+
+    private final MatchHandler matchHandler = ScoringService.matchHandler();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @PostMapping("/create")
+    public ResponseEntity<Object> createMatch(@RequestBody Map<String, Object> request) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        try {
+            int matchType = Integer.parseInt(request.get("matchType").toString());
+            int matchNumber = Integer.parseInt(request.get("matchNumber").toString());
+            String matchStartTime = request.get("matchStartTime").toString();
+            String[] redTeamIds = request.get("redTeamIds").toString().split(",");
+            String[] blueTeamIds = request.get("blueTeamIds").toString().split(",");
+
+            matchHandler.createMatch(matchType, matchNumber, matchStartTime, redTeamIds, blueTeamIds, createMatchCallback(future));
+        } catch (Exception e) {
+            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
+        }
+        return getObjectResponse(future);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Object> getMatch(@PathVariable String id) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        matchHandler.getMatch(id, new RequestCallback<Match>() {
+            @Override
+            public void onSuccess(Match match, String successMessage) {
+                future.complete(ResponseEntity.ok(match));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return getObjectResponse(future);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<Object> listMatches() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        matchHandler.listMatches(new RequestCallback<Match[]>() {
+            @Override
+            public void onSuccess(Match[] matches, String successMessage) {
+                future.complete(ResponseEntity.ok(matches));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return getObjectResponse(future);
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<Object> updateMatch(@RequestBody Match match) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        matchHandler.updateMatch(match, createMatchCallback(future));
+        return getObjectResponse(future);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Object> deleteMatch(@PathVariable String id) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        matchHandler.deleteMatch(id, new RequestCallback<Void>() {
+            @Override
+            public void onSuccess(Void result, String successMessage) {
+                future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return getObjectResponse(future);
+    }
+
+    @PostMapping("/schedule/generate")
+    public ResponseEntity<Object> generateSchedule(@RequestBody Map<String, Object> request) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        try {
+            int numberOfMatches = Integer.parseInt(request.get("numberOfMatches").toString());
+            String startTime = request.get("startTime").toString();
+            int matchDuration = Integer.parseInt(request.get("matchDuration").toString());
+            List<Map<String, String>> timeBlockMaps = (List<Map<String, String>>) request.get("timeBlocks");
+            TimeBlock[] timeBlocks = objectMapper.convertValue(timeBlockMaps, TimeBlock[].class);
+
+            matchHandler.generateMatchSchedule(numberOfMatches, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, String successMessage) {
+                    future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
+                }
+
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    future.complete(createErrorResponse(errorCode, errorMessage));
+                }
+            });
+        } catch (Exception e) {
+            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
+        }
+        return getObjectResponse(future);
+    }
+
+    // --- Helper Methods for DRY code ---
+
+    private RequestCallback<Match> createMatchCallback(CompletableFuture<ResponseEntity<Object>> future) {
+        return new RequestCallback<>() {
+            @Override
+            public void onSuccess(Match match, String successMessage) {
+                future.complete(ResponseEntity.ok(Map.of("message", successMessage, "matchId", match.getId())));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        };
+    }
+
+    private ResponseEntity<Object> createErrorResponse(int errorCode, String errorMessage) {
+        Map<String, Object> body = Map.of("errorCode", errorCode, "error", errorMessage);
+        HttpStatus status = switch (errorCode) {
+            case 400 -> HttpStatus.BAD_REQUEST;
+            case 404 -> HttpStatus.NOT_FOUND;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+        return ResponseEntity.status(status).body(body);
+    }
+
+    private ResponseEntity<Object> getObjectResponse(CompletableFuture<ResponseEntity<Object>> future) {
+        try {
+            return future.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Thread.currentThread().interrupt();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An unexpected error occurred."));
+        }
+    }
+}
+
