@@ -59,6 +59,7 @@ public class ScoringService extends Service {
         // Initialize handler
         authHandler = new AuthHandler(daoSqlite);
         scoreHandler = new ScoreHandler(daoSqlite, daoFile);
+        teamHandler = new TeamHandler(daoSqlite, teamCache);
         matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
     }
 

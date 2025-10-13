@@ -3,13 +3,17 @@ package org.thingai.app.scoringservice.handler;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.entity.team.Team;
+import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 
 public class TeamHandler {
     private final Dao dao;
 
-    public TeamHandler(Dao dao) {
+    private LRUCache<String, Team> teamCache;
+
+    public TeamHandler(Dao dao, LRUCache<String, Team> teamCache) {
         this.dao = dao;
+        this.teamCache = teamCache;
     }
 
     public void addTeam(String teamId, String teamName, String teamSchool, String teamRegion, RequestCallback<Team> callback) {

@@ -17,7 +17,7 @@ public class TestTeamHandler {
         dao.initDao(new Class[] {
                 Team.class,
         }); // Ensure the DAO is ready for use
-        teamHandler = new TeamHandler(dao);
+        teamHandler = new TeamHandler(dao, null);
     }
 
     private Team[] generateRandomTeams(int count) {
