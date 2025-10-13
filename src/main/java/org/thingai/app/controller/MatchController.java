@@ -6,11 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
+import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
 import org.thingai.app.scoringservice.handler.MatchHandler;
-import org.thingai.base.dao.Dao;
-import org.thingai.base.dao.DaoSqlite;
 
 import java.util.List;
 import java.util.Map;
@@ -74,6 +73,41 @@ public class MatchController {
         });
         return getObjectResponse(future);
     }
+
+    @GetMapping("/list/{matchType}")
+    public ResponseEntity<Object> listMatchesByType(@PathVariable int matchType) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        matchHandler.listMatchesByType(matchType, new RequestCallback<Match[]>() {
+            @Override
+            public void onSuccess(Match[] matches, String successMessage) {
+                future.complete(ResponseEntity.ok(matches));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return getObjectResponse(future);
+    }
+
+    @GetMapping("/list/details/{matchType}")
+    public ResponseEntity<Object> listMatchDetails(@PathVariable int matchType) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        matchHandler.listMatchDetails(matchType, new RequestCallback<MatchDetailDto[]>() {
+            @Override
+            public void onSuccess(MatchDetailDto[] matchDetails, String successMessage) {
+                future.complete(ResponseEntity.ok(matchDetails));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return getObjectResponse(future);
+    }
+
 
     @PutMapping("/update")
     public ResponseEntity<Object> updateMatch(@RequestBody Match match) {

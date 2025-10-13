@@ -5,6 +5,7 @@ import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.MatchHandler;
 import org.thingai.app.scoringservice.handler.TeamHandler;
 import org.thingai.base.Service;
+import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.dao.DaoSqlite;
@@ -17,7 +18,15 @@ import org.thingai.app.scoringservice.handler.AuthHandler;
 import org.thingai.app.scoringservice.handler.ScoreHandler;
 import org.thingai.base.log.ILog;
 
+import java.util.HashMap;
+
 public class ScoringService extends Service {
+    private static final String SERVICE_NAME = "ScoringService";
+
+    private final LRUCache<String, Match> matchCache = new LRUCache<>(50, new HashMap<>());
+    private final LRUCache<String, AllianceTeam[]> allianceTeamCache = new LRUCache<>(100, new HashMap<>());
+    private final LRUCache<String, Team> teamCache = new LRUCache<>(30, new HashMap<>());
+
     private static AuthHandler authHandler;
     private static TeamHandler teamHandler;
     private static ScoreHandler scoreHandler;
@@ -50,7 +59,7 @@ public class ScoringService extends Service {
         // Initialize handler
         authHandler = new AuthHandler(daoSqlite);
         scoreHandler = new ScoreHandler(daoSqlite, daoFile);
-        matchHandler = new MatchHandler(daoSqlite);
+        matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
     }
 
     @Override

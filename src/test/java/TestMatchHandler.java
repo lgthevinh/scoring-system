@@ -25,7 +25,7 @@ public class TestMatchHandler {
         }); // Ensure the DAO is ready for use
 
         DaoFile daoFile = new DaoFile("src/test/resources/files");
-        matchHandler = new MatchHandler(dao);
+        matchHandler = new MatchHandler(dao, null, null, null);
     }
 
     @Test

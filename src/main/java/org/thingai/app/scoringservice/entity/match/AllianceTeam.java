@@ -6,7 +6,7 @@ import org.thingai.base.dao.annotations.DaoTable;
 @DaoTable(name = "alliance_team")
 public class AllianceTeam {
 
-    @DaoColumn(name = "id")
+    @DaoColumn(name = "allianceId")
     private String allianceId;
 
     @DaoColumn(name = "teamId")
