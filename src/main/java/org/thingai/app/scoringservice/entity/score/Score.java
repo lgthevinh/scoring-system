@@ -5,7 +5,7 @@ import org.thingai.base.dao.annotations.DaoColumn;
 import org.thingai.base.dao.annotations.DaoTable;
 
 @DaoTable(name = "score")
-public abstract class Score {
+public class Score {
     // As alliance ID
     @DaoColumn(name = "id", primaryKey = true)
     private String id;
@@ -27,10 +27,18 @@ public abstract class Score {
         this.penaltiesScore = 0;
     }
 
-    public abstract void calculateTotalScore();
-    public abstract void calculatePenalties();
-    public abstract void fromJson(String json);
-    public abstract String getRawScoreData();
+    public void calculateTotalScore() {
+
+    }
+    public void calculatePenalties() {
+
+    }
+    public void fromJson(String json) {
+
+    }
+    public String getRawScoreData() {
+        return rawScoreData;
+    }
 
     public String getAllianceId() {
         return id;
