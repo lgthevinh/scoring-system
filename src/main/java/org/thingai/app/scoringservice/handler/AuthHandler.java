@@ -113,6 +113,10 @@ public class AuthHandler {
         }
     }
 
+    public String generateTokenForLocalUser() {
+        return generateToken("local");
+    }
+
     private String generateToken(String username) {
         long timestamp = System.currentTimeMillis();
         String tokenData = username + ":" + timestamp + ":" + SECRET_KEY;

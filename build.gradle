@@ -18,12 +18,14 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     implementation("org.xerial:sqlite-jdbc:3.43.2.0") // Essential for DAO
+    implementation 'com.zaxxer:HikariCP:5.1.0'
     implementation("org.slf4j:slf4j-api:2.0.9") // Logging interface of jdbc
+    implementation 'com.google.code.gson:gson:2.13.2'
+
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
     implementation files('libs/applicationbase.jar')
-    implementation 'com.google.code.gson:gson:2.13.2'
 }
 
 test {

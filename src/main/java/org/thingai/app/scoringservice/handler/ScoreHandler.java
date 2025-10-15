@@ -44,12 +44,16 @@ public class ScoreHandler {
             // 2. Read the detailed raw score data from the corresponding JSON file.
             String jsonRawScoreData = daoFile.readJsonFile("/scores/" + allianceId + ".json");
             if (jsonRawScoreData == null || jsonRawScoreData.isEmpty()) {
-                callback.onFailure(ErrorCode.NOT_FOUND, "Detailed score data file not found for alliance: " + allianceId);
-                return;
+                // Generate json data
+                Score newScore = factoryScore();
+                newScore.setAllianceId(allianceId);
+                daoFile.writeJsonFile("/scores/" + allianceId + ".json", newScore.getRawScoreData());
+                jsonRawScoreData = newScore.getRawScoreData();
             }
 
             callback.onSuccess(jsonRawScoreData, "Score retrieved successfully.");
         } catch (Exception e) {
+            e.printStackTrace();
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve score: " + e.getMessage());
         }
     }
@@ -87,6 +91,7 @@ public class ScoreHandler {
 
             callback.onSuccess(result, "Scores retrieved successfully for match: " + matchId);
         } catch (Exception e) {
+            e.printStackTrace();
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve scores for match: " + e.getMessage());
         }
     }
@@ -138,6 +143,7 @@ public class ScoreHandler {
             });
 
         } catch (Exception e) {
+            e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to submit score: " + e.getMessage());
         }
     }
@@ -160,6 +166,7 @@ public class ScoreHandler {
 
             callback.onSuccess(null, "Score data saved successfully.");
         } catch (Exception e) {
+            e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED,"Failed to save score data: " + e.getMessage());
         }
     }
