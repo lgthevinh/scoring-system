@@ -1,0 +1,79 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Scoring Match <span class="fw-bold">{{ matchId }}</span></h2>
+    <button class="btn btn-outline-secondary" (click)="backToMatches()">
+      <i class="bi bi-arrow-left me-2"></i>Back to Matches
+    </button>
+  </div>
+
+  <!-- Handle Loading State -->
+  <div *ngIf="isLoading()" class="text-center mt-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading Scores...</p>
+  </div>
+
+  <!-- Handle Error State -->
+  <div *ngIf="errorMessage()" class="alert alert-danger">{{ errorMessage() }}</div>
+
+  <div class="row" *ngIf="!isLoading() && !errorMessage()">
+    <div class="col-lg-6 mb-4">
+      <!-- Red Alliance Score Display -->
+      <div class="card mb-3" *ngIf="redScore()">
+        <div class="card-body text-center bg-light">
+          <h6 class="card-subtitle mb-2 text-muted">Current Red Score</h6>
+          <p class="card-text fs-2 fw-bold text-danger">{{ redScore()!.totalScore }}</p>
+          <span class="badge" [ngClass]="redScore()!.status === 1 ? 'bg-success' : 'bg-secondary'">
+            {{ getStatusText(redScore()!.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Red Alliance Scoring Form -->
+      <div class="card h-100">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">Update Red Alliance Score</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="redScoreForm" (ngSubmit)="submitScore('R')">
+            <div *ngFor="let field of scoreFields" class="mb-3">
+              <label [for]="'red_' + field.name" class="form-label">{{ field.label }}</label>
+              <input [id]="'red_' + field.name" [formControlName]="field.name" type="number" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-danger w-100">Submit Red Score</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+      <!-- Blue Alliance Score Display -->
+      <div class="card mb-3" *ngIf="blueScore()">
+        <div class="card-body text-center bg-light">
+          <h6 class="card-subtitle mb-2 text-muted">Current Blue Score</h6>
+          <p class="card-text fs-2 fw-bold text-primary">{{ blueScore()!.totalScore }}</p>
+          <span class="badge" [ngClass]="blueScore()!.status === 1 ? 'bg-success' : 'bg-secondary'">
+            {{ getStatusText(blueScore()!.status) }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Blue Alliance Scoring Form -->
+      <div class="card h-100">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Update Blue Alliance Score</h5>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="blueScoreForm" (ngSubmit)="submitScore('B')">
+            <div *ngFor="let field of scoreFields" class="mb-3">
+              <label [for]="'blue_' + field.name" class="form-label">{{ field.label }}</label>
+              <input [id]="'blue_' + field.name" [formControlName]="field.name" type="number" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Submit Blue Score</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

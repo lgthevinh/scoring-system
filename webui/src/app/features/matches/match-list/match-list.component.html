@@ -1,0 +1,99 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-diagram-3-fill me-2"></i>Matches</h2>
+    <button class="btn btn-primary" (click)="showScheduleModal = true">
+      <i class="bi bi-calendar-plus me-2"></i>Generate Schedule
+    </button>
+  </div>
+
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item" *ngFor="let type of matchTypes">
+      <a class="nav-link" [class.active]="activeMatchType === type.id" (click)="loadMatches(type.id)">
+        {{ type.name }}
+      </a>
+    </li>
+  </ul>
+
+  <!-- Read signals with () -->
+  <div *ngIf="isLoading()" class="text-center mt-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading Matches...</p>
+  </div>
+
+  <div *ngIf="errorMessage()" class="alert alert-danger">{{ errorMessage() }}</div>
+
+  <div *ngIf="!isLoading() && matches().length === 0 && !errorMessage()" class="alert alert-info">
+    No matches found for this type. Try generating a schedule.
+  </div>
+
+  <div class="row row-cols-1 row-cols-lg-2 g-4">
+    <!-- FIX: Use matches() to read the signal's value in the loop -->
+    <div class="col" *ngFor="let matchDetail of matches()">
+      <div class="card h-100 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white">
+          <h5 class="mb-0">
+            <span class="fw-bold">{{ matchDetail.match.matchCode }}</span>
+            <small class="text-muted ms-2">({{ matchDetail.match.matchStartTime | date:'shortTime' }})</small>
+          </h5>
+          <button class="btn btn-sm btn-outline-success" (click)="goToScoring(matchDetail.match.id)">
+            <i class="bi bi-pencil-square me-1"></i> Score
+          </button>
+        </div>
+        <div class="card-body p-3">
+          <div class="row">
+            <div class="col-6 border-end">
+              <h6 class="text-danger fw-bold text-center">Red Alliance</h6>
+              <ul class="list-group list-group-flush text-center">
+                <li class="list-group-item border-0" *ngFor="let team of matchDetail.redTeams">
+                  {{ team.teamId }} - {{ team.teamName }}
+                </li>
+              </ul>
+            </div>
+            <div class="col-6">
+              <h6 class="text-primary fw-bold text-center">Blue Alliance</h6>
+              <ul class="list-group list-group-flush text-center">
+                <li class="list-group-item border-0" *ngFor="let team of matchDetail.blueTeams">
+                  {{ team.teamId }} - {{ team.teamName }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Generate Schedule Modal -->
+<div class="modal" tabindex="-1" [class.d-block]="showScheduleModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Generate Match Schedule</h5>
+        <button type="button" class="btn-close" (click)="showScheduleModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="numberOfMatches" class="form-label">Number of Matches</label>
+          <input id="numberOfMatches" type="number" class="form-control" [(ngModel)]="scheduleConfig.numberOfMatches">
+        </div>
+        <div class="mb-3">
+          <label for="startTime" class="form-label">Start Time</label>
+          <input id="startTime" type="datetime-local" class="form-control" [(ngModel)]="scheduleConfig.startTime">
+        </div>
+        <div class="mb-3">
+          <label for="matchDuration" class="form-label">Match Duration (minutes)</label>
+          <input id="matchDuration" type="number" class="form-control" [(ngModel)]="scheduleConfig.matchDuration">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="showScheduleModal = false">Close</button>
+        <button type="button" class="btn btn-primary" (click)="generateSchedule()">Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="showScheduleModal"></div>
+
