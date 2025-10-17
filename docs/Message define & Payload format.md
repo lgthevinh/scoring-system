@@ -38,7 +38,8 @@ Example Payload:
                 "robotHanged":1,
                 "robotParked":2,
                 "ballEntered":20,
-                "minorFault":1,"majorFault":1
+                "minorFault":1,
+                "majorFault":1
             }
         }
     }
