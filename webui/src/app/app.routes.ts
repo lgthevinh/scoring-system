@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { AuthComponent } from './features/auth/auth.component';
-import { TeamListComponent } from './features/team/team-list/team-list.component';
-import { MatchListComponent } from './features/matches/match-list/match-list.component';
-import { ScoreMatchComponent } from './features/matches/score-match/score-match.component';
+import { TeamListComponent } from './features/scorekeeper/team/team-list/team-list.component';
+import { MatchListComponent } from './features/scorekeeper/matches/match-list/match-list.component';
+import { ScoreMatchComponent } from './features/scorekeeper/matches/score-match/score-match.component';
 
 export const routes: Routes = [
   // 1. Authentication Route

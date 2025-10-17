@@ -11,7 +11,7 @@ public class Team {
     @DaoColumn(name = "name")
     private String teamName;
 
-    @DaoColumn(name = "number")
+    @DaoColumn(name = "school")
     private String teamSchool;
 
     @DaoColumn(name = "region")

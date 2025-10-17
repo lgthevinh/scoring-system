@@ -11,6 +11,7 @@ import org.thingai.app.scoringservice.entity.time.TimeBlock;
 import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.match.Match;
+import org.thingai.base.log.ILog;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -216,6 +217,14 @@ public class MatchHandler {
     public void generateMatchSchedule(int numberOfMatches, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
         try {
             Team[] allTeams = dao.readAll(Team.class);
+
+            dao.deleteAll(Match.class);
+            dao.deleteAll(AllianceTeam.class);
+            dao.deleteAll(Score.class);
+            matchCache.clear();
+            allianceTeamCache.clear();
+            teamCache.clear();
+
             if (allTeams.length < 4) {
                 callback.onFailure(ErrorCode.CREATE_FAILED, "Cannot generate schedule with fewer than 4 teams.");
                 return;
@@ -244,6 +253,8 @@ public class MatchHandler {
 
                 String[] redTeamIds = {allTeams[teamPoolIndex++].getTeamId(), allTeams[teamPoolIndex++].getTeamId()};
                 String[] blueTeamIds = {allTeams[teamPoolIndex++].getTeamId(), allTeams[teamPoolIndex++].getTeamId()};
+
+                ILog.d("MatchHandler", Arrays.toString(redTeamIds) + " vs " + Arrays.toString(blueTeamIds) + " at " + currentTime.format(timeFormatter));
 
                 createMatchInternal(MatchType.QUALIFICATION, i, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
 

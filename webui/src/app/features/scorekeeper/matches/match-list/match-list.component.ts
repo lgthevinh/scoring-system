@@ -3,19 +3,22 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MatchService } from '../../../core/services/match.service';
 import { MatchDetailDto } from '../../../core/models/match.model';
+import { Team } from '../../../core/models/team.model';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-match-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './match-list.component.html'
+  templateUrl: './match-list.component.html',
+  styleUrls: ['./match-list.component.css']
 })
 export class MatchListComponent implements OnInit {
-  // Use WritableSignals for all component state
   matches: WritableSignal<MatchDetailDto[]> = signal([]);
   isLoading: WritableSignal<boolean> = signal(false);
   errorMessage: WritableSignal<string> = signal('');
+
+  expandedMatchId: WritableSignal<string | null> = signal(null);
 
   activeMatchType = 1; // Qualification
   showScheduleModal = false;
@@ -69,6 +72,25 @@ export class MatchListComponent implements OnInit {
       this.loadMatches(this.activeMatchType);
       this.showScheduleModal = false;
     });
+  }
+
+  toggleDetails(matchId: string) {
+    if (this.expandedMatchId() === matchId) {
+      this.expandedMatchId.set(null);
+    } else {
+      this.expandedMatchId.set(matchId);
+    }
+  }
+
+  /**
+   * Helper method to format team IDs for display in the template.
+   * This moves the complex logic out of the HTML.
+   */
+  getTeamIds(teams: Team[]): string {
+    if (!teams || teams.length === 0) {
+      return 'N/A';
+    }
+    return teams.map(t => t.teamId).join(' & ');
   }
 }
 

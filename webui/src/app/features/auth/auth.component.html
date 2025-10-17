@@ -1,7 +1,6 @@
 <div class="auth-container">
   <div class="auth-card">
     <div class="auth-header">
-      <i class="bi bi-robot auth-icon"></i>
       <h2>Scoring System Login</h2>
       <p>Please sign in to continue</p>
     </div>
@@ -19,12 +18,17 @@
           <i class="bi" [ngClass]="passwordVisible ? 'bi-eye-slash' : 'bi-eye'"></i>
         </button>
       </div>
-      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-        {{ errorMessage }}
-      </div>
+      @if (errorMessage) {
+        <div class="alert alert-danger mt-3">
+          {{ errorMessage }}
+        </div>
+      }
       <button type="submit" class="w-100 btn btn-lg btn-primary" [disabled]="authForm.invalid || loading">
-        <span *ngIf="!loading">Login</span>
-        <span *ngIf="loading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        @if (!loading) {
+          <span >Login</span>
+        } @else {
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        }
       </button>
     </form>
   </div>

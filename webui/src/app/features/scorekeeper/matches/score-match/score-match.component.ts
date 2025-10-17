@@ -9,7 +9,8 @@ import { Score } from '../../../core/models/score.model';
   selector: 'app-score-match',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './score-match.component.html'
+  templateUrl: './score-match.component.html',
+  styleUrl: './score-match.component.css'
 })
 export class ScoreMatchComponent implements OnInit {
   matchId: string | null = null;
