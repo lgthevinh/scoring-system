@@ -76,7 +76,7 @@ Example Payload:
 3. **Match Timer State**
 - Topic: `/topic/match-timer`
 - Type: `MATCH_TIMER_UPDATE`
-- Description:  Sent periodically during a match to update the match clock.
+- Description: Sent periodically during a match to update the match clock.
 Example Payload:
 ```json
 {
