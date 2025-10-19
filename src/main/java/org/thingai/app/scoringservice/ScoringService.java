@@ -1,9 +1,10 @@
 package org.thingai.app.scoringservice;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.thingai.app.controller.BroadcastController;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
-import org.thingai.app.scoringservice.handler.MatchHandler;
-import org.thingai.app.scoringservice.handler.TeamHandler;
+import org.thingai.app.scoringservice.handler.*;
 import org.thingai.base.Service;
 import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
@@ -14,8 +15,6 @@ import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.app.scoringservice.entity.config.AuthData;
 import org.thingai.app.scoringservice.entity.config.DbMapEntity;
 import org.thingai.app.scoringservice.entity.match.Match;
-import org.thingai.app.scoringservice.handler.AuthHandler;
-import org.thingai.app.scoringservice.handler.ScoreHandler;
 import org.thingai.base.log.ILog;
 
 import java.util.HashMap;
@@ -26,14 +25,16 @@ public class ScoringService extends Service {
     private final LRUCache<String, Match> matchCache = new LRUCache<>(50, new HashMap<>());
     private final LRUCache<String, AllianceTeam[]> allianceTeamCache = new LRUCache<>(100, new HashMap<>());
     private final LRUCache<String, Team> teamCache = new LRUCache<>(30, new HashMap<>());
+    private BroadcastController broadcastController;
 
     private static AuthHandler authHandler;
     private static TeamHandler teamHandler;
     private static ScoreHandler scoreHandler;
     private static MatchHandler matchHandler;
+    private static BroadcastHandler broadcastHandler;
 
     public ScoringService() {
-        // Initialize dao
+
     }
 
     @Override
@@ -58,7 +59,7 @@ public class ScoringService extends Service {
         });
         // Initialize handler
         authHandler = new AuthHandler(daoSqlite);
-        scoreHandler = new ScoreHandler(daoSqlite, daoFile);
+        scoreHandler = new ScoreHandler(daoSqlite, daoFile, broadcastController);
         teamHandler = new TeamHandler(daoSqlite, teamCache);
         matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
     }
@@ -82,5 +83,9 @@ public class ScoringService extends Service {
 
     public static MatchHandler matchHandler() {
         return matchHandler;
+    }
+
+    public void setBroadcastController(BroadcastController broadcastController) {
+        this.broadcastController = broadcastController;
     }
 }

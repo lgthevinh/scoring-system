@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/api/team")
 public class TeamController {
     // Get the singleton handler instance from the ScoringService
-    private final TeamHandler teamHandler = ScoringService.teamHandler();
 
     @PostMapping("/create")
     public ResponseEntity<Object> createTeam(@RequestBody Map<String, Object> requestBody) {
@@ -28,7 +27,7 @@ public class TeamController {
             String teamSchool = requestBody.get("teamSchool").toString();
             String teamRegion = requestBody.get("teamRegion").toString();
 
-            teamHandler.addTeam(teamId, teamName, teamSchool, teamRegion, new RequestCallback<Team>() {
+            ScoringService.teamHandler().addTeam(teamId, teamName, teamSchool, teamRegion, new RequestCallback<Team>() {
                 @Override
                 public void onSuccess(Team team, String message) {
                     future.complete(ResponseEntity.status(HttpStatus.CREATED).body(team));
@@ -48,7 +47,7 @@ public class TeamController {
     @GetMapping("/list")
     public ResponseEntity<Object> listTeams() {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        teamHandler.listTeams(new RequestCallback<Team[]>() {
+        ScoringService.teamHandler().listTeams(new RequestCallback<Team[]>() {
             @Override
             public void onSuccess(Team[] teams, String message) {
                 future.complete(ResponseEntity.ok(teams));
@@ -65,7 +64,7 @@ public class TeamController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getTeam(@PathVariable String id) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        teamHandler.getTeamById(id, new RequestCallback<Team>() {
+        ScoringService.teamHandler().getTeamById(id, new RequestCallback<Team>() {
             @Override
             public void onSuccess(Team team, String message) {
                 future.complete(ResponseEntity.ok(team));
@@ -82,7 +81,7 @@ public class TeamController {
     @PutMapping("/update")
     public ResponseEntity<Object> updateTeam(@RequestBody Team team) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        teamHandler.updateTeam(team, new RequestCallback<Team>() {
+        ScoringService.teamHandler().updateTeam(team, new RequestCallback<Team>() {
             @Override
             public void onSuccess(Team updatedTeam, String message) {
                 future.complete(ResponseEntity.ok(updatedTeam));
@@ -99,7 +98,7 @@ public class TeamController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteTeam(@PathVariable String id) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        teamHandler.deleteTeam(id, new RequestCallback<Void>() {
+        ScoringService.teamHandler().deleteTeam(id, new RequestCallback<Void>() {
             @Override
             public void onSuccess(Void result, String message) {
                 future.complete(ResponseEntity.ok(Map.of("message", message)));

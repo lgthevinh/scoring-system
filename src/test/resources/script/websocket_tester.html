@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STOMP WebSocket Test Client</title>
+    <!-- Using Bootstrap for a clean UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .log-box {
+            background-color: #212529;
+            color: #f8f9fa;
+            font-family: monospace;
+            height: 400px;
+            overflow-y: auto;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .log-message {
+            border-bottom: 1px solid #495057;
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .status-dot {
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">STOMP WebSocket Test Client</h4>
+            <div>
+                <span id="status-indicator" class="status-dot bg-secondary"></span>
+                <span id="status-text">Disconnected</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="socket-url" class="form-label">WebSocket URL</label>
+                    <input type="text" class="form-control" id="socket-url" value="ws://localhost:9090/ws/score">
+                </div>
+                <div class="col-md-6">
+                    <label for="topic" class="form-label">Topic to Subscribe</label>
+                    <input type="text" class="form-control" id="topic" value="/topic/scores">
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary me-2" id="connect-btn"><i class="bi bi-plug"></i> Connect</button>
+                <button class="btn btn-secondary" id="disconnect-btn" disabled><i class="bi bi-x-circle"></i> Disconnect</button>
+            </div>
+        </div>
+        <div class="card-footer">
+            <h5 class="mb-2">Message Log</h5>
+            <div id="message-log" class="log-box"></div>
+        </div>
+    </div>
+</div>
+
+<!-- STOMP.js library for handling the STOMP protocol -->
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
+
+<script>
+    const connectBtn = document.getElementById('connect-btn');
+    const disconnectBtn = document.getElementById('disconnect-btn');
+    const socketUrlInput = document.getElementById('socket-url');
+    const topicInput = document.getElementById('topic');
+    const messageLog = document.getElementById('message-log');
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+
+    let stompClient = null;
+
+    function log(message) {
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-message';
+        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        messageLog.appendChild(logEntry);
+        messageLog.scrollTop = messageLog.scrollHeight; // Auto-scroll
+    }
+
+    function setStatus(isConnected) {
+        if (isConnected) {
+            statusIndicator.classList.remove('bg-secondary', 'bg-danger');
+            statusIndicator.classList.add('bg-success');
+            statusText.textContent = 'Connected';
+            connectBtn.disabled = true;
+            disconnectBtn.disabled = false;
+        } else {
+            statusIndicator.classList.remove('bg-success');
+            statusIndicator.classList.add('bg-secondary');
+            statusText.textContent = 'Disconnected';
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+        }
+    }
+
+    function connect() {
+        const socketUrl = socketUrlInput.value;
+        const topic = topicInput.value;
+
+        stompClient = new StompJs.Client({
+            brokerURL: socketUrl,
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+        });
+
+        stompClient.onConnect = (frame) => {
+            log('Successfully connected to WebSocket broker!');
+            setStatus(true);
+
+            // Subscribe to the specified topic
+            stompClient.subscribe(topic, (message) => {
+                log(`Received from ${topic}:`);
+                try {
+                    const parsedJson = JSON.parse(message.body);
+                    log(JSON.stringify(parsedJson, null, 2)); // Pretty-print JSON
+                } catch (e) {
+                    log(message.body); // Log as plain text if not JSON
+                }
+            });
+        };
+
+        stompClient.onStompError = (frame) => {
+            log(`Broker reported error: ${frame.headers['message']}`);
+            log(`Additional details: ${frame.body}`);
+            statusIndicator.classList.add('bg-danger');
+            statusText.textContent = 'Error';
+        };
+
+        stompClient.activate();
+        log(`Attempting to connect to ${socketUrl}...`);
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.deactivate();
+        }
+        log('Disconnected.');
+        setStatus(false);
+    }
+
+    connectBtn.addEventListener('click', connect);
+    disconnectBtn.addEventListener('click', disconnect);
+
+    // Initial state
+    setStatus(false);
+</script>
+</body>
+</html>

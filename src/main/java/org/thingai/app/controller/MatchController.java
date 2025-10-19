@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/api/match")
 public class MatchController {
 
-    private final MatchHandler matchHandler = ScoringService.matchHandler();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @PostMapping("/create")
@@ -33,7 +32,7 @@ public class MatchController {
             String[] redTeamIds = request.get("redTeamIds").toString().split(",");
             String[] blueTeamIds = request.get("blueTeamIds").toString().split(",");
 
-            matchHandler.createMatch(matchType, matchNumber, matchStartTime, redTeamIds, blueTeamIds, createMatchCallback(future));
+            ScoringService.matchHandler().createMatch(matchType, matchNumber, matchStartTime, redTeamIds, blueTeamIds, createMatchCallback(future));
         } catch (Exception e) {
             future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
         }
@@ -43,7 +42,7 @@ public class MatchController {
     @GetMapping("/{id}")
     public ResponseEntity<Object> getMatch(@PathVariable String id) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        matchHandler.getMatch(id, new RequestCallback<Match>() {
+        ScoringService.matchHandler().getMatch(id, new RequestCallback<Match>() {
             @Override
             public void onSuccess(Match match, String successMessage) {
                 future.complete(ResponseEntity.ok(match));
@@ -60,7 +59,7 @@ public class MatchController {
     @GetMapping("/list")
     public ResponseEntity<Object> listMatches() {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        matchHandler.listMatches(new RequestCallback<Match[]>() {
+        ScoringService.matchHandler().listMatches(new RequestCallback<Match[]>() {
             @Override
             public void onSuccess(Match[] matches, String successMessage) {
                 future.complete(ResponseEntity.ok(matches));
@@ -77,7 +76,7 @@ public class MatchController {
     @GetMapping("/list/{matchType}")
     public ResponseEntity<Object> listMatchesByType(@PathVariable int matchType) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        matchHandler.listMatchesByType(matchType, new RequestCallback<Match[]>() {
+        ScoringService.matchHandler().listMatchesByType(matchType, new RequestCallback<Match[]>() {
             @Override
             public void onSuccess(Match[] matches, String successMessage) {
                 future.complete(ResponseEntity.ok(matches));
@@ -94,7 +93,7 @@ public class MatchController {
     @GetMapping("/list/details/{matchType}")
     public ResponseEntity<Object> listMatchDetails(@PathVariable int matchType) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        matchHandler.listMatchDetails(matchType, new RequestCallback<MatchDetailDto[]>() {
+        ScoringService.matchHandler().listMatchDetails(matchType, new RequestCallback<MatchDetailDto[]>() {
             @Override
             public void onSuccess(MatchDetailDto[] matchDetails, String successMessage) {
                 future.complete(ResponseEntity.ok(matchDetails));
@@ -112,14 +111,14 @@ public class MatchController {
     @PutMapping("/update")
     public ResponseEntity<Object> updateMatch(@RequestBody Match match) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        matchHandler.updateMatch(match, createMatchCallback(future));
+        ScoringService.matchHandler().updateMatch(match, createMatchCallback(future));
         return getObjectResponse(future);
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteMatch(@PathVariable String id) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        matchHandler.deleteMatch(id, new RequestCallback<Void>() {
+        ScoringService.matchHandler().deleteMatch(id, new RequestCallback<Void>() {
             @Override
             public void onSuccess(Void result, String successMessage) {
                 future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
@@ -143,7 +142,7 @@ public class MatchController {
             List<Map<String, String>> timeBlockMaps = (List<Map<String, String>>) request.get("timeBlocks");
             TimeBlock[] timeBlocks = objectMapper.convertValue(timeBlockMaps, TimeBlock[].class);
 
-            matchHandler.generateMatchSchedule(numberOfMatches, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
+            ScoringService.matchHandler().generateMatchSchedule(numberOfMatches, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
                 @Override
                 public void onSuccess(Void result, String successMessage) {
                     future.complete(ResponseEntity.ok(Map.of("message", successMessage)));

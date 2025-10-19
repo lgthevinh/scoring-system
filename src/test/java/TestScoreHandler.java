@@ -20,7 +20,7 @@ public class TestScoreHandler {
         }); // Ensure the DAO is ready for use
 
         DaoFile daoFile = new DaoFile("src/test/resources/files");
-        scoreHandler = new ScoreHandler(dao, daoFile);
+        scoreHandler = new ScoreHandler(dao, daoFile, null);
     }
 
     @Test

@@ -22,7 +22,6 @@ public class EventHandler {
         } catch (Exception e) {
             callback.onFailure(ErrorCode.CREATE_FAILED,"Failed to create event: " + e.getMessage());
         }
-
     }
 
     public void getEventById(String eventId, RequestCallback<Event> callback) {

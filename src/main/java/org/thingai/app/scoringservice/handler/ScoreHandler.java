@@ -1,6 +1,7 @@
 package org.thingai.app.scoringservice.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.thingai.app.controller.BroadcastController;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.ScoreStatus;
@@ -13,10 +14,12 @@ public class ScoreHandler {
     private final Dao dao;
     private final DaoFile daoFile;
     private final ObjectMapper objectMapper = new ObjectMapper(); // For converting DTO to JSON
+    private final BroadcastController broadcastController;
 
-    public ScoreHandler(Dao dao, DaoFile daoFile) {
+    public ScoreHandler(Dao dao, DaoFile daoFile, BroadcastController broadcastController) {
         this.dao = dao;
         this.daoFile = daoFile;
+        this.broadcastController = broadcastController;
     }
 
     /**
@@ -142,6 +145,7 @@ public class ScoreHandler {
                 }
             });
 
+            broadcastController.broadcastScoreUpdate(finalScore);
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to submit score: " + e.getMessage());

@@ -17,10 +17,6 @@ import java.util.concurrent.ExecutionException;
 @RestController
 @RequestMapping("/api/score")
 public class ScoreController {
-
-    // Get the singleton handler instance from the ScoringService
-    private final ScoreHandler scoreHandler = ScoringService.scoreHandler();
-
     /**
      * Retrieves the current score for a specific alliance.
      * @param allianceId The unique ID of the alliance (e.g., "Q1_R").
@@ -29,7 +25,7 @@ public class ScoreController {
     @GetMapping("/alliance/{allianceId}")
     public ResponseEntity<Object> getScore(@PathVariable String allianceId) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        scoreHandler.getScoreByAllianceId(allianceId, new RequestCallback<String>() {
+        ScoringService.scoreHandler().getScoreByAllianceId(allianceId, new RequestCallback<String>() {
             @Override
             public void onSuccess(String responseObject, String message) {
                 future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseObject));
@@ -46,7 +42,7 @@ public class ScoreController {
     @GetMapping("/match/{matchId}")
     public ResponseEntity<Object> getMatchScores(@PathVariable String matchId) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        scoreHandler.getScoresByMatchId(matchId, new RequestCallback<String>() {
+        ScoringService.scoreHandler().getScoresByMatchId(matchId, new RequestCallback<String>() {
             @Override
             public void onSuccess(String responseObject, String message) {
                 future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseObject));
@@ -69,7 +65,7 @@ public class ScoreController {
     @PostMapping("/submit/{allianceId}")
     public ResponseEntity<Object> submitScore(@PathVariable String allianceId, @RequestBody Object scoreDetailsDto) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        scoreHandler.submitScore(allianceId, scoreDetailsDto, false, new RequestCallback<Score>() {
+        ScoringService.scoreHandler().submitScore(allianceId, scoreDetailsDto, false, new RequestCallback<Score>() {
             @Override
             public void onSuccess(Score score, String message) {
                 future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(score));
