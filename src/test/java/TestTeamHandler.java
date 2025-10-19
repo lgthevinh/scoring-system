@@ -2,7 +2,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.team.Team;
-import org.thingai.app.scoringservice.handler.TeamHandler;
+import org.thingai.app.scoringservice.handler.systembase.TeamHandler;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoSqlite;
 

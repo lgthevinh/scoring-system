@@ -9,7 +9,6 @@ import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
-import org.thingai.app.scoringservice.handler.MatchHandler;
 
 import java.util.List;
 import java.util.Map;

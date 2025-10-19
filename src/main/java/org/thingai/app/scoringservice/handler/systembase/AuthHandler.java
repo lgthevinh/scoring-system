@@ -1,4 +1,4 @@
-package org.thingai.app.scoringservice.handler;
+package org.thingai.app.scoringservice.handler.systembase;
 
 import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.config.AuthData;

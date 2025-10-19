@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.team.Team;
-import org.thingai.app.scoringservice.handler.TeamHandler;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;

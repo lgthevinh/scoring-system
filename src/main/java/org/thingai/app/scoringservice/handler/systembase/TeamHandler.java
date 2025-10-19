@@ -1,4 +1,4 @@
-package org.thingai.app.scoringservice.handler;
+package org.thingai.app.scoringservice.handler.systembase;
 
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;

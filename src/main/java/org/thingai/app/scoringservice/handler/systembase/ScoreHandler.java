@@ -1,8 +1,8 @@
-package org.thingai.app.scoringservice.handler;
+package org.thingai.app.scoringservice.handler.systembase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.thingai.app.controller.BroadcastController;
 import org.thingai.app.scoringservice.callback.RequestCallback;
+import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.app.scoringservice.entity.score.Score;
@@ -14,12 +14,12 @@ public class ScoreHandler {
     private final Dao dao;
     private final DaoFile daoFile;
     private final ObjectMapper objectMapper = new ObjectMapper(); // For converting DTO to JSON
-    private final BroadcastController broadcastController;
 
-    public ScoreHandler(Dao dao, DaoFile daoFile, BroadcastController broadcastController) {
+    private BroadcastHandler broadcastHandler;
+
+    public ScoreHandler(Dao dao, DaoFile daoFile) {
         this.dao = dao;
         this.daoFile = daoFile;
-        this.broadcastController = broadcastController;
     }
 
     /**
@@ -136,6 +136,7 @@ public class ScoreHandler {
             updateAndSaveScore(finalScore, new RequestCallback<Void>() {
                 @Override
                 public void onSuccess(Void result, String message) {
+                    broadcastHandler.broadcast("/topic/scores", finalScore, BroadcastMessageType.SCORE_UPDATE);
                     callback.onSuccess(finalScore, "Score submitted and calculated successfully.");
                 }
 
@@ -144,8 +145,6 @@ public class ScoreHandler {
                     callback.onFailure(errorCode, errorMessage);
                 }
             });
-
-            broadcastController.broadcastScoreUpdate(finalScore);
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to submit score: " + e.getMessage());
@@ -173,6 +172,10 @@ public class ScoreHandler {
             e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED,"Failed to save score data: " + e.getMessage());
         }
+    }
+
+    public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
+        this.broadcastHandler = broadcastHandler;
     }
 }
 

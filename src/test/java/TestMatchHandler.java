@@ -5,7 +5,7 @@ import org.thingai.app.scoringservice.define.MatchType;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
-import org.thingai.app.scoringservice.handler.MatchHandler;
+import org.thingai.app.scoringservice.handler.systembase.MatchHandler;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.dao.DaoSqlite;
