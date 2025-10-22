@@ -67,6 +67,7 @@ public class ScoreHandler {
             String redAllianceId = matchId + "_R";
             String blueAllianceId = matchId + "_B";
 
+            // 1. Read both score objects from the database.
             Score redScore = dao.read(Score.class, redAllianceId);
             Score blueScore = dao.read(Score.class, blueAllianceId);
 
@@ -75,9 +76,11 @@ public class ScoreHandler {
                 return;
             }
 
+            // 2. Read their detailed raw score data from the corresponding JSON files.
             String redJsonData = daoFile.readJsonFile("/scores/" + redAllianceId + ".json");
             String blueJsonData = daoFile.readJsonFile("/scores/" + blueAllianceId + ".json");
 
+            // 3. Construct a combined JSON response.
             String result = "{";
             if (redScore != null) {
                 result += "\"red\":" + (redJsonData != null ? redJsonData : "{}");
@@ -158,13 +161,13 @@ public class ScoreHandler {
      */
     public void updateAndSaveScore(Score score, RequestCallback<Void> callback) {
         try {
-            // Get the raw data from the entity itself.
+            // 1. Get the raw data from the entity itself.
             String jsonRawScoreData = score.getRawScoreData();
 
-            // Use the concrete class for the DAO operation.
+            // 2. Update score record in the database.
             dao.update(Score.class, score.getAllianceId(), score);
 
-            // Also write the raw data to a backup/detail JSON file.
+            // 3. Also write the raw data to a JSON file.
             daoFile.writeJsonFile("/scores/" + score.getAllianceId() + ".json", jsonRawScoreData);
 
             callback.onSuccess(null, "Score data saved successfully.");

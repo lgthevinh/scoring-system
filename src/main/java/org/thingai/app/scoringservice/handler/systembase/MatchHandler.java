@@ -26,7 +26,7 @@ public class MatchHandler {
     private final LRUCache<String, Team> teamCache;
 
     // Flag to indicate if the cache is stale and needs to be refreshed from the database.
-    private boolean matchUpdateFlag = true; // Start as true to force initial load.
+    private boolean matchUpdateFlag = true; // Start as true to force initial loads.
 
     public MatchHandler(Dao dao, LRUCache<String, Match> matchCache, LRUCache<String, AllianceTeam[]> allianceTeamCache, LRUCache<String, Team> teamCache) {
         this.dao = dao;
@@ -35,6 +35,7 @@ public class MatchHandler {
         this.teamCache = teamCache;
     }
 
+    // Methods use outside system implementation
     public void createMatch(int matchType, int matchNumber, String matchStartTime, String[] redTeamIds, String[] blueTeamIds, RequestCallback<Match> callback) {
         try {
             Match match = new Match();
@@ -87,7 +88,7 @@ public class MatchHandler {
     }
 
     public void getMatch(String matchId, RequestCallback<Match> callback) {
-        if (!isMatchUpdateFlag()) {
+        if (isMatchUpdateFlag()) {
             Match cachedMatch = matchCache.get(matchId);
             if (cachedMatch != null) {
                 callback.onSuccess(cachedMatch, "Match retrieved successfully from cache.");
@@ -105,6 +106,46 @@ public class MatchHandler {
             }
         } catch (Exception e) {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve match: " + e.getMessage());
+        }
+    }
+
+    public void getMatchDetail(String matchId, RequestCallback<MatchDetailDto> callback) {
+        try {
+            Match match = dao.read(Match.class, matchId);
+            if (match == null) {
+                callback.onFailure(ErrorCode.NOT_FOUND, "Match not found.");
+                return;
+            }
+
+            String redAllianceId = match.getMatchCode() + "_R";
+            String blueAllianceId = match.getMatchCode() + "_B";
+
+            AllianceTeam[] redAllianceTeams = dao.query(AllianceTeam.class, new String[]{"allianceId"}, new String[]{redAllianceId});
+            AllianceTeam[] blueAllianceTeams = dao.query(AllianceTeam.class, new String[]{"allianceId"}, new String[]{blueAllianceId});
+            Team[] redTeams = Arrays.stream(redAllianceTeams)
+                    .map(at -> {
+                        try {
+                            return dao.read(Team.class, at.getTeamId());
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .toArray(Team[]::new);
+            Team[] blueTeams = Arrays.stream(blueAllianceTeams)
+                    .map(at -> {
+                        try {
+                            return dao.read(Team.class, at.getTeamId());
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .toArray(Team[]::new);
+            MatchDetailDto detailDto = new MatchDetailDto(match, redTeams, blueTeams);
+            callback.onSuccess(detailDto, "Match detail retrieved successfully.");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve match detail: " + e.getMessage());
         }
     }
 
@@ -307,6 +348,59 @@ public class MatchHandler {
         dao.insert(Score.class, blueScore);
     }
 
+    // Methods use inside system implementation
+    public Match getMatchSync(String matchId) throws Exception {
+        if (isMatchUpdateFlag()) {
+            Match cachedMatch = matchCache.get(matchId);
+            if (cachedMatch != null) {
+                return cachedMatch;
+            }
+        }
+
+        Match match = dao.read(Match.class, matchId);
+        if (match != null) {
+            matchCache.put(matchId, match); // Add to cache
+            return match;
+        } else {
+            throw new Exception("Match not found.");
+        }
+    }
+
+    public MatchDetailDto getMatchDetailSync(String matchId) throws Exception {
+        Match match = dao.read(Match.class, matchId);
+        if (match == null) {
+            throw new Exception("Match not found.");
+        }
+
+        String redAllianceId = match.getMatchCode() + "_R";
+        String blueAllianceId = match.getMatchCode() + "_B";
+
+        AllianceTeam[] redAllianceTeams = dao.query(AllianceTeam.class, new String[]{"allianceId"}, new String[]{redAllianceId});
+        AllianceTeam[] blueAllianceTeams = dao.query(AllianceTeam.class, new String[]{"allianceId"}, new String[]{blueAllianceId});
+        Team[] redTeams = Arrays.stream(redAllianceTeams)
+                .map(at -> {
+                    try {
+                        return dao.read(Team.class, at.getTeamId());
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toArray(Team[]::new);
+        Team[] blueTeams = Arrays.stream(blueAllianceTeams)
+                .map(at -> {
+                    try {
+                        return dao.read(Team.class, at.getTeamId());
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toArray(Team[]::new);
+        return new MatchDetailDto(match, redTeams, blueTeams);
+    }
+
+    // Utility methods
     private <T> void shuffleArray(T[] array) {
         Random rand = new Random();
         for (int i = array.length - 1; i > 0; i--) {
@@ -317,11 +411,11 @@ public class MatchHandler {
         }
     }
 
-    public boolean isMatchUpdateFlag() {
-        return matchUpdateFlag;
+    private boolean isMatchUpdateFlag() {
+        return !matchUpdateFlag;
     }
 
-    public void setMatchUpdateFlag(boolean matchUpdateFlag) {
+    private void setMatchUpdateFlag(boolean matchUpdateFlag) {
         this.matchUpdateFlag = matchUpdateFlag;
         if (this.matchUpdateFlag) {
             // If the flag is set to dirty, clear all caches to force reloads.

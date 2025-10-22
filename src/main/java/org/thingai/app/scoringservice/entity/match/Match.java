@@ -20,6 +20,9 @@ public class Match {
     @DaoColumn(name = "matchStartTime")
     private String matchStartTime;
 
+    @DaoColumn(name = "actualStartTime")
+    private String actualStartTime;
+
     @DaoColumn(name = "matchEndTime")
     private String matchEndTime;
 
@@ -69,5 +72,13 @@ public class Match {
 
     public void setMatchCode(String matchCode) {
         this.matchCode = matchCode;
+    }
+
+    public String getActualStartTime() {
+        return actualStartTime;
+    }
+
+    public void setActualStartTime(String actualStartTime) {
+        this.actualStartTime = actualStartTime;
     }
 }
