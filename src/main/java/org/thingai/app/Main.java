@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.ScoringService;
+import org.thingai.base.log.ILog;
 
 @SpringBootApplication
 public class Main {
@@ -13,6 +14,9 @@ public class Main {
         ScoringService.name = "Scoring System";
         ScoringService.appDirName = "scoring_system";
         ScoringService.version = "1.0.0";
+
+        ILog.ENABLE_LOGGING = true;
+        ILog.logLevel = ILog.DEBUG;
 
         // 1. Start Spring and get its application context
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
