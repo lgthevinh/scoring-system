@@ -2,8 +2,8 @@ import { Component, OnInit, ChangeDetectorRef, signal, WritableSignal } from '@a
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatchService } from '../../../core/services/match.service';
-import { Score } from '../../../core/models/score.model';
+import { MatchService } from '../../../../core/services/match.service';
+import { Score } from '../../../../core/models/score.model';
 
 @Component({
   selector: 'app-score-match',

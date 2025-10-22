@@ -1,8 +1,8 @@
 import { Component, OnInit, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TeamService } from '../../../core/services/team.service';
-import { Team } from '../../../core/models/team.model';
+import { TeamService } from '../../../../core/services/team.service';
+import { Team } from '../../../../core/models/team.model';
 
 @Component({
   selector: 'app-team-list',

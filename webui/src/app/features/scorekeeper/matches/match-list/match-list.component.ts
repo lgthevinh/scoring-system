@@ -1,9 +1,9 @@
 import { Component, OnInit, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { MatchService } from '../../../core/services/match.service';
-import { MatchDetailDto } from '../../../core/models/match.model';
-import { Team } from '../../../core/models/team.model';
+import { MatchService } from '../../../../core/services/match.service';
+import { MatchDetailDto } from '../../../../core/models/match.model';
+import { Team } from '../../../../core/models/team.model';
 import { FormsModule } from '@angular/forms';
 
 @Component({
