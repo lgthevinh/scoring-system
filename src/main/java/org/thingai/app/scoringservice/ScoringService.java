@@ -3,6 +3,7 @@ package org.thingai.app.scoringservice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
+import org.thingai.app.scoringservice.handler.rolebase.ScorekeeperHandler;
 import org.thingai.app.scoringservice.handler.systembase.*;
 import org.thingai.base.Service;
 import org.thingai.base.cache.LRUCache;
@@ -31,14 +32,14 @@ public class ScoringService extends Service {
     private static MatchHandler matchHandler;
     private static BroadcastHandler broadcastHandler;
 
+    private static ScorekeeperHandler scorekeeperHandler;
+
     public ScoringService() {
 
     }
 
     @Override
     protected void onServiceInit() {
-        ILog.ENABLE_LOGGING = true;
-        ILog.logLevel = ILog.DEBUG;
         Dao daoSqlite = new DaoSqlite(appDir + "/scoring_system.db");
         DaoFile daoFile = new DaoFile(appDir + "/files");
 
@@ -57,11 +58,16 @@ public class ScoringService extends Service {
         });
         // Initialize handler
         authHandler = new AuthHandler(daoSqlite);
-        teamHandler = new TeamHandler(daoSqlite, teamCache);
-        matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
-        scoreHandler = new ScoreHandler(daoSqlite, daoFile);
 
+        teamHandler = new TeamHandler(daoSqlite, teamCache);
+
+        matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
+
+        scoreHandler = new ScoreHandler(daoSqlite, daoFile);
         scoreHandler.setBroadcastHandler(broadcastHandler);
+
+        scorekeeperHandler = new ScorekeeperHandler(matchHandler, scoreHandler);
+        scorekeeperHandler.setBroadcastHandler(broadcastHandler);
     }
 
     @Override
@@ -89,7 +95,12 @@ public class ScoringService extends Service {
         return broadcastHandler;
     }
 
+    public static ScorekeeperHandler scorekeeperHandler() {
+        return scorekeeperHandler;
+    }
+
     public void setSimpMessagingTemplate(SimpMessagingTemplate simpMessagingTemplate) {
         broadcastHandler = new BroadcastHandler(simpMessagingTemplate);
+        ILog.d("ScoringService::setSimpMessagingTemplate", broadcastHandler().toString());
     }
 }
