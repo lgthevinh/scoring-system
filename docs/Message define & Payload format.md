@@ -4,7 +4,12 @@ This document outlines the defined message types and their corresponding payload
 
 To ensure consistent communication, all messages sent over the WebSocket will follow a standard structure.
 
-## Message Structure
+## Table of Contents
+1. [System Message Structure](#system-message-structure)
+2. [Defined Message Types and Payload Formats](#defined-message-types-and-payload-formats)
+3. 
+
+## System Message Structure
 
 ### Generic Message Wrapper
 
@@ -88,3 +93,58 @@ Example Payload:
     }
 }
 ```
+
+## Role-based Message Structure
+
+### Role Definitions
+- **Local**: Full all access, to control and system.
+- **Scorekeeper**: Full access to all messages and can send control messages. But cannot change system settings.
+- **Referee**: Access to match control messages and score updates.
+- **Display**: Read-only access to all messages for display purposes and live update. (Receive only)
+- **Common**: Read-only access to score updates and match status. (Receive only)
+
+1. **Local**
+2. **Scorekeeper**
+3. **Referee**
+- **Live match score update** (Send every change event of score) 
+  - Action: `Publish`
+  - Topic: `/topic/live/scores/{allianceId}`
+  - Payload: 
+```json
+{
+    "id": "Q1_R",
+    "robotHanged":1,
+    "robotParked":2,
+    "ballEntered":20,
+    "minorFault":1,
+    "majorFault":1,
+}
+```
+
+- **Live match update** (Send when current match status is changed)
+  - Action: `Publish`
+  - Topic: `/topic/live/match/{matchId}/state`
+  - Payload:
+```json
+{
+    "payload": {
+        "match": {
+            "id": "Q2",
+            "matchCode": "Q2",
+            "matchType": 1,
+            "matchNumber": 2,
+            "matchStartTime": "2025-10-18T10:15:00"
+        },
+        "redTeams": [
+            { "teamId": "103", "teamName": "RoboRaiders", "teamSchool": "Tech High" },
+            { "teamId": "104", "teamName": "Circuit Breakers", "teamSchool": "STEM Academy" }
+        ],
+        "blueTeams": [
+            { "teamId": "203", "teamName": "Voltage", "teamSchool": "Innovation High" },
+            { "teamId": "204", "teamName": "MechaKnights", "teamSchool": "Engineering Prep" }
+        ]
+    }
+}
+```
+4. **Display**
+5. **Common**
