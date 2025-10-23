@@ -1,6 +1,7 @@
-package org.thingai.app.scoringservice.handler.rolebase;
+package org.thingai.app.scoringservice.handler;
 
 import org.thingai.app.scoringservice.callback.RequestCallback;
+import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.entity.score.Score;
@@ -13,7 +14,7 @@ import org.thingai.base.log.ILog;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class ScorekeeperHandler {
+public class LiveScoreHandler {
     private static final String TAG = "ScorekeeperHandler";
     private static final MatchTimerHandler matchTimerHandler = new MatchTimerHandler();
 
@@ -27,7 +28,7 @@ public class ScorekeeperHandler {
     private static Score currentRedScoreHolder;
     private static Score currentBlueScoreHolder;
 
-    public ScorekeeperHandler(MatchHandler matchHandler, ScoreHandler scoreHandler) {
+    public LiveScoreHandler(MatchHandler matchHandler, ScoreHandler scoreHandler) {
         this.matchHandler = matchHandler;
         this.scoreHandler = scoreHandler;
 
@@ -43,6 +44,7 @@ public class ScorekeeperHandler {
         try {
             nextMatch = matchHandler.getMatchDetailSync(matchId);
             callback.onSuccess(nextMatch, "Set next match success");
+            broadcastHandler.broadcast("/topic/match/available", nextMatch, BroadcastMessageType.MATCH_STATUS);
         } catch (Exception e) {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to set next match: " + e.getMessage());
         }
@@ -61,13 +63,61 @@ public class ScorekeeperHandler {
 
         currentMatch.getMatch().setActualStartTime(currentTime.format(timeFormatter));
 
+        currentRedScoreHolder = ScoreHandler.factoryScore();
+        currentBlueScoreHolder = ScoreHandler.factoryScore();
+
+        currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
+        currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
+
         matchTimerHandler.startTimer(currentMatch.getMatch().getId(), 150);
         callback.onSuccess(true, "Match started");
     }
 
-    public void commitScore(String allianceId, RequestCallback<Boolean> callback) {
-        // Submit current score holder
+    public void handleLiveScoreUpdate(String updatedScoreJson, boolean isRedAlliance) {
+        ILog.d(TAG, "Live Score Update Received: " + updatedScoreJson);
 
+        if (isRedAlliance) {
+            currentRedScoreHolder.fromJson(updatedScoreJson);
+            broadcastHandler.broadcast("/topic/live/alliance/score/" + currentRedScoreHolder.getAllianceId(),
+                    currentRedScoreHolder,
+                    BroadcastMessageType.SCORE_UPDATE);
+        } else {
+            currentBlueScoreHolder.fromJson(updatedScoreJson);
+            broadcastHandler.broadcast("/topic/live/alliance/score/" + currentBlueScoreHolder.getAllianceId(),
+                    currentBlueScoreHolder,
+                    BroadcastMessageType.SCORE_UPDATE);
+        }
+    }
+
+    public void commitFinalScore(RequestCallback<Score[]> callback) {
+        final Score[] result = new Score[2];
+        scoreHandler.submitScore(currentBlueScoreHolder, true, new RequestCallback<Score>() {;
+            @Override
+            public void onSuccess(Score responseObject, String message) {
+                ILog.d(TAG, "Red alliance score submitted: " + message);
+                result[0] = responseObject;
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                ILog.d(TAG, "Failed to submit red alliance score: " + errorMessage);
+            }
+        });
+
+        scoreHandler.submitScore(currentBlueScoreHolder, true, new RequestCallback<Score>() {
+            @Override
+            public void onSuccess(Score responseObject, String message) {
+                ILog.d(TAG, "Blue alliance score submitted: " + message);
+                result[1] = responseObject;
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                ILog.d(TAG, "Failed to submit blue alliance score: " + errorMessage);
+            }
+        });
+
+        callback.onSuccess(result, "Scores committed successfully");
 
         // Update next match to current match
         currentMatch = nextMatch;

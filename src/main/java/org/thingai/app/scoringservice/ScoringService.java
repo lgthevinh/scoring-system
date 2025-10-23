@@ -3,7 +3,7 @@ package org.thingai.app.scoringservice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
-import org.thingai.app.scoringservice.handler.rolebase.ScorekeeperHandler;
+import org.thingai.app.scoringservice.handler.LiveScoreHandler;
 import org.thingai.app.scoringservice.handler.systembase.*;
 import org.thingai.base.Service;
 import org.thingai.base.cache.LRUCache;
@@ -32,7 +32,7 @@ public class ScoringService extends Service {
     private static MatchHandler matchHandler;
     private static BroadcastHandler broadcastHandler;
 
-    private static ScorekeeperHandler scorekeeperHandler;
+    private static LiveScoreHandler liveScoreHandler;
 
     public ScoringService() {
 
@@ -58,16 +58,12 @@ public class ScoringService extends Service {
         });
         // Initialize handler
         authHandler = new AuthHandler(daoSqlite);
-
         teamHandler = new TeamHandler(daoSqlite, teamCache);
-
         matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
-
         scoreHandler = new ScoreHandler(daoSqlite, daoFile);
-        scoreHandler.setBroadcastHandler(broadcastHandler);
 
-        scorekeeperHandler = new ScorekeeperHandler(matchHandler, scoreHandler);
-        scorekeeperHandler.setBroadcastHandler(broadcastHandler);
+        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
+        liveScoreHandler.setBroadcastHandler(broadcastHandler);
     }
 
     @Override
@@ -95,8 +91,8 @@ public class ScoringService extends Service {
         return broadcastHandler;
     }
 
-    public static ScorekeeperHandler scorekeeperHandler() {
-        return scorekeeperHandler;
+    public static LiveScoreHandler liveScoreHandler() {
+        return liveScoreHandler;
     }
 
     public void setSimpMessagingTemplate(SimpMessagingTemplate simpMessagingTemplate) {

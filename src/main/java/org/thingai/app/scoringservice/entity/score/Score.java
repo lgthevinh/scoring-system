@@ -36,6 +36,9 @@ public class Score {
     public void fromJson(String json) {
 
     }
+    public void toJson() {
+
+    }
     public String getRawScoreData() {
         return rawScoreData;
     }
@@ -54,5 +57,13 @@ public class Score {
 
     public void setStatus(int status) {
         this.status = status;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public int getPenaltiesScore() {
+        return penaltiesScore;
     }
 }

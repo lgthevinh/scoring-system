@@ -2,13 +2,14 @@ package org.thingai.app.scoringservice.entity.score;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.thingai.base.log.ILog;
 
 public class ScoreSeasonDemo extends Score {
-    private int robotParked; // 0, 1, 2, 3 for robots parked
-    private int robotHanged;
-    private int ballEntered; // number of ball entered
-    private int minorFault;
-    private int majorFault;
+    private int robotParked = 0; // 0, 1, 2, 3 for robots parked
+    private int robotHanged = 0;
+    private int ballEntered = 0; // number of ball entered
+    private int minorFault = 0;
+    private int majorFault = 0;
 
     public ScoreSeasonDemo() {
         super();
@@ -30,11 +31,27 @@ public class ScoreSeasonDemo extends Score {
 
         JsonObject jsonObject = gson.fromJson(json, JsonObject.class);
 
-        this.robotParked = jsonObject.get("robotParked").getAsInt();
-        this.robotHanged = jsonObject.get("robotHanged").getAsInt();
-        this.ballEntered = jsonObject.get("ballEntered").getAsInt();
-        this.minorFault = jsonObject.get("minorFault").getAsInt();
-        this.majorFault = jsonObject.get("majorFault").getAsInt();
+        ILog.d("ScoreSeasonDemo", "fromJson: " + jsonObject.toString());
+
+        if (jsonObject.get("robotParked") != null) {
+            this.robotParked = jsonObject.get("robotParked").getAsInt();
+        }
+
+        if (jsonObject.get("robotHanged") != null) {
+            this.robotHanged = jsonObject.get("robotHanged").getAsInt();
+        }
+
+        if (jsonObject.get("ballEntered") != null) {
+            this.ballEntered = jsonObject.get("ballEntered").getAsInt();
+        }
+
+        if (jsonObject.get("minorFault") != null) {
+            this.minorFault = jsonObject.get("minorFault").getAsInt();
+        }
+
+        if (jsonObject.get("majorFault") != null) {
+            this.majorFault = jsonObject.get("majorFault").getAsInt();
+        }
     }
 
     @Override

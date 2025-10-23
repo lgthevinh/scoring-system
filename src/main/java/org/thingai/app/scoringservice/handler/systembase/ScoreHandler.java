@@ -2,20 +2,18 @@ package org.thingai.app.scoringservice.handler.systembase;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.thingai.app.scoringservice.callback.RequestCallback;
-import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.score.ScoreSeasonDemo;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
+import org.thingai.base.log.ILog;
 
 public class ScoreHandler {
     private final Dao dao;
     private final DaoFile daoFile;
     private final ObjectMapper objectMapper = new ObjectMapper(); // For converting DTO to JSON
-
-    private BroadcastHandler broadcastHandler;
 
     public ScoreHandler(Dao dao, DaoFile daoFile) {
         this.dao = dao;
@@ -135,12 +133,49 @@ public class ScoreHandler {
             finalScore.calculatePenalties();
             finalScore.setStatus(ScoreStatus.SCORED);
 
+            ILog.d("ScoreHandler", "Final calculated score for alliance " + allianceId + ": Total=" + finalScore.getTotalScore() + ", Penalties=" + finalScore.getPenaltiesScore());
+
             // 5. Call the existing save method to persist the changes.
             updateAndSaveScore(finalScore, new RequestCallback<Void>() {
                 @Override
                 public void onSuccess(Void result, String message) {
-                    broadcastHandler.broadcast("/topic/scores", finalScore, BroadcastMessageType.SCORE_UPDATE);
                     callback.onSuccess(finalScore, "Score submitted and calculated successfully.");
+                }
+
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    callback.onFailure(errorCode, errorMessage);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to submit score: " + e.getMessage());
+        }
+    }
+
+    public void submitScore(Score score, boolean isForceUpdate, RequestCallback<Score> callback) {
+        try {
+            score.calculatePenalties();
+            score.calculateTotalScore();
+
+            String allianceId = score.getAllianceId();
+            // 1. Retrieve the existing score object.
+            Score existingScore = dao.read(Score.class, allianceId);
+            if (existingScore == null) {
+                callback.onFailure(ErrorCode.NOT_FOUND, "Cannot submit score, match/alliance not found: " + allianceId);
+                return;
+            }
+
+            if (existingScore.getStatus() == ScoreStatus.SCORED && !isForceUpdate) {
+                callback.onFailure(ErrorCode.UPDATE_FAILED, "Score already submitted for alliance: " + allianceId);
+                return;
+            }
+
+            // 2. Call the existing save method to persist the changes.
+            updateAndSaveScore(score, new RequestCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, String message) {
+                    callback.onSuccess(score, "Score submitted and calculated successfully.");
                 }
 
                 @Override
@@ -175,10 +210,6 @@ public class ScoreHandler {
             e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED,"Failed to save score data: " + e.getMessage());
         }
-    }
-
-    public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
-        this.broadcastHandler = broadcastHandler;
     }
 }
 
