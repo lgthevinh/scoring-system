@@ -7,6 +7,7 @@ import org.thingai.app.scoringservice.dto.BroadcastMessageDto;
 
 @Service
 public class BroadcastHandler {
+    private static final String TAG = "BroadcastHandler";
 
     private final SimpMessagingTemplate messagingTemplate;
 
