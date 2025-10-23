@@ -3,6 +3,7 @@ import { AuthComponent } from './features/auth/auth.component';
 import { TeamListComponent } from './features/scorekeeper/team/team-list/team-list.component';
 import { MatchListComponent } from './features/scorekeeper/matches/match-list/match-list.component';
 import { ScoreMatchComponent } from './features/scorekeeper/matches/score-match/score-match.component';
+import { LiveDisplayComponent } from './features/display/live-display/live-display.component';
 
 export const routes: Routes = [
   // 1. Authentication Route
@@ -12,8 +13,10 @@ export const routes: Routes = [
   { path: 'teams', component: TeamListComponent },
   { path: 'matches', component: MatchListComponent },
   { path: 'score/:matchId', component: ScoreMatchComponent },
+  { path: 'live-display', component: LiveDisplayComponent },
 
   // 3. Redirect Routes
   { path: '', redirectTo: '/matches', pathMatch: 'full' },
   { path: '**', redirectTo: '/matches' }
+
 ];

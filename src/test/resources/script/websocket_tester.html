@@ -13,7 +13,7 @@
             background-color: #212529;
             color: #f8f9fa;
             font-family: monospace;
-            height: 400px;
+            height: 300px; /* Adjusted height */
             overflow-y: auto;
             border-radius: 0.25rem;
             padding: 1rem;
@@ -45,10 +45,12 @@
             </div>
         </div>
         <div class="card-body">
+            <!-- Connection Section -->
+            <h5 class="mb-3">Connection</h5>
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="socket-url" class="form-label">WebSocket URL</label>
-                    <input type="text" class="form-control" id="socket-url" value="ws://localhost:9090/ws/score">
+                    <input type="text" class="form-control" id="socket-url" value="ws://localhost:9090/ws"> <!-- Corrected single endpoint -->
                 </div>
                 <div class="col-md-6">
                     <label for="topic" class="form-label">Topic to Subscribe</label>
@@ -59,6 +61,23 @@
                 <button class="btn btn-primary me-2" id="connect-btn"><i class="bi bi-plug"></i> Connect</button>
                 <button class="btn btn-secondary" id="disconnect-btn" disabled><i class="bi bi-x-circle"></i> Disconnect</button>
             </div>
+            <hr class="my-4">
+
+            <!-- Send Message Section -->
+            <h5 class="mb-3">Send Message</h5>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="send-destination" class="form-label">Destination</label>
+                    <input type="text" class="form-control" id="send-destination" value="/app/live/score/update" placeholder="/app/your-endpoint">
+                </div>
+                <div class="col-md-12">
+                    <label for="send-payload" class="form-label">Payload (JSON)</label>
+                    <textarea class="form-control" id="send-payload" rows="4" placeholder='{"key": "value"}'></textarea>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-success" id="send-btn" disabled><i class="bi bi-send"></i> Send Message</button>
+            </div>
         </div>
         <div class="card-footer">
             <h5 class="mb-2">Message Log</h5>
@@ -68,13 +87,16 @@
 </div>
 
 <!-- STOMP.js library for handling the STOMP protocol -->
-<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.2.0/bundles/stomp.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
 
 <script>
     const connectBtn = document.getElementById('connect-btn');
     const disconnectBtn = document.getElementById('disconnect-btn');
+    const sendBtn = document.getElementById('send-btn'); // Get send button
     const socketUrlInput = document.getElementById('socket-url');
     const topicInput = document.getElementById('topic');
+    const sendDestinationInput = document.getElementById('send-destination'); // Get destination input
+    const sendPayloadInput = document.getElementById('send-payload'); // Get payload input
     const messageLog = document.getElementById('message-log');
     const statusIndicator = document.getElementById('status-indicator');
     const statusText = document.getElementById('status-text');
@@ -86,7 +108,7 @@
         logEntry.className = 'log-message';
         logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
         messageLog.appendChild(logEntry);
-        messageLog.scrollTop = messageLog.scrollHeight; // Auto-scroll
+        messageLog.scrollTop = messageLog.scrollHeight;
     }
 
     function setStatus(isConnected) {
@@ -96,12 +118,14 @@
             statusText.textContent = 'Connected';
             connectBtn.disabled = true;
             disconnectBtn.disabled = false;
+            sendBtn.disabled = false; // Enable send button on connect
         } else {
             statusIndicator.classList.remove('bg-success');
             statusIndicator.classList.add('bg-secondary');
             statusText.textContent = 'Disconnected';
             connectBtn.disabled = false;
             disconnectBtn.disabled = true;
+            sendBtn.disabled = true; // Disable send button on disconnect
         }
     }
 
@@ -114,20 +138,21 @@
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
+            // Optional: Add debug logging from the STOMP library
+            // debug: (str) => { log(`STOMP DEBUG: ${str}`); }
         });
 
         stompClient.onConnect = (frame) => {
             log('Successfully connected to WebSocket broker!');
             setStatus(true);
 
-            // Subscribe to the specified topic
             stompClient.subscribe(topic, (message) => {
                 log(`Received from ${topic}:`);
                 try {
                     const parsedJson = JSON.parse(message.body);
-                    log(JSON.stringify(parsedJson, null, 2)); // Pretty-print JSON
+                    log(JSON.stringify(parsedJson, null, 2));
                 } catch (e) {
-                    log(message.body); // Log as plain text if not JSON
+                    log(message.body);
                 }
             });
         };
@@ -137,6 +162,18 @@
             log(`Additional details: ${frame.body}`);
             statusIndicator.classList.add('bg-danger');
             statusText.textContent = 'Error';
+            setStatus(false); // Ensure buttons are reset on error
+        };
+
+        stompClient.onWebSocketError = (event) => {
+            log('WebSocket error occurred. Check browser console for details.');
+            console.error('WebSocket Error:', event);
+            setStatus(false);
+        };
+
+        stompClient.onWebSocketClose = (event) => {
+            log('WebSocket connection closed.');
+            setStatus(false);
         };
 
         stompClient.activate();
@@ -151,11 +188,42 @@
         setStatus(false);
     }
 
+    function sendMessage() {
+        if (!stompClient || !stompClient.active) {
+            log('Error: Cannot send message. Client not connected.');
+            return;
+        }
+
+        const destination = sendDestinationInput.value;
+        const payload = sendPayloadInput.value;
+
+        if (!destination) {
+            log('Error: Please enter a destination.');
+            return;
+        }
+
+        try {
+            // Attempt to parse JSON to ensure validity before sending (optional)
+            JSON.parse(payload || '{}'); // Use empty object if payload is empty
+
+            stompClient.publish({
+                destination: destination,
+                body: payload
+            });
+            log(`Sent to ${destination}:`);
+            log(payload);
+        } catch (e) {
+            log(`Error: Invalid JSON payload. ${e.message}`);
+        }
+    }
+
     connectBtn.addEventListener('click', connect);
     disconnectBtn.addEventListener('click', disconnect);
+    sendBtn.addEventListener('click', sendMessage); // Add listener for send button
 
     // Initial state
     setStatus(false);
 </script>
 </body>
 </html>
+

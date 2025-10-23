@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LivescoreComponent } from './livescore.component';
+import { LiveDisplayComponent } from './live-display.component';
 
-describe('LivescoreComponent', () => {
-  let component: LivescoreComponent;
-  let fixture: ComponentFixture<LivescoreComponent>;
+describe('LiveDisplayComponent', () => {
+  let component: LiveDisplayComponent;
+  let fixture: ComponentFixture<LiveDisplayComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LivescoreComponent]
+      imports: [LiveDisplayComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LivescoreComponent);
+    fixture = TestBed.createComponent(LiveDisplayComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
