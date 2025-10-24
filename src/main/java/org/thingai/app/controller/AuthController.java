@@ -9,7 +9,8 @@ import org.thingai.app.scoringservice.handler.systembase.AuthHandler;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+
+import static org.thingai.app.controller.utils.ResponseEntityUtil.getObjectResponse;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -75,14 +76,5 @@ public class AuthController {
         });
 
         return getObjectResponse(future);
-    }
-
-    private ResponseEntity<Object> getObjectResponse(CompletableFuture<ResponseEntity<Object>> future) {
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An unexpected error occurred."));
-        }
     }
 }

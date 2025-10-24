@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorResponse;
+import static org.thingai.app.controller.utils.ResponseEntityUtil.getObjectResponse;
+
 @RestController
 @RequestMapping("/api/match")
 public class MatchController {
@@ -172,25 +175,6 @@ public class MatchController {
                 future.complete(createErrorResponse(errorCode, errorMessage));
             }
         };
-    }
-
-    private ResponseEntity<Object> createErrorResponse(int errorCode, String errorMessage) {
-        Map<String, Object> body = Map.of("errorCode", errorCode, "error", errorMessage);
-        HttpStatus status = switch (errorCode) {
-            case 400 -> HttpStatus.BAD_REQUEST;
-            case 404 -> HttpStatus.NOT_FOUND;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
-        };
-        return ResponseEntity.status(status).body(body);
-    }
-
-    private ResponseEntity<Object> getObjectResponse(CompletableFuture<ResponseEntity<Object>> future) {
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An unexpected error occurred."));
-        }
     }
 }
 

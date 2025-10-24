@@ -1,16 +1,15 @@
 package org.thingai.app.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.score.Score;
+import org.thingai.app.controller.utils.ResponseEntityUtil;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
+import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorResponse;
 
 @RestController
 @RequestMapping("/api/score")
@@ -34,7 +33,7 @@ public class ScoreController {
                 future.complete(createErrorResponse(errorCode, errorMessage));
             }
         });
-        return getObjectResponse(future);
+        return ResponseEntityUtil.getObjectResponse(future);
     }
 
     @GetMapping("/match/{matchId}")
@@ -51,7 +50,7 @@ public class ScoreController {
                 future.complete(createErrorResponse(errorCode, errorMessage));
             }
         });
-        return getObjectResponse(future);
+        return ResponseEntityUtil.getObjectResponse(future);
     }
 
     /**
@@ -74,27 +73,6 @@ public class ScoreController {
                 future.complete(createErrorResponse(errorCode, errorMessage));
             }
         });
-        return getObjectResponse(future);
-    }
-
-    // --- Helper Methods ---
-
-    private ResponseEntity<Object> createErrorResponse(int errorCode, String errorMessage) {
-        Map<String, Object> body = Map.of("errorCode", errorCode, "error", errorMessage);
-        HttpStatus status = switch (errorCode) {
-            case 400 -> HttpStatus.BAD_REQUEST;
-            case 404 -> HttpStatus.NOT_FOUND;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
-        };
-        return ResponseEntity.status(status).body(body);
-    }
-
-    private ResponseEntity<Object> getObjectResponse(CompletableFuture<ResponseEntity<Object>> future) {
-        try {
-            return future.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Thread.currentThread().interrupt();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An unexpected error occurred."));
-        }
+        return ResponseEntityUtil.getObjectResponse(future);
     }
 }
