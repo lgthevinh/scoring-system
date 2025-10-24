@@ -91,8 +91,9 @@ export class LiveScoreService implements OnDestroy {
 
   ngOnDestroy() {
     if (this.client.active) {
-      this.client.deactivate();
-      console.log("STOMP: Client deactivated.");
+      this.client.deactivate().then(() => {
+        console.log("STOMP: Client deactivated on destroy.");
+      });
     }
     this.connectionState.complete();
     this.messagesSubject.complete();
