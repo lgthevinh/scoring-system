@@ -65,4 +65,10 @@ public class ScorekeeperController {
         });
         return ResponseEntityUtil.getObjectResponse(future);
     }
+
+    @PostMapping("/override-score/{allianceId}")
+    public ResponseEntity<Object> overrideScore(@PathVariable("allianceId") String allianceId, @RequestBody Object scoreDetailsDto) {
+        return null;
+    }
+
 }
