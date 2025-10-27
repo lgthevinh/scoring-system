@@ -1,0 +1,72 @@
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+.event-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+.print-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+}
+.schedule-table th, .schedule-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+}
+.condensed .schedule-table th,
+.condensed .schedule-table td {
+  padding: 4px 6px;
+  font-size: 0.95rem;
+}
+
+.schedule-table th, .schedule-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  text-align: center;
+}
+
+/* Add vertical borders between specific columns */
+.schedule-table th:nth-child(3),
+.schedule-table td:nth-child(3),  /* After Field */
+.schedule-table th:nth-child(5),
+.schedule-table td:nth-child(5)   /* After Red team 2 */
+{
+  border-right: 1px solid #ddd;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .print-area, .print-area * {
+    visibility: visible !important;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    background: white;
+    z-index: 9999;
+    /* Optional: remove box-shadow or other screen-only styles */
+    box-shadow: none;
+  }
+}
