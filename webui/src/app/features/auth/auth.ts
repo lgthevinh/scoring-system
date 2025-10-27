@@ -38,7 +38,7 @@ export class Auth {
       this.errorMessage = '';
       this.authService.login(this.authForm.value).subscribe({
         next: () => {
-          this.router.navigate(['/matches']);
+          this.router.navigate(['/']);
         },
         error: (err) => {
           this.errorMessage = 'Invalid username or password.';

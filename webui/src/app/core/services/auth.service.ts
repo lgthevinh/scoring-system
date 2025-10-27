@@ -32,8 +32,7 @@ export class AuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    // return this.isAuthenticatedSubject.asObservable();
-    this.isAuthenticatedSubject.next(true);
+    console.log('AuthService: isAuthenticated called, current value:', this.isAuthenticatedSubject.value);
     return this.isAuthenticatedSubject.asObservable();
   }
 
