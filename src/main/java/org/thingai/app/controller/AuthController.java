@@ -77,4 +77,10 @@ public class AuthController {
 
         return getObjectResponse(future);
     }
+
+    @GetMapping("/get-local-ip")
+    public ResponseEntity<Object> getLocalIp() {
+        String localIp = System.getenv("LOCAL_IP_ADDRESS");
+        return ResponseEntity.ok(Map.of("localIp", localIp));
+    }
 }

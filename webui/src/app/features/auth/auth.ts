@@ -8,10 +8,10 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-auth',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './auth.component.html',
-  styleUrls: ['./auth.component.css']
+  templateUrl: './auth.html',
+  styleUrls: ['./auth.css']
 })
-export class AuthComponent {
+export class Auth {
   authForm: FormGroup;
   errorMessage: string = '';
   loading: boolean = false;

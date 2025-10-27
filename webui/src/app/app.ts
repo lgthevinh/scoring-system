@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
@@ -8,22 +8,14 @@ import { filter } from 'rxjs';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, CommonModule, RouterModule],
-  templateUrl: './app.component.html',
-  styles: [`
-    .nav-link.active {
-      font-weight: bold;
-      color: #0d6efd !important;
-      border-bottom: 2px solid #0d6efd;
-    }
-    .navbar {
-      padding: 0.8rem 1rem;
-    }
-  `]
+  templateUrl: './app.component.html'
 })
-export class App {
+export class App implements OnInit {
   isLoggedIn = false;
+  localIp: string = '';
+  showNavbar = true;
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(protected authService: AuthService, private router: Router) {
     this.authService.isAuthenticated().subscribe(isAuth => {
       this.isLoggedIn = isAuth;
     });
@@ -38,10 +30,23 @@ export class App {
         }
       });
     });
+
+    this.localIp = this.authService.getLocalIp();
+    console.log('Local IP:', this.localIp);
   }
 
   logout() {
     this.authService.logout();
     this.router.navigate(['/auth']);
+  }
+
+  ngOnInit() {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        // List of routes where navbar should be hidden
+        const hiddenNavbarRoutes = ['/match-controller'];
+        this.showNavbar = !hiddenNavbarRoutes.includes(event.urlAfterRedirects);
+      });
   }
 }

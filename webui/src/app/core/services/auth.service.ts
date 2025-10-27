@@ -36,6 +36,18 @@ export class AuthService {
     return this.isAuthenticatedSubject.asObservable();
   }
 
+  getLocalIp(): string {
+    let localIp: string = '127.0.0.1';
+    try {
+      this.http.get<{ ip: string }>(`${this.apiUrl}/local-ip`).subscribe(response => {
+        localIp = response.ip;
+      });
+    } catch (error) {
+      console.error('Error fetching local IP:', error);
+    }
+    return localIp;
+  }
+
   private hasToken(): boolean {
     return !!localStorage.getItem('authToken');
   }
