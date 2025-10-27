@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
-import { filter } from 'rxjs';
+import {filter, Observable} from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -12,10 +12,11 @@ import { filter } from 'rxjs';
 })
 export class App implements OnInit {
   isLoggedIn = false;
-  localIp: string = '';
   showNavbar = true;
+  localIp: Observable<string> | undefined;
 
   constructor(protected authService: AuthService, private router: Router) {
+
     this.authService.isAuthenticated().subscribe(isAuth => {
       this.isLoggedIn = isAuth;
     });
@@ -30,9 +31,6 @@ export class App implements OnInit {
         }
       });
     });
-
-    this.localIp = this.authService.getLocalIp();
-    console.log('Local IP:', this.localIp);
   }
 
   logout() {
@@ -41,12 +39,6 @@ export class App implements OnInit {
   }
 
   ngOnInit() {
-    this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        // List of routes where navbar should be hidden
-        const hiddenNavbarRoutes = ['/match-controller'];
-        this.showNavbar = !hiddenNavbarRoutes.includes(event.urlAfterRedirects);
-      });
+    this.localIp = this.authService.getLocalIp();
   }
 }

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import {BehaviorSubject, map, Observable} from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
+import {environment} from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = '/api/auth';
+  private apiUrl = environment .apiBaseUrl + '/api/auth';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
 
   constructor(private http: HttpClient) {}
@@ -36,16 +37,8 @@ export class AuthService {
     return this.isAuthenticatedSubject.asObservable();
   }
 
-  getLocalIp(): string {
-    let localIp: string = '127.0.0.1';
-    try {
-      this.http.get<{ ip: string }>(`${this.apiUrl}/local-ip`).subscribe(response => {
-        localIp = response.ip;
-      });
-    } catch (error) {
-      console.error('Error fetching local IP:', error);
-    }
-    return localIp;
+  getLocalIp(): Observable<string> {
+    return this.http.get<string>(`${this.apiUrl}/local-ip`).pipe(map((response: any) => response.localIp));
   }
 
   private hasToken(): boolean {

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.handler.systembase.AuthHandler;
 
+import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -78,9 +79,14 @@ public class AuthController {
         return getObjectResponse(future);
     }
 
-    @GetMapping("/get-local-ip")
+    @GetMapping("/local-ip")
     public ResponseEntity<Object> getLocalIp() {
-        String localIp = System.getenv("LOCAL_IP_ADDRESS");
-        return ResponseEntity.ok(Map.of("localIp", localIp));
+        try {
+            InetAddress localHost = InetAddress.getLocalHost();
+            String localIp = localHost.getHostAddress();
+            return ResponseEntity.ok(Map.of("localIp", localIp));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unable to retrieve local IP address."));
+        }
     }
 }

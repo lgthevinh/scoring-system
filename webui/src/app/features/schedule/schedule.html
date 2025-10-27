@@ -9,9 +9,9 @@
   </div>
   <h2 class="event-title">{{ eventName }}</h2>
   <div class="info-row">
-    <div>Teams: {{ teamsCount }}</div>
-    <div>Matches Per Team: {{ matchesPerTeam }}</div>
-    <div>Matches: {{ matchesCount }}</div>
+    <div>Teams: {{ teamsCount() }}</div>
+    <div>Matches Per Team: {{ matchesPerTeam() }}</div>
+    <div>Matches: {{ matchesCount() }}</div>
   </div>
   <table class="table table-striped schedule-table">
     <thead>
@@ -26,7 +26,7 @@
     </tr>
     </thead>
     <tbody>
-      @for (matchDetail of schedule; track matchDetail.match.id) {
+      @for (matchDetail of schedule(); track matchDetail.match.id) {
         <tr>
           <td>{{ TimeUtils.formatIsoTime(matchDetail.match.matchStartTime, "HH:mm") }}</td>
           <td>{{ matchDetail.match.matchCode }}</td>
