@@ -43,6 +43,19 @@ public class TeamHandler {
         }
     }
 
+    public void addTeams(Team[] teams, RequestCallback<Boolean> callback) {
+        try {
+            for (Team team : teams) {
+                dao.insert(Team.class, team);
+                // Add each new team to the cache
+                teamCache.put(team.getTeamId(), team);
+            }
+            callback.onSuccess(true,"Teams added successfully");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.CREATE_FAILED, e.getMessage());
+        }
+    }
+
     public void listTeams(RequestCallback<Team[]> callback) {
         try {
             Team[] teams = dao.readAll(Team.class);

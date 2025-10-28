@@ -111,4 +111,28 @@ public class TeamController {
         });
         return getObjectResponse(future);
     }
+
+    @PostMapping("/bulk-create")
+    public ResponseEntity<Object> bulkCreateTeams(@RequestBody Map<String, Object> requestBody) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        try {
+            Object teamsObj = requestBody.get("teams");
+
+            Team[] teamsList = (Team[]) teamsObj;
+            ScoringService.teamHandler().addTeams(teamsList, new RequestCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean teams, String message) {
+                    future.complete(ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", message)));
+                }
+
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    future.complete(createErrorResponse(errorCode, errorMessage));
+                }
+            });
+        } catch (Exception e) {
+            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
+        }
+        return getObjectResponse(future);
+    }
 }
