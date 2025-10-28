@@ -43,10 +43,13 @@ export class CreateAccount {
         role: formValues.role
       }
       this.authService.createAccount(credentials).subscribe({
-        next() {
+        next: () => {
           console.log('Account created successfully.');
+          alert("Account created successfully.");
+          this.createAccountForm.reset();
         },
         error(err) {
+          alert("Error creating account: " + err.error.message);
           console.error('Error creating account:', err);
         },
         complete() {
@@ -56,6 +59,7 @@ export class CreateAccount {
     } else {
       // Handle password mismatch
       console.error('Passwords do not match.');
+      alert("Passwords do not match.");
     }
   }
 
