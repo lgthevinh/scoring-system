@@ -17,7 +17,7 @@ public class Match {
     @DaoColumn(name = "matchNumber")
     private int matchNumber;
 
-    @DaoColumn(name = "fieldNumber")
+    @DaoColumn(name = "field")
     private int fieldNumber;
 
     @DaoColumn(name = "matchStartTime")

@@ -1,5 +1,6 @@
 package org.thingai.app.scoringservice.handler.systembase;
 
+import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.config.AuthData;
 
@@ -16,10 +17,10 @@ public class AuthHandler {
     private static final String SECRET_KEY = "secret_key";
     private static final int TOKEN_EXPIRATION_TIME = 3600 * 1000 * 24; // 1 day in milliseconds
 
-    private final Dao authDataDao;
+    private final Dao dao;
 
-    public AuthHandler(Dao authDataDao ) {
-        this.authDataDao = authDataDao;
+    public AuthHandler(Dao dao ) {
+        this.dao = dao;
     }
 
     public interface AuthHandlerCallback {
@@ -29,7 +30,7 @@ public class AuthHandler {
 
     public void handleAuthenticate(String username, String password, AuthHandlerCallback callback) {
         try {
-            AuthData[] authDataList = authDataDao.query(AuthData.class, new String[]{"username"}, new String[]{username});
+            AuthData[] authDataList = dao.query(AuthData.class, new String[]{"username"}, new String[]{username});
 
             if (authDataList.length == 0) {
                 callback.onFailure("Authentication failed: User not found.");
@@ -57,9 +58,9 @@ public class AuthHandler {
         }
     }
 
-    public void handleCreateAuth(String username, String password, AuthHandlerCallback callback) {
+    public void handleCreateAuth(String username, String password, int role, AuthHandlerCallback callback) {
         // Check if the user already exists
-        AuthData[] existingUsers = authDataDao.query(AuthData.class, new String[]{"username"}, new String[] {username});
+        AuthData[] existingUsers = dao.query(AuthData.class, new String[]{"username"}, new String[] {username});
         if (!(existingUsers.length == 0)) {
             callback.onFailure("User already exists.");
             return;
@@ -85,8 +86,14 @@ public class AuthHandler {
         authData.setPassword(bytesToHex(hashedPassword));
         authData.setSalt(bytesToHex(salt));
 
+        // Create AccountRole object
+        AccountRole accountRole = new AccountRole();
+        accountRole.setUsername(username);
+        accountRole.setRole(role);
+
         try {
-            authDataDao.insert(AuthData.class, authData);
+            dao.insert(AuthData.class, authData);
+            dao.insert(AccountRole.class, accountRole);
             String token = generateToken(username);
             callback.onSuccess(token, "Authentication created successfully.");
         } catch (Exception e) {

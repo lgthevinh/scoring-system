@@ -1,6 +1,7 @@
 package org.thingai.app.scoringservice;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.LiveScoreHandler;
@@ -54,6 +55,7 @@ public class ScoringService extends Service {
 
                 // System entities
                 AuthData.class,
+                AccountRole.class,
                 DbMapEntity.class
         });
         // Initialize handler

@@ -96,9 +96,9 @@ public class AuthController {
 
         String username = request.get("username");
         String password = request.get("password");
+        int role = Integer.parseInt(request.get("role"));
 
-        ScoringService.authHandler().handleCreateAuth(username, password, new AuthHandler.AuthHandlerCallback() {
-
+        ScoringService.authHandler().handleCreateAuth(username, password, role, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String token, String successMessage) {
                 future.complete(ResponseEntity.ok(Map.of("token", token, "message", successMessage)));
