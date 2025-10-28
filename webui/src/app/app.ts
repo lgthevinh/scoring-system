@@ -42,7 +42,9 @@ export class App implements OnInit {
   }
 
   ngOnInit() {
-    this.localIp = this.authService.getLocalIp();
+    if (this.localIp === undefined) {
+      this.localIp = this.authService.getLocalIp();
+    }
 
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))

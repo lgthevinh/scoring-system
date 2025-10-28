@@ -46,8 +46,8 @@
 /* Add vertical borders between specific columns */
 .schedule-table th:nth-child(3),
 .schedule-table td:nth-child(3),  /* After Field */
-.schedule-table th:nth-child(5),
-.schedule-table td:nth-child(5)   /* After Red team 2 */
+.schedule-table th:nth-child(6),
+.schedule-table td:nth-child(6)   /* After Red team 2 */
 {
   border-right: 1px solid #ddd;
 }

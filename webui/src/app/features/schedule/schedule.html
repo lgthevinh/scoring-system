@@ -21,8 +21,10 @@
       <th>Field</th>
       <th>Red 1</th>
       <th>Red 2</th>
+      <th>Red 3</th>
       <th>Blue 1</th>
       <th>Blue 2</th>
+      <th>Blue 3</th>
     </tr>
     </thead>
     <tbody>
@@ -33,8 +35,10 @@
           <td>{{ matchDetail.match.matchField }}</td>
           <td>{{ matchDetail.redTeams.at(0)?.teamId }}</td>
           <td>{{ matchDetail.redTeams.at(1)?.teamId }}</td>
+          <td>{{ matchDetail.redTeams.at(2)?.teamId }}</td>
           <td>{{ matchDetail.blueTeams.at(0)?.teamId }}</td>
           <td>{{ matchDetail.blueTeams.at(1)?.teamId }}</td>
+          <td>{{ matchDetail.blueTeams.at(2)?.teamId }}</td>
         </tr>
       }
     </tbody>
