@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Team } from '../models/team.model';
+import {environment} from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TeamService {
-  private apiUrl = '/api/team';
+  private apiUrl = environment.apiBaseUrl + '/api/team';
 
   constructor(private http: HttpClient) { }
 

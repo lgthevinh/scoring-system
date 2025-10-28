@@ -24,7 +24,7 @@ public class TestAuthHandler {
         String username = "newUser";
         String password = "newPassword";
 
-        authHandler.handleCreateAuth(username, password, new AuthHandler.AuthHandlerCallback() {
+        authHandler.handleCreateAuth(username, password, 1, new AuthHandler.AuthHandlerCallback() {
             @Override
             public void onSuccess(String token, String successMessage) {
                 System.out.println("User created successfully: " + successMessage);

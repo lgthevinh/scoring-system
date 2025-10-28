@@ -32,12 +32,11 @@ export class AuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    console.log('AuthService: isAuthenticated called, current value:', this.isAuthenticatedSubject.value);
     return this.isAuthenticatedSubject.asObservable();
   }
 
-  createAccount(credentials: { username: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/create-account`, credentials);
+  createAccount(credentials: { username: string; password: string, role: number }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-account`, credentials);
   }
 
   getLocalIp(): Observable<string> {
