@@ -1,0 +1,33 @@
+<div class="container my-4">
+  <form [formGroup]="createAccountForm" (ngSubmit)="onSubmit()">
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" class="form-control" id="username" placeholder="Enter username" formControlName="username">
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input [type]="passwordVisible ? 'text' : 'password'" class="form-control" id="password" placeholder="Password" formControlName="password">
+    </div>
+    <div class="mb-3">
+      <label for="reEnterPassword" class="form-label">Re-enter Password</label>
+      <input [type]="passwordVisible ? 'text' : 'password'" class="form-control" id="reEnterPassword" placeholder="Re-enter Password" formControlName="reEnterPassword">
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="show-re-enter-password" (click)="togglePasswordVisibility()">
+      <label class="form-check-label" for="show-re-enter-password">Show Password</label>
+    </div>
+    <div class="mb-3">
+      <label for="role" class="form-label">Select role:</label>
+      <select class="form-select" aria-label="Large select example" id="role" formControlName="role">
+        <option selected>Select role</option>
+        <option value="{{AccountRoleType.EVENT_ADMIN}}">Event Admin</option>
+        <option value="{{AccountRoleType.SCOREKEEPER}}">Scorekeeper</option>
+        <option value="{{AccountRoleType.HEAD_REFEREE}}">Head-referee</option>
+        <option value="{{AccountRoleType.SCORING_REFEREE}}">Scoring-referee</option>
+        <option value="{{AccountRoleType.EMCEE}}">Emcee</option>
+      </select>
+
+    </div>
+    <button type="submit" class="btn btn-primary" >Create Account</button>
+  </form>
+</div>
