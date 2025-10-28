@@ -1,0 +1,30 @@
+.table-responsive {
+  overflow-x: auto;
+}
+.team-table th,
+.team-table td {
+  vertical-align: middle;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
+  white-space: nowrap;
+}
+.team-table td[style*="width: 70px;"] {
+  text-align: center;
+}
+@media (max-width: 768px) {
+  .team-table th, .team-table td {
+    font-size: 13px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .team-table th[style*="width: 70px;"],
+  .team-table td[style*="width: 70px;"] {
+    min-width: 50px;
+  }
+  .team-table th[style*="width: 60px;"],
+  .team-table td[style*="width: 60px;"] {
+    min-width: 40px;
+  }
+}

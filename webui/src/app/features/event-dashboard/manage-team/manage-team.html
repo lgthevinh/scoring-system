@@ -1,0 +1,133 @@
+<div class="container mt-3">
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link active">Add Individually</a>
+        </li>
+      </ul>
+      <button class="btn btn-primary btn-sm">Done</button>
+    </div>
+    <div class="card-body">
+      <form class="row g-2 align-items-center mb-2">
+        <div class="col-auto">
+          <button class="btn btn-secondary" type="button" data-bs-toggle="modal" data-bs-target="#addTeamModal">
+            Add
+          </button>
+        </div>
+        <div class="col-auto ms-auto">
+          <input type="file" class="form-control">
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-secondary" type="button" (click)="uploadTeamList()">Upload Team List</button>
+        </div>
+      </form>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+          <thead>
+          <tr class="table-secondary">
+            <th>Number</th>
+            <th>Team Name</th>
+            <th>School</th>
+            <th>Region</th>
+            <th>Edit</th>
+          </tr>
+          </thead>
+          <tbody>
+            @for (team of teams(); track team.teamId) {
+              <tr>
+                <td>{{ team.teamId }}</td>
+                <td>{{ team.teamName }}</td>
+                <td>{{ team.teamSchool }}</td>
+                <td>{{ team.teamRegion }}</td>
+                <td>
+                  <button class="btn btn-outline-secondary btn-sm me-1"
+                          (click)="openEditTeamModal(team)"
+                          data-bs-toggle="modal"
+                          data-bs-target="#editTeamModal">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="btn btn-outline-danger btn-sm" (click)="deleteTeam(team.teamId)">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Team Modal -->
+<div class="modal fade" id="addTeamModal" tabindex="-1" aria-labelledby="addTeamModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form (ngSubmit)="submitAddTeam()" #addTeamForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addTeamModalLabel">Add Team</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="teamId" class="form-label">Team Number</label>
+            <input type="text" class="form-control" id="teamId" [(ngModel)]="newTeam.teamId" name="teamId" required>
+          </div>
+          <div class="mb-3">
+            <label for="teamName" class="form-label">Team Name</label>
+            <input type="text" class="form-control" id="teamName" [(ngModel)]="newTeam.teamName" name="teamName" required>
+          </div>
+          <div class="mb-3">
+            <label for="teamSchool" class="form-label">School</label>
+            <input type="text" class="form-control" id="teamSchool" [(ngModel)]="newTeam.teamSchool" name="teamSchool" required>
+          </div>
+          <div class="mb-3">
+            <label for="teamRegion" class="form-label">Region</label>
+            <input type="text" class="form-control" id="teamRegion" [(ngModel)]="newTeam.teamRegion" name="teamRegion" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="addTeamForm.invalid">Add</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Team Modal -->
+<div class="modal fade" id="editTeamModal" tabindex="-1" aria-labelledby="editTeamModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form (ngSubmit)="submitEditTeam()" #editTeamForm="ngForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editTeamModalLabel">Edit Team</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editTeamId" class="form-label">Team Number</label>
+            <input type="text" class="form-control" id="editTeamId" [(ngModel)]="editTeam.teamId" name="editTeamId" required readonly>
+          </div>
+          <div class="mb-3">
+            <label for="editTeamName" class="form-label">Team Name</label>
+            <input type="text" class="form-control" id="editTeamName" [(ngModel)]="editTeam.teamName" name="editTeamName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editTeamSchool" class="form-label">School</label>
+            <input type="text" class="form-control" id="editTeamSchool" [(ngModel)]="editTeam.teamSchool" name="editTeamSchool" required>
+          </div>
+          <div class="mb-3">
+            <label for="editTeamRegion" class="form-label">Region</label>
+            <input type="text" class="form-control" id="editTeamRegion" [(ngModel)]="editTeam.teamRegion" name="editTeamRegion" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" [disabled]="editTeamForm.invalid">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
