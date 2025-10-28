@@ -89,4 +89,27 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unable to retrieve local IP address."));
         }
     }
+
+    @PostMapping("/create-account")
+    public ResponseEntity<Object> createAccount(@RequestBody Map<String, String> request) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+
+        String username = request.get("username");
+        String password = request.get("password");
+
+        ScoringService.authHandler().handleCreateAuth(username, password, new AuthHandler.AuthHandlerCallback() {
+
+            @Override
+            public void onSuccess(String token, String successMessage) {
+                future.complete(ResponseEntity.ok(Map.of("token", token, "message", successMessage)));
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                future.complete(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", errorMessage)));
+            }
+        });
+
+        return getObjectResponse(future);
+    }
 }

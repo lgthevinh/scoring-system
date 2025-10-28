@@ -1,38 +1,39 @@
-<div class="d-flex flex-column container shadow p-0">
-  @if (showNavbar) {
-    <p class="text-center w-100 m-0 bg-primary text-white">Live Scoring System running at {{(localIp | async)?.toString()}} </p>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
-        <a class="navbar-brand fw-semibold text-white" href="#">Scoring System</a>
+@if (showNavbar) {
+  <div class="d-flex flex-column container shadow p-0">
+      <p class="text-center w-100 m-0 bg-primary text-white">Live Scoring System running at {{(localIp | async)?.toString()}} </p>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <a class="navbar-brand fw-semibold text-white" href="#">Scoring System</a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
-                aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                  data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
+                  aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
 
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-          <div class="navbar-nav ms-auto">
-            <a class="nav-link text-white" href="#">Home</a>
-            <a class="nav-link text-white" href="#">Resources</a>
-            @if (isLoggedIn()) {
-              <a class="nav-link text-white" href="#" (click)="logout()">Logout</a>
-            } @else {
-              <a class="nav-link text-white" href="#">Login</a>
-            }
+          <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav ms-auto">
+              <a class="nav-link text-white" href="#">Home</a>
+              <a class="nav-link text-white" href="#">Resources</a>
+              @if (isLoggedIn()) {
+                <a class="nav-link text-white" href="#" (click)="logout()">Logout</a>
+              } @else {
+                <a class="nav-link text-white" href="#">Login</a>
+              }
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
-  }
-  <main class="px-3 bg-white">
-    <router-outlet></router-outlet>
-  </main>
-  @if (showNavbar) {
+      </nav>
+    <main class="px-3 bg-white">
+      <router-outlet></router-outlet>
+    </main>
     <footer class="footer mt-auto py-3 bg-dark text-white text-center">
       <div class="container">
         <span>&copy; ThingAI 2025 Scoring System. All rights reserved.</span>
       </div>
     </footer>
-  }
-</div>
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}
+

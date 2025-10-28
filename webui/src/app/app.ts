@@ -43,5 +43,14 @@ export class App implements OnInit {
 
   ngOnInit() {
     this.localIp = this.authService.getLocalIp();
+
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        // List of routes where navbar should be hidden
+        const hiddenNavbarRoutes = ['/match-control'];
+        this.showNavbar = !hiddenNavbarRoutes.includes(event.urlAfterRedirects);
+      });
+
   }
 }

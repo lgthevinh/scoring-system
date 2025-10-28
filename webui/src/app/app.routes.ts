@@ -2,9 +2,13 @@ import { Routes } from '@angular/router';
 import { Home } from './features/home/home';
 import { Auth } from './features/auth/auth';
 import { Schedule } from './features/schedule/schedule';
+import {MatchControl} from './features/match-control/match-control';
+import {EventDashboard} from './features/event-dashboard/event-dashboard';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'auth', component: Auth },
-  { path: 'schedule', component: Schedule }
+  { path: 'schedule', component: Schedule },
+  { path: 'event-dashboard', component: EventDashboard },
+  { path: 'match-control', component: MatchControl }
 ];

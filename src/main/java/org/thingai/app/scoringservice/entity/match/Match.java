@@ -17,6 +17,9 @@ public class Match {
     @DaoColumn(name = "matchNumber")
     private int matchNumber;
 
+    @DaoColumn(name = "fieldNumber")
+    private int fieldNumber;
+
     @DaoColumn(name = "matchStartTime")
     private String matchStartTime;
 
@@ -80,5 +83,13 @@ public class Match {
 
     public void setActualStartTime(String actualStartTime) {
         this.actualStartTime = actualStartTime;
+    }
+
+    public int getFieldNumber() {
+        return fieldNumber;
+    }
+
+    public void setFieldNumber(int fieldNumber) {
+        this.fieldNumber = fieldNumber;
     }
 }
