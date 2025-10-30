@@ -2,11 +2,18 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'application'
+    id 'distribution'
+    id "com.github.node-gradle.node" version "7.0.2" // Gradle-managed Node/npm
 }
 
 group = 'org.thingai.vrc.scoringsystem'
-version = ''
+version = '' // set a version like '1.0.0' if you want
 description = 'Scoring System for Robotics Competitions'
+
+application {
+    mainClass = 'org.thingai.app.Main'
+}
 
 repositories {
     mavenCentral()
@@ -17,9 +24,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-    implementation("org.xerial:sqlite-jdbc:3.43.2.0") // Essential for DAO
+    implementation "org.xerial:sqlite-jdbc:3.43.2.0"
     implementation 'com.zaxxer:HikariCP:5.1.0'
-    implementation("org.slf4j:slf4j-api:2.0.9") // Logging interface of jdbc
+    implementation "org.slf4j:slf4j-api:2.0.9"
     implementation 'com.google.code.gson:gson:2.13.2'
 
     implementation 'org.springframework.boot:spring-boot-starter'
@@ -32,4 +39,79 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+/* ==== Frontend build config ==== */
+def webUiDir = "${projectDir}/webui"
+def webUiDistDir = "${webUiDir}/dist"      // adjust if Angular outputs dist/<app>/browser
+def hasWebUi = file("${webUiDir}/package.json").exists()
+def skipWebuiBuild = project.findProperty('skipWebuiBuild') == 'true'
+
+// Download/use local Node so we don't depend on PATH or NVM
+node {
+    version = '24.9.0'
+    download = true
+    // Workaround for Windows path length issues if needed:
+    // workDir = file("${project.buildDir}/nodejs")
+    // npmWorkDir = file("${project.buildDir}/npm")
+}
+
+tasks.register('npmBuild', com.github.gradle.node.npm.task.NpmTask) {
+    enabled = hasWebUi && !skipWebuiBuild
+    dependsOn 'npmInstall'
+    workingDir.set(file(webUiDir))
+    args = ['run', 'build']
+}
+
+tasks.register('copyWebUi', Copy) {
+    // Copy after an npm build
+    enabled = hasWebUi && !skipWebuiBuild
+    dependsOn 'npmBuild'
+    from(webUiDistDir) { include '**/*' }
+    into("${buildDir}/resources/main/static")
+}
+
+tasks.register('copyWebUiIfPresent', Copy) {
+    // Fallback: if we skip build but dist exists, still package UI
+    enabled = hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()
+    from(webUiDistDir) { include '**/*' }
+    into("${buildDir}/resources/main/static")
+}
+
+tasks.named('processResources') {
+    if (hasWebUi && !skipWebuiBuild) {
+        dependsOn 'copyWebUi'
+    } else if (hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()) {
+        dependsOn 'copyWebUiIfPresent'
+    }
+}
+
+/* ==== Boot Jar ==== */
+tasks.named('bootJar') {
+    archiveFileName = 'scoring-system.jar'
+    if (hasWebUi && !skipWebuiBuild) {
+        dependsOn 'copyWebUi'
+    } else if (hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()) {
+        dependsOn 'copyWebUiIfPresent'
+    }
+}
+
+/* ==== Distribution ZIP (jar + bin + data + scripts) ==== */
+distributions {
+    main {
+        contents {
+            from({ tasks.named('bootJar').get().archiveFile }) { into 'app' }
+            from('bin') { into 'bin' }   // includes bin/MatchMaker.exe
+            from('data') { into 'data' } // includes data/match_schedule.txt
+            from('scripts') { into '' }  // run.bat / run.sh (optional)
+            from('README.md') { into '' }
+        }
+    }
+}
+
+tasks.named('distZip') { dependsOn 'bootJar' }
+
+/* Convenience */
+tasks.register('packageAll') {
+    dependsOn 'bootJar', 'distZip'
 }

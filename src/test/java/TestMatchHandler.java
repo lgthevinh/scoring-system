@@ -5,10 +5,15 @@ import org.thingai.app.scoringservice.define.MatchType;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
+import org.thingai.app.scoringservice.entity.team.Team;
+import org.thingai.app.scoringservice.entity.time.TimeBlock;
 import org.thingai.app.scoringservice.handler.systembase.MatchHandler;
+import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.dao.DaoSqlite;
+
+import java.util.HashMap;
 
 public class TestMatchHandler {
     private static MatchHandler matchHandler;
@@ -16,16 +21,17 @@ public class TestMatchHandler {
     @BeforeAll
     public static void setup() {
         // Set up the DAO factory with SQLite configuration
-        String url = "src/test/resources/test.db";
+        String url = "src/test/resources/scoring_system.db";
         Dao dao = new DaoSqlite(url);
         dao.initDao(new Class[] {
             Score.class,
             Match.class,
-            AllianceTeam.class
+            AllianceTeam.class,
+            Team.class
         }); // Ensure the DAO is ready for use
 
         DaoFile daoFile = new DaoFile("src/test/resources/files");
-        matchHandler = new MatchHandler(dao, null, null, null);
+        matchHandler = new MatchHandler(dao, new LRUCache<>(100, new HashMap<>()), new LRUCache<>(100, new HashMap<>()), new LRUCache<>(100, new HashMap<>()));
     }
 
     @Test
@@ -48,5 +54,22 @@ public class TestMatchHandler {
             }
         });
 
+    }
+
+    @Test
+    public void testGenerateMatchSchedule() {
+        int rounds = 5;
+        System.out.println("Generating match schedule for " + rounds + " rounds.");
+        matchHandler.generateMatchScheduleV2(rounds, "11", 5, new TimeBlock[]{}, new RequestCallback<Void>() {
+            @Override
+            public void onSuccess(Void responseObject, String message) {
+                System.out.println("Match schedule generated successfully: " + responseObject);
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                System.err.println("Failed to generate match schedule: " + errorMessage);
+            }
+        });
     }
 }
