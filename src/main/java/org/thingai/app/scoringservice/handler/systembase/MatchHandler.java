@@ -8,11 +8,15 @@ import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
+import org.thingai.app.scoringservice.handler.MatchMakerHandler;
 import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.base.log.ILog;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -20,8 +24,10 @@ import java.util.*;
 public class MatchHandler {
     private final Dao dao;
 
+    private final MatchMakerHandler matchMakerHandler = new MatchMakerHandler();
+
     // Caches are now injected via the constructor for better management.
-    private final LRUCache<String, Match> matchCache;
+    private LRUCache<String, Match> matchCache;
     private final LRUCache<String, AllianceTeam[]> allianceTeamCache;
     private final LRUCache<String, Team> teamCache;
 
@@ -33,6 +39,23 @@ public class MatchHandler {
         this.matchCache = matchCache;
         this.allianceTeamCache = allianceTeamCache;
         this.teamCache = teamCache;
+
+        this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath().toString() + "/MatchMaker.exe");
+
+        Path outPath = Paths.get("data");
+        if (!Files.exists(outPath)) {
+            try {
+                Files.createDirectories(outPath.getParent());
+                Files.createFile(outPath);
+                ILog.d("MatchHandler", "Created match schedule output file at: " + outPath.toAbsolutePath());
+            } catch (Exception e) {
+                ILog.e("MatchHandler", "Error creating match schedule output file: " + e.getMessage());
+            }
+        }
+
+        String outDir = outPath.toAbsolutePath() + "/match_schedule.txt";
+        ILog.d("MatchHandler", "Match schedule output path set to: " + outDir);
+        this.matchMakerHandler.setOutPath(outDir);
     }
 
     // Methods use outside system implementation
@@ -255,6 +278,41 @@ public class MatchHandler {
         }
     }
 
+    public void generateMatchScheduleV2(int rounds, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
+        ILog.d("MatchHandler", "Generating match schedule with " + rounds + " rounds, starting at " + startTime + ", match duration " + matchDuration + " minutes.");
+        try {
+            Team[] allTeams = dao.readAll(Team.class);
+
+            dao.deleteAll(Match.class);
+            dao.deleteAll(AllianceTeam.class);
+            dao.deleteAll(Score.class);
+
+            matchCache.clear();
+            allianceTeamCache.clear();
+            teamCache.clear();
+
+
+            if (allTeams.length < 4) {
+                callback.onFailure(ErrorCode.CREATE_FAILED, "Cannot generate schedule with fewer than 4 teams.");
+                return;
+            }
+
+            // Shuffle teams for randomness
+            shuffleArray(allTeams);
+
+            // Run MatchMaker.exe to generate match schedule map
+            matchMakerHandler.generateMatchSchedule(rounds, allTeams.length, 2);
+
+            // Read generated schedule from output file
+            Path schedulePath = Paths.get(matchMakerHandler.getOutPath());
+
+            callback.onSuccess(null, "Match schedule generated successfully by MatchMaker.");
+        }
+        catch (Exception e) {
+            callback.onFailure(ErrorCode.CREATE_FAILED, "Failed to generate match schedule: " + e.getMessage());
+        }
+    }
+
     public void generateMatchSchedule(int numberOfMatches, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
         try {
             Team[] allTeams = dao.readAll(Team.class);
@@ -423,6 +481,10 @@ public class MatchHandler {
             allianceTeamCache.clear();
             teamCache.clear();
         }
+    }
+
+    public void setMatchCache(LRUCache<String, Match> matchCache) {
+        this.matchCache = matchCache;
     }
 }
 

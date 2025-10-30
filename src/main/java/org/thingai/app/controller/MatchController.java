@@ -13,7 +13,6 @@ import org.thingai.app.scoringservice.entity.time.TimeBlock;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorResponse;
 import static org.thingai.app.controller.utils.ResponseEntityUtil.getObjectResponse;
@@ -158,6 +157,34 @@ public class MatchController {
         } catch (Exception e) {
             future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
         }
+        return getObjectResponse(future);
+    }
+
+    @PostMapping("/schedule/generate/v2")
+    public ResponseEntity<Object> generateScheduleV2(@RequestBody Map<String, Object> request) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+
+        try {
+            int rounds = (int) request.get("rounds");
+            String startTime = (String) request.get("startTime");
+            int matchDuration = (int) request.get("matchDuration");
+            List<Map<String, String>> timeBlockMaps = (List<Map<String, String>>) request.get("timeBlocks");
+            TimeBlock[] timeBlocks = objectMapper.convertValue(timeBlockMaps, TimeBlock[].class);
+            ScoringService.matchHandler().generateMatchScheduleV2(rounds, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, String successMessage) {
+                    future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
+                }
+
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    future.complete(createErrorResponse(errorCode, errorMessage));
+                }
+            });
+        } catch (Exception e) {
+            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
+        }
+
         return getObjectResponse(future);
     }
 
