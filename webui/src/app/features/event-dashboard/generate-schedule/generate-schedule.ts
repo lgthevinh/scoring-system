@@ -6,6 +6,7 @@ import { TeamService } from '../../../core/services/team.service';
 import { Team } from '../../../core/models/team.model';
 import { environment } from '../../../../environments/environment';
 import { TimeBlock } from '../../../core/models/timeblock.model';
+import { finalize } from 'rxjs/operators';
 
 type BreakBlockVM = {
   name: string;
@@ -28,18 +29,18 @@ export class GenerateSchedule implements OnInit {
   teams: WritableSignal<Team[]> = signal([]);
   teamsCount: WritableSignal<number> = signal(0);
   matchesRequired: WritableSignal<number> = signal(0);
-  matchesPerTeamInput = 0; // optional input similar to FTC header (not sent to backend)
+  matchesPerTeamInput = 0;
 
   // Form fields
   rounds = 3;
-  cycleTimeMinutes = 7; // mapped to matchDuration
-  firstMatchStartLocal = this.toLocalInputValue(new Date()); // datetime-local control value
+  cycleTimeMinutes = 7;
+  firstMatchStartLocal = this.toLocalInputValue(new Date());
   breakBlocks: BreakBlockVM[] = [];
 
-  // UI feedback
-  running = false;
-  successMsg = '';
-  errorMsg = '';
+  // UI feedback as signals
+  running: WritableSignal<boolean> = signal(false);
+  successMsg: WritableSignal<string> = signal('');
+  errorMsg: WritableSignal<string> = signal('');
 
   constructor(
     private matchService: MatchService,
@@ -57,20 +58,16 @@ export class GenerateSchedule implements OnInit {
         this.teamsCount.set(teams.length);
         this.updateMatchesRequired();
       },
-      error: (err) => {
-        console.error('Failed to load teams', err);
-      }
+      error: (err) => console.error('Failed to load teams', err)
     });
   }
 
   updateMatchesRequired() {
-    // For 2v2: matches needed ~ rounds * teamsCount / 2
     const count = this.teamsCount();
     this.matchesRequired.set(Math.ceil((this.rounds * count) / 2));
   }
 
   addBreakBlock() {
-    // Default 30-min break starting 2 hours after first match
     const start = new Date(this.firstMatchStartLocal);
     start.setMinutes(start.getMinutes() + 120);
     this.breakBlocks.push({
@@ -85,36 +82,39 @@ export class GenerateSchedule implements OnInit {
   }
 
   runMatchMaker() {
-    this.successMsg = '';
-    this.errorMsg = '';
-    this.running = true;
+    this.successMsg.set('');
+    this.errorMsg.set('');
+    this.running.set(true);
 
     const payload = {
       rounds: this.rounds,
-      startTime: this.toBackendIsoMinute(this.firstMatchStartLocal), // "yyyy-MM-dd'T'HH:mm"
+      startTime: this.toBackendIsoMinute(this.firstMatchStartLocal),
       matchDuration: this.cycleTimeMinutes,
       timeBlocks: this.breakBlocks.map<TimeBlock>(b => ({
-        name: b.name?.trim() || 'Break',
+        name: (b.name ?? '').trim() || 'Break',
         startTime: this.toBackendIsoMinute(b.startTimeLocal),
         duration: String(b.durationMinutes)
       }))
     };
 
-    this.matchService.generateScheduleV2(payload).subscribe({
-      next: (res) => {
-        this.successMsg = (res?.message) || 'Schedule generated successfully.';
-        this.running = false;
-      },
-      error: (err) => {
-        this.errorMsg = err?.error?.error || 'Failed to generate schedule.';
-        this.running = false;
-      }
-    });
+    this.matchService.generateScheduleV2(payload)
+      .pipe(finalize(() => this.running.set(false)))
+      .subscribe({
+        next: (res) => {
+          console.log('generateScheduleV2 success:', res);
+          this.successMsg.set(res?.message ?? 'Schedule generated successfully.');
+          this.errorMsg.set('');
+        },
+        error: (err) => {
+          console.error('generateScheduleV2 error:', err);
+          const msg = err?.error?.message || err?.error?.error || err?.message || 'Failed to generate schedule.';
+          this.errorMsg.set(msg);
+          this.successMsg.set('');
+        }
+      });
   }
 
   // Helpers
-
-  // Convert Date -> "yyyy-MM-ddTHH:mm" in local time (for datetime-local input)
   private toLocalInputValue(d: Date): string {
     const pad = (n: number) => n.toString().padStart(2, '0');
     const yyyy = d.getFullYear();
@@ -125,10 +125,7 @@ export class GenerateSchedule implements OnInit {
     return `${yyyy}-${MM}-${dd}T${HH}:${mm}`;
   }
 
-  // Convert a local datetime-local string -> backend expected "yyyy-MM-dd'T'HH:mm" (no timezone suffix)
   private toBackendIsoMinute(localInput: string): string {
-    // Input is already "yyyy-MM-ddTHH:mm" in local time; pass through.
-    // Ensure seconds are not present.
     return localInput.slice(0, 16);
   }
 }

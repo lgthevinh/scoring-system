@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { MatchDetailDto } from '../models/match.model';
 import { Score } from '../models/score.model';
 import { RandomUtils } from '../utils/RandomUtils';
@@ -13,12 +13,15 @@ export abstract class MatchService {
 
   abstract getMatches(matchType: number): Observable<MatchDetailDto[]>;
   abstract generateSchedule(scheduleConfig: any): Observable<any>;
+
+  // Add V2 signature
   abstract generateScheduleV2(scheduleConfig: {
     rounds: number;
     startTime: string;        // "yyyy-MM-dd'T'HH:mm"
     matchDuration: number;    // minutes
-    timeBlocks: TimeBlock[];  // breaks only
-  }): Observable<any>;
+    timeBlocks: TimeBlock[];  // breaks
+  }): Observable<{ message: string }>;
+
   abstract getScore(allianceId: string): Observable<Score>;
   abstract submitScore(allianceId: string, scoreData: any): Observable<Score>;
 }
@@ -42,13 +45,20 @@ export class ProdMatchService extends MatchService {
     return this.http.post(`${this.apiUrl}/schedule/generate`, scheduleConfig);
   }
 
-  override generateScheduleV2(scheduleConfig: {
+  // Robust to empty 200 body; always returns an object with message
+  override generateScheduleV2(payload: {
     rounds: number;
     startTime: string;
     matchDuration: number;
     timeBlocks: TimeBlock[];
-  }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/schedule/generate/v2`, scheduleConfig);
+  }): Observable<{ message: string }> {
+    return this.http.post(`${this.apiUrl}/schedule/generate/v2`, payload, { observe: 'response' }).pipe(
+      map(res => {
+        const body = res.body as any;
+        const message = body?.message ?? 'Schedule generated successfully.';
+        return { message };
+      })
+    );
   }
 
   override getScore(allianceId: string): Observable<Score> {
@@ -67,13 +77,11 @@ export class MockMatchService extends MatchService {
   protected apiUrl = environment.apiBaseUrl + '/api/match';
   protected scoreApiUrl = environment.apiBaseUrl + '/api/score';
 
-  constructor() {
-    super();
-  }
+  constructor() { super(); }
 
   override getMatches(matchType: number): Observable<MatchDetailDto[]> {
     return new Observable<MatchDetailDto[]>(observer => {
-      let mockMatches: MatchDetailDto[] = [];
+      const mockMatches: MatchDetailDto[] = [];
       for (let i = 1; i <= 20; i++) {
         mockMatches.push({
           match: {
@@ -107,13 +115,13 @@ export class MockMatchService extends MatchService {
     });
   }
 
-  override generateScheduleV2(scheduleConfig: {
+  override generateScheduleV2(_: {
     rounds: number;
     startTime: string;
     matchDuration: number;
     timeBlocks: TimeBlock[];
-  }): Observable<any> {
-    return new Observable<any>(observer => {
+  }): Observable<{ message: string }> {
+    return new Observable(observer => {
       observer.next({ message: 'Mock schedule generated (V2)' });
       observer.complete();
     });
