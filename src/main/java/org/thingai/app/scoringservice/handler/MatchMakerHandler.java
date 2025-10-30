@@ -33,11 +33,8 @@ public class MatchMakerHandler {
     }
 
     /**
-     * Run the external match maker tool and log its output.
-     * If outPath is a directory, uses it as CWD.
-     * If outPath is a file, uses its parent as CWD and tees stdout to that file.
-     *
-     * @return exit code (0 = success)
+     * Run the external match maker tool and write its stdout directly to a file if outPath points to a file.
+     * Returns the process exit code (0 = success).
      */
     public int generateMatchSchedule(int rounds, int numberOfTeams, int allianceSize) {
         if (binPath == null || binPath.isBlank() || outPath == null || outPath.isBlank()) {
@@ -51,24 +48,18 @@ public class MatchMakerHandler {
                 ILog.e(TAG, "Binary not found or not a file: " + bin);
                 return -2;
             }
-            // Ensure executable on POSIX (ignored on Windows)
             tryEnsureExecutable(bin);
 
             Path out = Paths.get(outPath).toAbsolutePath().normalize();
 
-            // Determine working directory and optional output file (if out looks like a file)
             Path workingDir;
-            Path stdoutFile;
+            Path stdoutFile = null;
 
             if (Files.exists(out) && Files.isDirectory(out)) {
-                stdoutFile = null;
-                // Existing directory
                 workingDir = out;
             } else {
-                // If path ends with a filename (e.g., *.txt), treat parent as working dir
-                // Create parent directories if needed
                 String fileName = out.getFileName() != null ? out.getFileName().toString() : "";
-                boolean looksLikeFile = fileName.contains(".") || fileName.endsWith(".txt");
+                boolean looksLikeFile = fileName.contains("."); // treat as file if it has an extension
                 if (looksLikeFile) {
                     Path parent = out.getParent();
                     if (parent == null) {
@@ -77,27 +68,18 @@ public class MatchMakerHandler {
                     }
                     Files.createDirectories(parent);
                     workingDir = parent;
-                    stdoutFile = out; // tee stdout to this file
+                    stdoutFile = out; // write stdout directly to this file
                 } else {
-                    stdoutFile = null;
-                    // Treat as directory path that doesn't exist yet
                     Files.createDirectories(out);
                     workingDir = out;
                 }
             }
 
-            // Build command
             List<String> cmd = new ArrayList<>();
             cmd.add(bin.toString());
             cmd.add("-t"); cmd.add(String.valueOf(numberOfTeams));
             cmd.add("-r"); cmd.add(String.valueOf(rounds));
             cmd.add("-a"); cmd.add(String.valueOf(allianceSize));
-
-            // If your CLI supports explicit output arg, prefer this:
-            // if (stdoutFile != null) {
-            //     cmd.add("-o");
-            //     cmd.add(stdoutFile.toString());
-            // }
 
             ILog.d(TAG, "Working directory: " + workingDir);
             ILog.d(TAG, "Executing: " + String.join(" ", cmd));
@@ -107,15 +89,22 @@ public class MatchMakerHandler {
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             pb.directory(workingDir.toFile());
-            pb.redirectErrorStream(true); // merge stderr into stdout
+            pb.redirectErrorStream(true);
+
+            // Critical change: redirect stdout directly to the target file so it's complete when process exits.
+            if (stdoutFile != null) {
+                pb.redirectOutput(stdoutFile.toFile());
+            }
 
             Process process = pb.start();
 
-            // Stream output to logs and optionally to file
-            Thread outThread = new Thread(() -> streamToLogAndOptionalFile(process.getInputStream(), stdoutFile));
-            outThread.setName("matchmaker-stdout");
-            outThread.setDaemon(true);
-            outThread.start();
+            // If not writing to a file, stream logs (rare case)
+            Thread logThread = null;
+            if (stdoutFile == null) {
+                logThread = new Thread(() -> streamToLogOnly(process.getInputStream()));
+                logThread.setName("matchmaker-stdout");
+                logThread.start();
+            }
 
             boolean finished = process.waitFor(300, TimeUnit.SECONDS);
             if (!finished) {
@@ -126,6 +115,11 @@ public class MatchMakerHandler {
 
             int exitCode = process.exitValue();
             ILog.d(TAG, "Match maker finished with exit code: " + exitCode);
+
+            if (logThread != null) {
+                try { logThread.join(5000); } catch (InterruptedException ignored) {}
+            }
+
             return exitCode;
         } catch (IOException e) {
             ILog.e(TAG, "IO error running match maker: " + e.getMessage());
@@ -137,20 +131,12 @@ public class MatchMakerHandler {
         }
     }
 
-    private void streamToLogAndOptionalFile(InputStream inputStream, Path optionalFile) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
-             BufferedWriter writer = optionalFile != null
-                     ? Files.newBufferedWriter(optionalFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
-                     : null) {
+    private void streamToLogOnly(InputStream inputStream) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 ILog.d(TAG, "[proc] " + line);
-                if (writer != null) {
-                    writer.write(line);
-                    writer.newLine();
-                }
             }
-            if (writer != null) writer.flush();
         } catch (IOException e) {
             ILog.w(TAG, "Failed to stream process output: " + e.getMessage());
         }
@@ -164,7 +150,7 @@ public class MatchMakerHandler {
             perms.add(PosixFilePermission.OTHERS_EXECUTE);
             Files.setPosixFilePermissions(bin, perms);
         } catch (UnsupportedOperationException ignored) {
-            // Windows or non-POSIX FS; ignore
+            // Windows or non-POSIX FS
         } catch (IOException ex) {
             ILog.w(TAG, "Unable to adjust executable permissions: " + ex.getMessage());
         }

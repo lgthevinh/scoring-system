@@ -14,6 +14,7 @@ import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.base.log.ILog;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -317,20 +318,34 @@ public class MatchHandler {
                 return;
             }
 
-            // 4) Read generated schedule file (MatchMakerHandler.getOutPath() should point to the .txt to parse)
+            // Read generated schedule from output file
             Path schedulePath = Paths.get(matchMakerHandler.getOutPath()).toAbsolutePath().normalize();
             if (Files.isDirectory(schedulePath)) {
                 callback.onFailure(ErrorCode.RETRIEVE_FAILED, "OutPath is a directory. Please set MatchMakerHandler.outPath to the schedule file.");
                 return;
             }
-            if (!Files.exists(schedulePath)) {
-                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Schedule file not found at: " + schedulePath);
+
+            // Small retry to ensure file is fully materialized
+            List<String> lines = null;
+            final long deadline = System.currentTimeMillis() + 2000; // up to 2s
+            while (System.currentTimeMillis() < deadline) {
+                if (Files.exists(schedulePath)) {
+                    try {
+                        lines = Files.readAllLines(schedulePath);
+                        if (!lines.isEmpty()) break;
+                    } catch (IOException ignored) {}
+                }
+                try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+            }
+            if (lines == null || lines.isEmpty()) {
+                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Schedule file not readable at: " + schedulePath);
                 return;
             }
 
-            List<String> lines = Files.readAllLines(schedulePath);
             List<ParsedMatch> parsedMatches = parseMatchMakerSchedule(lines);
             if (parsedMatches.isEmpty()) {
+                // Last defensive check: if we still don't see "Match Schedule", dump first few lines to logs
+                ILog.w("MatchHandler", "Schedule header not found. First lines: " + String.join(" | ", lines.subList(0, Math.min(5, lines.size()))));
                 callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No matches parsed from schedule file. Ensure it contains a 'Match Schedule' section.");
                 return;
             }
