@@ -284,6 +284,7 @@ public class MatchHandler {
      * V2 schedule generator:
      * - Uses external MatchMakerHandler to produce a schedule file.
      * - Parses "Match Schedule" lines into 2v2 team pairings.
+     * - Maps team numbers in the file as 1-based indices into a SHUFFLED team list from DAO.
      * - Keeps existing time generation (start time, duration, TimeBlocks).
      */
     public void generateMatchScheduleV2(int rounds, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
@@ -305,33 +306,21 @@ public class MatchHandler {
                 return;
             }
 
-            // 2) Deterministic team index mapping 1..N -> teamId
-            //    Sort by numeric teamId if possible, otherwise lexicographic.
-            List<Team> orderedTeams = new ArrayList<>(Arrays.asList(allTeams));
-            orderedTeams.sort((a, b) -> {
-                String as = a.getTeamId();
-                String bs = b.getTeamId();
-                try {
-                    int ai = Integer.parseInt(as.replaceAll("\\D", ""));
-                    int bi = Integer.parseInt(bs.replaceAll("\\D", ""));
-                    return Integer.compare(ai, bi);
-                } catch (NumberFormatException nfe) {
-                    return as.compareTo(bs);
-                }
-            });
+            // 2) Shuffle teams to form the 1..N mapping base (index 1 = shuffled[0])
+            shuffleArray(allTeams);
+            List<Team> shuffledTeams = Arrays.asList(allTeams);
 
-            // 3) Run external generator (2 teams per alliance by default)
-            //    Ensure MatchMakerHandler is configured with bin/out paths before calling this method.
-            int exitCode = matchMakerHandler.generateMatchSchedule(rounds, orderedTeams.size(), 2);
+            // 3) Run external generator (2 teams per alliance)
+            int exitCode = matchMakerHandler.generateMatchSchedule(rounds, shuffledTeams.size(), 2);
             if (exitCode != 0) {
                 callback.onFailure(ErrorCode.CREATE_FAILED, "MatchMaker.exe failed (exitCode=" + exitCode + "). Check matchmaker.log for details.");
                 return;
             }
 
-            // 4) Read generated schedule file (MatchMakerHandler.getOutPath() can be a file or directory)
+            // 4) Read generated schedule file (MatchMakerHandler.getOutPath() should point to the .txt to parse)
             Path schedulePath = Paths.get(matchMakerHandler.getOutPath()).toAbsolutePath().normalize();
             if (Files.isDirectory(schedulePath)) {
-                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "OutPath is a directory. Please point MatchMakerHandler.outPath to the schedule file to parse.");
+                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "OutPath is a directory. Please set MatchMakerHandler.outPath to the schedule file.");
                 return;
             }
             if (!Files.exists(schedulePath)) {
@@ -342,11 +331,11 @@ public class MatchHandler {
             List<String> lines = Files.readAllLines(schedulePath);
             List<ParsedMatch> parsedMatches = parseMatchMakerSchedule(lines);
             if (parsedMatches.isEmpty()) {
-                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No matches parsed from schedule file. Ensure the output format contains a 'Match Schedule' section.");
+                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No matches parsed from schedule file. Ensure it contains a 'Match Schedule' section.");
                 return;
             }
 
-            // 5) Time keeping (same as V1): parse start time, for each match advance time with breaks
+            // 5) Time keeping: same as V1 (apply TimeBlocks)
             DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
             LocalDateTime currentTime = LocalDateTime.parse(startTime, timeFormatter);
 
@@ -359,40 +348,39 @@ public class MatchHandler {
                         long breakDuration = Long.parseLong(block.getDuration());
                         LocalDateTime breakEnd = breakStart.plusMinutes(breakDuration);
 
-                        // If currentTime is within a break, jump to breakEnd
                         if (!currentTime.isBefore(breakStart) && currentTime.isBefore(breakEnd)) {
                             currentTime = breakEnd;
                         }
                     }
                 }
 
-                // Map team indexes to team IDs (1-based index in file -> 0-based list index)
                 if (pm.red.length < 2 || pm.blue.length < 2) {
-                    ILog.w("MatchHandler", "Skipping malformed match line: not enough teams. " + Arrays.toString(pm.red) + " vs " + Arrays.toString(pm.blue));
+                    ILog.w("MatchHandler", "Skipping malformed match line: " + Arrays.toString(pm.red) + " vs " + Arrays.toString(pm.blue));
                     continue;
                 }
 
+                // Map team numbers (1-based) -> shuffled team IDs
                 String[] redTeamIds = new String[] {
-                        mapTeamIndexToId(orderedTeams, pm.red[0]),
-                        mapTeamIndexToId(orderedTeams, pm.red[1])
+                        mapTeamIndexToId(shuffledTeams, pm.red[0]),
+                        mapTeamIndexToId(shuffledTeams, pm.red[1])
                 };
                 String[] blueTeamIds = new String[] {
-                        mapTeamIndexToId(orderedTeams, pm.blue[0]),
-                        mapTeamIndexToId(orderedTeams, pm.blue[1])
+                        mapTeamIndexToId(shuffledTeams, pm.blue[0]),
+                        mapTeamIndexToId(shuffledTeams, pm.blue[1])
                 };
 
                 ILog.d("MatchHandler", Arrays.toString(redTeamIds) + " vs " + Arrays.toString(blueTeamIds) + " at " + currentTime.format(timeFormatter));
 
-                // Create match
+                // Create the match and scores
                 createMatchInternal(MatchType.QUALIFICATION, matchNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
 
-                // Advance time to next slot
+                // Advance time for next match
                 currentTime = currentTime.plusMinutes(matchDuration);
                 matchNumber++;
             }
 
             setMatchUpdateFlag(true);
-            callback.onSuccess(null, "Match schedule generated successfully by MatchMaker and times assigned.");
+            callback.onSuccess(null, "Match schedule generated successfully by MatchMaker (shuffled mapping) and times assigned.");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.CREATE_FAILED, "Failed to generate match schedule: " + e.getMessage());
         }
@@ -400,9 +388,8 @@ public class MatchHandler {
 
     /**
      * Parse the "Match Schedule" section from the MatchMaker .txt output.
-     * Expected lines like:
-     *   "  1:    4     7     5     8 "
-     * Optional '*' after a team number denotes surrogate; ignored for now.
+     * Expected lines like: "  1:    4     7     5     8 "
+     * Optional '*' after a team number denotes surrogate; ignored here.
      */
     private List<ParsedMatch> parseMatchMakerSchedule(List<String> lines) {
         List<ParsedMatch> matches = new ArrayList<>();
@@ -413,26 +400,21 @@ public class MatchHandler {
             String line = raw == null ? "" : raw.trim();
 
             if (!inSchedule) {
-                // Enter section after encountering "Match Schedule"
                 if (line.equalsIgnoreCase("Match Schedule")) {
                     inSchedule = true;
                 }
                 continue;
             }
 
-            // Skip header separators or blank lines
             if (line.isEmpty() || line.startsWith("------")) {
                 continue;
             }
-
-            // Stop at "Schedule Statistics" or another section
             if (line.toLowerCase().startsWith("schedule statistics")) {
                 break;
             }
 
             Matcher m = linePattern.matcher(raw);
             if (m.matches()) {
-                // m.group(1) = match number (unused)
                 int t1 = parseTeamIndex(m.group(2));
                 int t2 = parseTeamIndex(m.group(3));
                 int t3 = parseTeamIndex(m.group(4));
@@ -448,8 +430,7 @@ public class MatchHandler {
     }
 
     private int parseTeamIndex(String token) {
-        // Remove any trailing '*' (surrogate marker)
-        String digits = token.replace("*", "").trim();
+        String digits = token.replace("*", "").trim(); // remove surrogate marker
         try {
             return Integer.parseInt(digits);
         } catch (NumberFormatException e) {
@@ -457,14 +438,14 @@ public class MatchHandler {
         }
     }
 
-    private String mapTeamIndexToId(List<Team> orderedTeams, int idx1Based) throws Exception {
-        if (idx1Based < 1 || idx1Based > orderedTeams.size()) {
+    private String mapTeamIndexToId(List<Team> shuffledTeams, int idx1Based) throws Exception {
+        if (idx1Based < 1 || idx1Based > shuffledTeams.size()) {
             throw new Exception("Team index out of bounds in schedule: " + idx1Based);
         }
-        return orderedTeams.get(idx1Based - 1).getTeamId();
+        return shuffledTeams.get(idx1Based - 1).getTeamId();
     }
 
-    // Simple holder for a parsed 2v2 match
+    // Helper holder for parsed match
     private static class ParsedMatch {
         int[] red;
         int[] blue;
