@@ -3,19 +3,23 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MatchDetailDto } from '../models/match.model';
 import { Score } from '../models/score.model';
-import {RandomUtils} from '../utils/RandomUtils';
+import { RandomUtils } from '../utils/RandomUtils';
 import { environment } from '../../../environments/environment';
+import { TimeBlock } from '../models/timeblock.model';
 
 export abstract class MatchService {
   protected abstract apiUrl: string;
   protected abstract scoreApiUrl: string;
 
   abstract getMatches(matchType: number): Observable<MatchDetailDto[]>;
-
   abstract generateSchedule(scheduleConfig: any): Observable<any>;
-
+  abstract generateScheduleV2(scheduleConfig: {
+    rounds: number;
+    startTime: string;        // "yyyy-MM-dd'T'HH:mm"
+    matchDuration: number;    // minutes
+    timeBlocks: TimeBlock[];  // breaks only
+  }): Observable<any>;
   abstract getScore(allianceId: string): Observable<Score>;
-
   abstract submitScore(allianceId: string, scoreData: any): Observable<Score>;
 }
 
@@ -36,6 +40,15 @@ export class ProdMatchService extends MatchService {
 
   override generateSchedule(scheduleConfig: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/schedule/generate`, scheduleConfig);
+  }
+
+  override generateScheduleV2(scheduleConfig: {
+    rounds: number;
+    startTime: string;
+    matchDuration: number;
+    timeBlocks: TimeBlock[];
+  }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/schedule/generate/v2`, scheduleConfig);
   }
 
   override getScore(allianceId: string): Observable<Score> {
@@ -59,7 +72,6 @@ export class MockMatchService extends MatchService {
   }
 
   override getMatches(matchType: number): Observable<MatchDetailDto[]> {
-    // Return mock data
     return new Observable<MatchDetailDto[]>(observer => {
       let mockMatches: MatchDetailDto[] = [];
       for (let i = 1; i <= 20; i++) {
@@ -89,15 +101,25 @@ export class MockMatchService extends MatchService {
   }
 
   override generateSchedule(scheduleConfig: any): Observable<any> {
-    // Return mock response
     return new Observable<any>(observer => {
-      observer.next({message: 'Mock schedule generated'});
+      observer.next({ message: 'Mock schedule generated' });
+      observer.complete();
+    });
+  }
+
+  override generateScheduleV2(scheduleConfig: {
+    rounds: number;
+    startTime: string;
+    matchDuration: number;
+    timeBlocks: TimeBlock[];
+  }): Observable<any> {
+    return new Observable<any>(observer => {
+      observer.next({ message: 'Mock schedule generated (V2)' });
       observer.complete();
     });
   }
 
   override getScore(allianceId: string): Observable<Score> {
-    // Return mock score data
     return new Observable<Score>(observer => {
       const mockScore: Score = {
         id: allianceId,
@@ -112,7 +134,6 @@ export class MockMatchService extends MatchService {
   }
 
   override submitScore(allianceId: string, scoreData: any): Observable<Score> {
-    // Return mock submitted score data
     return new Observable<Score>(observer => {
       const submittedScore: Score = {
         id: allianceId,
@@ -126,4 +147,3 @@ export class MockMatchService extends MatchService {
     });
   }
 }
-

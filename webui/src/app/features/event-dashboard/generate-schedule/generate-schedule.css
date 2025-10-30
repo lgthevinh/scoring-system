@@ -1,0 +1,4 @@
+/* Simple spacing and responsive tweaks */
+.container .form-control.bg-light {
+  pointer-events: none;
+}
