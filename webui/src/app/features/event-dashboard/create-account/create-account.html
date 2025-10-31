@@ -1,5 +1,7 @@
 <div class="container my-4">
-  <form [formGroup]="createAccountForm" (ngSubmit)="onSubmit()">
+  <a class="text-decoration-none" href="/event-dashboard">« Back to Event Dashboard</a>
+
+  <form class="mt-3" [formGroup]="createAccountForm" (ngSubmit)="onSubmit()">
     <div class="mb-3">
       <label for="username" class="form-label">Username</label>
       <input type="text" class="form-control" id="username" placeholder="Enter username" formControlName="username">

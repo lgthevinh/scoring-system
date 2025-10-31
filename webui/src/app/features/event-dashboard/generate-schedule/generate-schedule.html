@@ -1,5 +1,5 @@
 <div class="container my-4">
-  <a class="text-decoration-none" href="/">« Back to Dashboard</a>
+  <a class="text-decoration-none" href="/event-dashboard">« Back to Event Dashboard</a>
 
   <div class="d-flex align-items-center mt-3 flex-wrap gap-3">
     <div>
@@ -41,11 +41,7 @@
   </div>
 
   <div *ngFor="let block of breakBlocks; let i = index" class="border rounded p-3 mb-3">
-    <div class="d-flex justify-content-between">
-      <div class="h6 mb-0">{{ block.name || 'Break' }}</div>
-      <button class="btn btn-sm btn-secondary" (click)="removeBreakBlock(i)">Remove</button>
-    </div>
-    <div class="row g-3 mt-1">
+    <div class="row g-3">
       <div class="col-md-4">
         <label class="form-label">Label</label>
         <input type="text" class="form-control" [(ngModel)]="block.name" placeholder="Lunch Break">
@@ -54,10 +50,13 @@
         <label class="form-label">Start</label>
         <input type="datetime-local" class="form-control" [(ngModel)]="block.startTimeLocal">
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label class="form-label">Duration (minutes)</label>
         <input type="number" class="form-control" [(ngModel)]="block.durationMinutes" min="1">
       </div>
+    </div>
+    <div class="mt-3 d-flex justify-content-between">
+      <button class="btn btn-sm btn-secondary" (click)="removeBreakBlock(i)">Remove</button>
     </div>
   </div>
 
