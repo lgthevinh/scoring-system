@@ -1,15 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import {environment} from '../../../environments/environment';
 
+@Injectable({ providedIn: 'root' })
 export class ScorekeeperService {
-  private apiUrl = '/api/scorekeeper';
+  private apiUrl = environment.apiBaseUrl + '/api/scorekeeper';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   setNextMatch(matchId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/set-next-match/${ matchId }`, {});
+    return this.http.post(`${this.apiUrl}/set-next-match/${matchId}`, {});
   }
 
   startCurrentMatch(): Observable<any> {
@@ -23,5 +24,4 @@ export class ScorekeeperService {
   overrideScore(allianceId: string, scoreData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/override-score/${allianceId}`, scoreData);
   }
-
 }

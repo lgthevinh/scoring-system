@@ -1,1 +1,256 @@
-<p>match-control works!</p>
+<div class="d-flex min-vh-100 mc-shell">
+
+  <!-- Sidebar (Bootstrap example; fixed + full-height via CSS) -->
+  <div class="d-flex flex-column flex-shrink-0 p-3 bg-light border-end mc-sidebar">
+    <a href="#" (click)="$event.preventDefault()"
+       class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+      <span class="fs-4 fw-semibold">Home</span>
+    </a>
+    <hr class="my-3">
+    <ul class="nav nav-pills flex-column mb-auto">
+      <li class="nav-item">
+        <a href="#" class="nav-link" [class.active]="selectedTab() === 'schedule'"
+           (click)="$event.preventDefault(); setTab('schedule')">
+          <i class="bi bi-list-ul me-2"></i>
+          Schedule
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'incomplete'"
+           (click)="$event.preventDefault(); setTab('incomplete')">
+          <i class="bi bi-exclamation-circle me-2"></i>
+          Incomplete Matches
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'score-edit'"
+           (click)="$event.preventDefault(); setTab('score-edit')">
+          <i class="bi bi-pencil-square me-2"></i>
+          Score Edit
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'active-match'"
+           (click)="$event.preventDefault(); setTab('active-match')">
+          <i class="bi bi-lightning-charge me-2"></i>
+          Active Match
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'settings'"
+           (click)="$event.preventDefault(); setTab('settings')">
+          <i class="bi bi-gear me-2"></i>
+          Settings
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'alliance-selection'"
+           (click)="$event.preventDefault(); setTab('alliance-selection')">
+          <i class="bi bi-people me-2"></i>
+          Alliance Selection
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'video-switch'"
+           (click)="$event.preventDefault(); setTab('video-switch')">
+          <i class="bi bi-camera-video me-2"></i>
+          Video Switch
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'present-awards'"
+           (click)="$event.preventDefault(); setTab('present-awards')">
+          <i class="bi bi-award me-2"></i>
+          Present Awards
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'help'"
+           (click)="$event.preventDefault(); setTab('help')">
+          <i class="bi bi-question-circle me-2"></i>
+          Help
+        </a>
+      </li>
+    </ul>
+
+    <hr class="my-3">
+    <div class="text-muted small">
+      <div>Loaded: <span class="fw-semibold text-dark">{{ loadedTitle() }}</span></div>
+      <div>Active: <span class="fw-semibold text-dark">{{ activeTitle() }}</span></div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="flex-grow-1 p-3 mc-main">
+
+    <!-- STICKY HEADER WRAPPER -->
+    <div class="mc-sticky sticky-top">
+      <div class="text-center mc-title h4 fw-semibold mb-3 mb-lg-2 pt-2">Match Control</div>
+
+      <!-- FTC-like top panels: Loaded vs Active -->
+      <div class="row mc-top-panels pb-2">
+        <!-- Loaded Match -->
+        <div class="col-12 col-lg-6">
+          <div class="card h-100">
+            <div class="card-header bg-primary text-white py-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Loaded Match</span>
+                <small class="opacity-75">{{ loadedTime() }}</small>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                <div class="me-auto">
+                  <div class="fw-semibold">{{ loadedTitle() }}</div>
+                  <div class="small text-muted">Not Started</div>
+                </div>
+                <div class="text-nowrap">
+                  <button class="btn btn-success btn-sm me-2" (click)="loadNextMatch()">Load Next</button>
+                  <button class="btn btn-outline-secondary btn-sm me-2" (click)="showPreview()">Show Preview</button>
+                  <button class="btn btn-outline-secondary btn-sm" (click)="showMatch()">Show Match</button>
+                </div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <span class="badge bg-danger me-2">Red</span>
+                  <span class="text-monospace">{{ loadedRed() }}</span>
+                </div>
+                <div class="col-12 col-md-6">
+                  <span class="badge bg-primary me-2">Blue</span>
+                  <span class="text-monospace">{{ loadedBlue() }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Match -->
+        <div class="col-12 col-lg-6">
+          <div class="card h-100">
+            <div class="card-header bg-dark text-white py-2">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fw-semibold">Active Match</span>
+                <small class="opacity-75">{{ activeTime() }}</small>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                <div class="me-auto">
+                  <div class="fw-semibold">{{ activeTitle() }}</div>
+                  <div class="small text-muted">0:00 (AUTO)</div>
+                </div>
+                <div class="text-nowrap">
+                  <button class="btn btn-primary btn-sm me-2" (click)="startMatch()">Start</button>
+                  <button class="btn btn-outline-danger btn-sm" (click)="abortMatch()">Abort</button>
+                </div>
+              </div>
+              <div class="row g-2">
+                <div class="col-12 col-md-6">
+                  <span class="badge bg-danger me-2">Red</span>
+                  <span class="text-monospace">{{ activeRed() }}</span>
+                </div>
+                <div class="col-12 col-md-6">
+                  <span class="badge bg-primary me-2">Blue</span>
+                  <span class="text-monospace">{{ activeBlue() }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- /row -->
+
+      <!-- Section title + commit button (not sticky; keep below the sticky area) -->
+      <div class="card my-3">
+        <div class="card-body py-2 d-flex justify-content-between align-items-center">
+          <div class="fw-semibold">{{ selectedTabTitle() }}</div>
+          <button class="btn btn-outline-secondary btn-sm" (click)="commitAndPostLastMatch()">Commit & Post Last Match</button>
+        </div>
+      </div>
+
+    </div> <!-- /mc-sticky -->
+
+    <!-- Content -->
+    <div>
+      @if (selectedTab() === 'schedule') {
+        <div class="card">
+          <div class="table-responsive position-relative">
+            <table class="table table-sm table-hover align-middle mb-0 tableFixHead">
+              <thead class="table-primary">
+              <tr>
+                <th class="text-start">Match</th>
+                <th>Field</th>
+                <th>State</th>
+                <th>Red Score</th>
+                <th>Red 1</th>
+                <th>Red 2</th>
+                <th>Red 3</th>
+                <th>Blue 1</th>
+                <th>Blue 2</th>
+                <th>Blue 3</th>
+                <th>Blue Score</th>
+                <th class="text-center" style="width: 90px;">Load</th>
+                <th class="text-center" style="width: 120px;">Enter Scores</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (m of schedule(); track m.match.id) {
+                  <tr>
+                    <td class="text-start">{{ m.match.matchCode }}</td>
+                    <td>{{ m.match.matchField }}</td>
+                    <td>UNPLAYED</td>
+                    <td>0</td>
+                    <td>{{ m.redTeams[0]?.teamId }}</td>
+                    <td>{{ m.redTeams[1]?.teamId }}</td>
+                    <td>{{ m.redTeams[2]?.teamId }}</td>
+                    <td>{{ m.blueTeams[0]?.teamId }}</td>
+                    <td>{{ m.blueTeams[1]?.teamId }}</td>
+                    <td>{{ m.blueTeams[2]?.teamId }}</td>
+                    <td>0</td>
+                    <td class="text-center">
+                      <button class="btn btn-outline-primary btn-sm px-2" (click)="playMatch(m)">Load</button>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-outline-primary btn-sm px-2" (click)="enterScores(m)">Enter Scores</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      } @else if (selectedTab() === 'incomplete') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Incomplete matches listing (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'score-edit') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Score edit tools (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'active-match') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Active match details (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'settings') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Settings (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'alliance-selection') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Alliance selection (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'video-switch') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Video switch (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'present-awards') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Present awards (placeholder)</p>
+        </div></div>
+      } @else if (selectedTab() === 'help') {
+        <div class="card"><div class="card-body">
+          <p class="mb-0 text-muted">Help and operator instructions (placeholder)</p>
+        </div></div>
+      }
+    </div>
+  </div>
+</div>

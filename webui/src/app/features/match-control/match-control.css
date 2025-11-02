@@ -1,0 +1,48 @@
+/* Ensure the fixed sidebar does not overlap main content */
+:host { --mc-sidebar-w: 280px; }
+
+.mc-shell {
+  background: #eef3f7;
+  padding-left: var(--mc-sidebar-w);
+  width: 100%;
+}
+
+.mc-sidebar {
+  position: fixed;
+  top: 0; bottom: 0; left: 0;
+  width: var(--mc-sidebar-w);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  z-index: 1030;
+}
+
+.mc-main { min-width: 0; }
+
+/* Sticky header wrapper */
+.mc-sticky {
+  /* sticky-top from Bootstrap already sets position: sticky; top: 0; z-index: 1020 */
+  /* Add a little padding and ensure it covers content behind */
+  padding-bottom: .25rem;
+  background: #eef3f7 !important;
+}
+
+/* Title color on light sticky background */
+.mc-title { color: #223041; }
+
+/* Top status band (non-sticky now) if you still use it elsewhere */
+.mc-status {
+  background: #e8eef6;
+  border-radius: .5rem;
+  padding: .75rem;
+}
+
+/* Compact table header */
+.table thead th { white-space: nowrap; }
+
+.tableFixHead          { overflow: auto; height: 100px; }
+.tableFixHead thead th { position: sticky; top: 0; z-index: 1; }
+
+/* Optional: narrower sidebar on small screens */
+@media (max-width: 576px) {
+  :host { --mc-sidebar-w: 240px; }
+}
