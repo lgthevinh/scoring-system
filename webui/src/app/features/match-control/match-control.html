@@ -137,7 +137,7 @@
               <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
                 <div class="me-auto">
                   <div class="fw-semibold">{{ activeTitle() }}</div>
-                  <div class="small text-muted">0:00 (AUTO)</div>
+                  <div class="small text-muted">{{ activeMatchTimerDisplay() }}</div>
                 </div>
                 <div class="text-nowrap">
                   <button class="btn btn-primary btn-sm me-2" (click)="startMatch()">Start</button>

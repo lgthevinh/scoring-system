@@ -9,6 +9,7 @@ import {
 import { environment } from '../../../environments/environment';
 import { MatchDetailDto } from '../../core/models/match.model';
 import { ScorekeeperService } from '../../core/services/scorekeeper.service';
+import {BroadcastService} from '../../core/services/broadcast.service';
 
 type TabKey =
   | 'schedule'
@@ -53,10 +54,12 @@ export class MatchControl implements OnInit {
   schedule = signal<MatchDetailDto[]>([]);
   loaded = signal<MatchDetailDto | null>(null);
   active = signal<MatchDetailDto | null>(null);
+  activeMatchTimer: WritableSignal<number | null> = signal<number | null>(null);
 
   constructor(
     private matchService: MatchService,
-    private scorekeeper: ScorekeeperService
+    private scorekeeper: ScorekeeperService,
+    private broadcastService: BroadcastService
   ) {}
 
   ngOnInit(): void {
@@ -95,7 +98,6 @@ export class MatchControl implements OnInit {
 
   // ---- Top buttons (Loaded section) ----
   loadNextMatch() {
-    // TODO: Call backend endpoint if it exists to auto-pick next match
     const list = this.schedule();
     if (!list.length) return;
     const current = this.loaded();
@@ -125,6 +127,15 @@ export class MatchControl implements OnInit {
       console.warn('No loaded match to start.');
       return;
     }
+    this.broadcastService.subscribeToTopic("/topic/display/timer/*").subscribe({
+      next: (msg) => {
+        console.log("Received timer update:", msg);
+        if (msg.payload && msg.payload.remainingSeconds !== undefined) {
+          this.activeMatchTimer.set(msg.payload.remainingSeconds);
+        }
+      },
+      error: (e) => console.error("Failed to subscribe to timer updates:", e)
+    });
     this.scorekeeper.startCurrentMatch().subscribe({
       next: () => this.active.set(toStart),
       error: (e) => {
@@ -192,6 +203,14 @@ export class MatchControl implements OnInit {
   activeTime(): string {
     const m = this.active();
     return m ? this.formatLocalTime(m.match.matchStartTime) : '';
+  }
+
+  activeMatchTimerDisplay(): string {
+    const seconds = this.activeMatchTimer();
+    if (seconds === null) return '';
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   private formatLocalTime(iso: string | null | undefined): string {

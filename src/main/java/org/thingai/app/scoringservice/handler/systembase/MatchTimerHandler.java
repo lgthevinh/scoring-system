@@ -41,20 +41,20 @@ public class MatchTimerHandler {
     public void stopTimer() {
         isRunning = false;
         if (timerTask != null) timerTask.cancel(true);
-        broadcastUpdate();
+        broadcastTimerUpdate();
     }
 
     private void tick() {
         if (remainingSeconds > 0) {
             remainingSeconds--;
-            broadcastUpdate();
+            broadcastTimerUpdate();
         } else {
             stopTimer();
             callback.onTimerEnded(matchId);
         }
     }
 
-    private void broadcastUpdate() {
+    private void broadcastTimerUpdate() {
         MatchTimeStatusDto dto = new MatchTimeStatusDto(matchId, remainingSeconds);
         String topic = "/topic/display/timer/" + matchId;
         broadcastHandler.broadcast(topic, dto, BroadcastMessageType.MATCH_STATUS);

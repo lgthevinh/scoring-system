@@ -1,26 +1,31 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Client, IMessage } from '@stomp/stompjs';
+import {Client, IMessage, StompSubscription} from '@stomp/stompjs';
 import { Subject, Observable, BehaviorSubject } from 'rxjs'; // Import BehaviorSubject
 import { BroadcastMessage } from '../models/broadcast.model';
+import {environment} from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-export class LiveScoreService implements OnDestroy {
+export class BroadcastService implements OnDestroy {
   private client: Client;
   private messagesSubject = new Subject<BroadcastMessage>();
   public messages$: Observable<BroadcastMessage> = this.messagesSubject.asObservable();
   // Use BehaviorSubject to track connection state and allow late subscribers
   private connectionState = new BehaviorSubject<boolean>(false);
+  private subscriptions: Map<string, StompSubscription> = new Map();
 
   constructor() {
+    const brokerUrl: string = environment.production ? ('ws://' + window.location.host + '/ws') : ('ws://localhost:9090/ws');
     this.client = new Client({
-      brokerURL: 'ws://localhost:9090/ws', // Single endpoint
+      brokerURL: brokerUrl,
       debug: (str) => { console.log(new Date(), str); },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
+
+    console.log("websocket url:", brokerUrl);
 
     this.client.onConnect = (frame) => {
       console.log('STOMP: Connected');
@@ -75,6 +80,7 @@ export class LiveScoreService implements OnDestroy {
             topicSubject.next(JSON.parse(message.body));
           } catch (e) { topicSubject.error(e); }
         });
+        this.subscriptions.set(topic, subscription);
         console.log(`Subscribed to ${topic}`);
         // When the topicSubject is unsubscribed from, clean up the STOMP subscription
         return () => {
@@ -87,6 +93,23 @@ export class LiveScoreService implements OnDestroy {
       return undefined;
     });
     return topicSubject.asObservable();
+  }
+
+  unsubscribeFromTopic(topic: string) {
+    const subscription = this.subscriptions.get(topic);
+    if (subscription) {
+      subscription.unsubscribe();
+      this.subscriptions.delete(topic);
+      console.log(`STOMP: Unsubscribed from ${topic}`);
+    } else {
+      console.warn(`STOMP: No active subscription found for topic ${topic}`);
+    }
+  }
+
+  unsubscribeAll() {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+    this.subscriptions.clear();
+    console.log("STOMP: Unsubscribed from all topics.");
   }
 
   ngOnDestroy() {

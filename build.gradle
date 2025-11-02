@@ -52,8 +52,8 @@ node {
     version = '24.9.0'
     download = true
     // Workaround for Windows path length issues if needed:
-    // workDir = file("${project.buildDir}/nodejs")
-    // npmWorkDir = file("${project.buildDir}/npm")
+     workDir = file("${project.buildDir}/nodejs")
+     npmWorkDir = file("${project.buildDir}/npm")
 }
 
 tasks.register('npmBuild', com.github.gradle.node.npm.task.NpmTask) {

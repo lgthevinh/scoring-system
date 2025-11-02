@@ -51,12 +51,12 @@ public class LiveScoreHandler {
     }
 
     public void startCurrentMatch(RequestCallback<Boolean> callback) {
-        if (currentMatch == null && nextMatch == null) {
+        if (nextMatch == null) {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No match found");
-        } else if (currentMatch == null) {
-            currentMatch = nextMatch;
-            nextMatch = null;
         }
+
+        currentMatch = nextMatch;
+        nextMatch = null;
 
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         LocalDateTime currentTime = LocalDateTime.now();
@@ -133,6 +133,13 @@ public class LiveScoreHandler {
      */
     public void overrideScore(String allianceId, Object detailScore, RequestCallback<Boolean> callback) {
 
+    }
+
+    public void abortCurrentMatch(RequestCallback<Boolean> callback) {
+        matchTimerHandler.stopTimer();
+        currentRedScoreHolder = null;
+        currentBlueScoreHolder = null;
+        callback.onSuccess(true, "Match aborted");
     }
 
     public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
