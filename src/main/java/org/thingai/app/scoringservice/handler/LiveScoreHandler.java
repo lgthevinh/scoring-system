@@ -142,6 +142,14 @@ public class LiveScoreHandler {
         callback.onSuccess(true, "Match aborted");
     }
 
+    public void initialSyncFrontend(RequestCallback<MatchDetailDto[]> callback) {
+        try {
+            callback.onSuccess(new MatchDetailDto[]{currentMatch, nextMatch}, "Initial sync success");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Initial sync failed: " + e.getMessage());
+        }
+    }
+
     public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
         ILog.d(TAG, "Broadcast Handler: " + broadcastHandler);
         this.broadcastHandler = broadcastHandler;

@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {BroadcastService} from "../../core/services/broadcast.service";
 
 @Component({
   selector: 'app-field-display',
@@ -29,6 +30,10 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   private hideTimer: any = null;
   private tickTimer: any = null;
 
+  constructor(
+    private broadcastService: BroadcastService
+  ) {}
+
   // Track fullscreen changes
   private onFullscreenChange = () => {
     const isFs =
@@ -40,6 +45,28 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
+    this.broadcastService.subscribeToTopic("topic/display/command/*").subscribe({
+      next: (msg) => {
+        console.debug("FieldDisplay received message:", msg);
+      },
+      error: (err) => {
+        console.error("FieldDisplay message error:", err);
+      }
+    });
+
+    this.broadcastService.subscribeToTopic("/topic/display/timer/*").subscribe({
+      next: (msg) => {
+        console.log("FieldDisplay received timer message:", msg);
+        if (msg.payload && msg.payload.remainingSeconds !== undefined) {
+          this.timeLeft.set(msg.payload.remainingSeconds);
+        }
+      },
+      error: (err) => {
+        console.error("FieldDisplay timer message error:", err);
+      }
+    });
+
+    // Notify that the field display is active
     this.resetHideTimer();
     document.addEventListener('fullscreenchange', this.onFullscreenChange);
     // Safari/legacy vendor events (no-ops if unsupported)
@@ -58,7 +85,6 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   }
 
   // ========== Fullscreen Button ==========
-  // Hook this to the modal button: (click)="toggleFullscreen()"
   toggleFullscreen() {
     if (!this.isFullscreen()) {
       this.enterFullscreen();
