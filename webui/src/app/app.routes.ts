@@ -7,6 +7,7 @@ import {EventDashboard} from './features/event-dashboard/event-dashboard';
 import {CreateAccount} from './features/event-dashboard/create-account/create-account';
 import {ManageTeam} from './features/event-dashboard/manage-team/manage-team';
 import {GenerateSchedule} from './features/event-dashboard/generate-schedule/generate-schedule';
+import {ScoringDisplay} from './features/scoring-display/scoring-display';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -16,6 +17,8 @@ export const routes: Routes = [
   { path: 'event-dashboard/create-account', component: CreateAccount },
   { path: 'event-dashboard/manage-team', component: ManageTeam },
   { path: 'event-dashboard/generate-schedule', component: GenerateSchedule },
+
+  { path: 'display', component: ScoringDisplay },
 
   { path: 'match-control', component: MatchControl }
 ];

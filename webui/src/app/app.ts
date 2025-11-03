@@ -50,7 +50,7 @@ export class App implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
         // List of routes where navbar should be hidden
-        const hiddenNavbarRoutes = ['/match-control'];
+        const hiddenNavbarRoutes = ['/match-control', '/display'];
         this.showNavbar = !hiddenNavbarRoutes.includes(event.urlAfterRedirects);
       });
 
