@@ -137,13 +137,17 @@ export class MatchControl implements OnInit {
       error: (e) => console.error("Failed to subscribe to timer updates:", e)
     });
     this.scorekeeper.startCurrentMatch().subscribe({
-      next: () => this.active.set(toStart),
+      next: () => {
+        this.active.set(toStart);
+        this.loaded.set(null); // Clear loaded match after starting
+      },
       error: (e) => {
         console.error('Failed to start current match', e);
         // Fallback for UI
         this.active.set(toStart);
       }
     });
+
   }
 
   abortMatch() {
