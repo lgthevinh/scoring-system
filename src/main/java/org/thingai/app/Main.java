@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.ScoringService;
+import org.thingai.app.seasondemo.ScoreSeasonDemo;
 import org.thingai.base.log.ILog;
 
 @SpringBootApplication
@@ -30,6 +31,8 @@ public class Main {
         scoringService.setSimpMessagingTemplate(simpMessagingTemplate);
         scoringService.init();
         scoringService.run();
+
+        scoringService.registerScoreClass(ScoreSeasonDemo.class);
 
     }
 
