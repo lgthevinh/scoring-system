@@ -35,6 +35,8 @@ public class ScoringService extends Service {
 
     private static LiveScoreHandler liveScoreHandler;
 
+    private Class<? extends Score> scoreClass;
+
     public ScoringService() {
 
     }
@@ -100,5 +102,10 @@ public class ScoringService extends Service {
     public void setSimpMessagingTemplate(SimpMessagingTemplate simpMessagingTemplate) {
         broadcastHandler = new BroadcastHandler(simpMessagingTemplate);
         ILog.d("ScoringService::setSimpMessagingTemplate", broadcastHandler().toString());
+    }
+
+    public void registerScoreClass(Class<? extends Score> scoreClass) {
+        this.scoreClass = scoreClass;
+        scoreHandler().setScoreClass(scoreClass);
     }
 }

@@ -1,10 +1,15 @@
-package org.thingai.app.scoringservice.entity.score;
+package org.thingai.app.seasondemo;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.thingai.app.scoringservice.entity.score.IScoreConfig;
+import org.thingai.app.scoringservice.entity.score.Score;
+import org.thingai.app.scoringservice.entity.score.ScoreDefine;
 import org.thingai.base.log.ILog;
 
-public class ScoreSeasonDemo extends Score {
+import java.util.HashMap;
+
+public class ScoreSeasonDemo extends Score implements IScoreConfig {
     private int robotParked = 0; // 0, 1, 2, 3 for robots parked
     private int robotHanged = 0;
     private int ballEntered = 0; // number of ball entered
@@ -58,5 +63,10 @@ public class ScoreSeasonDemo extends Score {
     public String getRawScoreData() {
         Gson gson = new Gson();
         return gson.toJson(this);
+    }
+
+    @Override
+    public HashMap<String, ScoreDefine> getScoreDefinitions() {
+        return null;
     }
 }

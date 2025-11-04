@@ -36,9 +36,7 @@ public class Score {
     public void fromJson(String json) {
 
     }
-    public void toJson() {
 
-    }
     public String getRawScoreData() {
         return rawScoreData;
     }

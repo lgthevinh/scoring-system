@@ -5,7 +5,6 @@ import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.app.scoringservice.entity.score.Score;
-import org.thingai.app.scoringservice.entity.score.ScoreSeasonDemo;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.log.ILog;
@@ -15,17 +14,25 @@ public class ScoreHandler {
     private final DaoFile daoFile;
     private final ObjectMapper objectMapper = new ObjectMapper(); // For converting DTO to JSON
 
+    private static Class<? extends Score> scoreClass;
+
     public ScoreHandler(Dao dao, DaoFile daoFile) {
         this.dao = dao;
         this.daoFile = daoFile;
     }
 
     /**
-     * Factory method to create a Score object. For a new season, change the implementation here.
+     * Factory method to create a Score object. Uses the configured scoreClass.
      * @return A new Score object instance.
      */
     public static Score factoryScore() {
-        return new ScoreSeasonDemo();
+        try {
+            return scoreClass.getDeclaredConstructor().newInstance();
+        } catch (Exception e) {
+            ILog.e("ScoreHandler", "Failed to instantiate score class: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Failed to instantiate score class, define score specific class first.");
+        }
     }
 
     /**
@@ -210,6 +217,10 @@ public class ScoreHandler {
             e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED,"Failed to save score data: " + e.getMessage());
         }
+    }
+
+    public void setScoreClass(Class<? extends Score> scoreClass) {
+        ScoreHandler.scoreClass = scoreClass;
     }
 }
 
