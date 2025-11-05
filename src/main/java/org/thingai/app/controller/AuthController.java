@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
-import org.thingai.app.scoringservice.handler.systembase.AuthHandler;
+import org.thingai.app.scoringservice.handler.entityhandler.AuthHandler;
 
 import java.net.InetAddress;
 import java.util.Map;

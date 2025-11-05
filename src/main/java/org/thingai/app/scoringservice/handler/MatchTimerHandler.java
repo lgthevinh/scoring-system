@@ -1,4 +1,4 @@
-package org.thingai.app.scoringservice.handler.systembase;
+package org.thingai.app.scoringservice.handler;
 
 import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.dto.MatchTimeStatusDto;

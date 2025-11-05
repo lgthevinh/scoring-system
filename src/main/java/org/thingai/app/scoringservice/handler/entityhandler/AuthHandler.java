@@ -1,4 +1,4 @@
-package org.thingai.app.scoringservice.handler.systembase;
+package org.thingai.app.scoringservice.handler.entityhandler;
 
 import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.base.dao.Dao;

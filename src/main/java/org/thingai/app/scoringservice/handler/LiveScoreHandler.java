@@ -5,10 +5,8 @@ import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.entity.score.Score;
-import org.thingai.app.scoringservice.handler.systembase.BroadcastHandler;
-import org.thingai.app.scoringservice.handler.systembase.MatchHandler;
-import org.thingai.app.scoringservice.handler.systembase.MatchTimerHandler;
-import org.thingai.app.scoringservice.handler.systembase.ScoreHandler;
+import org.thingai.app.scoringservice.handler.entityhandler.MatchHandler;
+import org.thingai.app.scoringservice.handler.entityhandler.ScoreHandler;
 import org.thingai.base.log.ILog;
 
 import java.time.LocalDateTime;

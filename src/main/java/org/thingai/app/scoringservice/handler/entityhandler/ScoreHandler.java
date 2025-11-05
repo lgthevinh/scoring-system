@@ -1,4 +1,4 @@
-package org.thingai.app.scoringservice.handler.systembase;
+package org.thingai.app.scoringservice.handler.entityhandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.thingai.app.scoringservice.callback.RequestCallback;

@@ -1,4 +1,4 @@
-package org.thingai.app.scoringservice.handler.systembase;
+package org.thingai.app.scoringservice.handler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
