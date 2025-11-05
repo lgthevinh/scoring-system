@@ -106,7 +106,10 @@ export class MatchControl implements OnInit {
     // Optimistic UI update, then backend (if any)
     this.scorekeeper.setNextMatch(next.match.id).subscribe({
       next: () => this.loaded.set(next),
-      error: () => this.loaded.set(next)
+      error: () => {
+        console.error('Failed to set next match');
+        alert('Failed to load next match');
+      }
     });
   }
 
@@ -139,7 +142,6 @@ export class MatchControl implements OnInit {
     this.scorekeeper.startCurrentMatch().subscribe({
       next: () => {
         this.active.set(toStart);
-        this.loaded.set(null); // Clear loaded match after starting
       },
       error: (e) => {
         console.error('Failed to start current match', e);
