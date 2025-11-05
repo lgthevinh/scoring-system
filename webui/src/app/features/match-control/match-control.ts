@@ -10,6 +10,7 @@ import { environment } from '../../../environments/environment';
 import { MatchDetailDto } from '../../core/models/match.model';
 import { ScorekeeperService } from '../../core/services/scorekeeper.service';
 import {BroadcastService} from '../../core/services/broadcast.service';
+import {SyncService} from '../../core/services/sync.service';
 
 type TabKey =
   | 'schedule'
@@ -59,11 +60,37 @@ export class MatchControl implements OnInit {
   constructor(
     private matchService: MatchService,
     private scorekeeper: ScorekeeperService,
-    private broadcastService: BroadcastService
+    private broadcastService: BroadcastService,
+    private syncService: SyncService
   ) {}
 
   ngOnInit(): void {
     this.loadSchedule(1);
+    this.syncService.syncPlayingMatches().subscribe({
+      next: (matches) => {
+        console.log('Synced playing matches', matches);
+
+        if (matches && matches.length > 0) {
+          // Assume first match is active, second is loaded
+          this.active.set(matches[0]);
+          if (matches.length > 1) {
+            this.loaded.set(matches[1]);
+          } else {
+            this.loaded.set(null);
+          }
+        }
+      },
+      error: (e) => console.error('Failed to sync playing matches', e.message)
+    });
+    this.broadcastService.subscribeToTopic("/topic/display/field/*/timer").subscribe({
+      next: (msg) => {
+        console.log("Received timer update:", msg);
+        if (msg.payload && msg.payload.remainingSeconds !== undefined) {
+          this.activeMatchTimer.set(msg.payload.remainingSeconds);
+        }
+      },
+      error: (e) => console.error("Failed to subscribe to timer updates:", e)
+    });
   }
 
   setTab(key: TabKey) {
@@ -130,18 +157,10 @@ export class MatchControl implements OnInit {
       console.warn('No loaded match to start.');
       return;
     }
-    this.broadcastService.subscribeToTopic("/topic/display/timer/*").subscribe({
-      next: (msg) => {
-        console.log("Received timer update:", msg);
-        if (msg.payload && msg.payload.remainingSeconds !== undefined) {
-          this.activeMatchTimer.set(msg.payload.remainingSeconds);
-        }
-      },
-      error: (e) => console.error("Failed to subscribe to timer updates:", e)
-    });
     this.scorekeeper.startCurrentMatch().subscribe({
       next: () => {
         this.active.set(toStart);
+        this.loaded.set(null); // Clear loaded match after starting
       },
       error: (e) => {
         console.error('Failed to start current match', e);

@@ -35,6 +35,7 @@ export class GenerateSchedule implements OnInit {
   rounds = 3;
   cycleTimeMinutes = 7;
   firstMatchStartLocal = this.toLocalInputValue(new Date());
+  fieldCount = 1;
   breakBlocks: BreakBlockVM[] = [];
 
   // UI feedback as signals
@@ -90,6 +91,7 @@ export class GenerateSchedule implements OnInit {
       rounds: this.rounds,
       startTime: this.toBackendIsoMinute(this.firstMatchStartLocal),
       matchDuration: this.cycleTimeMinutes,
+      fieldCount: this.fieldCount,
       timeBlocks: this.breakBlocks.map<TimeBlock>(b => ({
         name: (b.name ?? '').trim() || 'Break',
         startTime: this.toBackendIsoMinute(b.startTimeLocal),

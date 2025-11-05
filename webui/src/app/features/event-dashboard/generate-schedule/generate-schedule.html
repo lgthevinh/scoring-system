@@ -14,6 +14,10 @@
       <label class="form-label fw-semibold">Estimate required</label>
       <div class="form-control bg-light">{{ matchesRequired() }}</div>
     </div>
+    <div>
+      <label class="form-label fw-semibold">Number of field</label>
+      <input type="number" class="form-control" [(ngModel)]="fieldCount" min="1">
+    </div>
   </div>
 
   <hr>

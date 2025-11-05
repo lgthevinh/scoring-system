@@ -109,11 +109,12 @@
                   </div>
                   <div class="col-12 col-md-3">
                     <label class="form-label">Bind to Field</label>
-                    <select class="form-select">
-                      <option selected>(All)</option>
-                      <option>Field 1</option>
-                      <option>Field 2</option>
-                      <option>Practice</option>
+                    <select class="form-select" [(ngModel)]="fieldBindValue" (change)="onFieldBindChange($event)">
+                      <option selected value="0">(All)</option>
+                      <option value="1">Field 1</option>
+                      <option value="2">Field 2</option>
+                      <option value="3">Field 3</option>
+                      <option value="4">Field 4</option>
                     </select>
                   </div>
                 </div>

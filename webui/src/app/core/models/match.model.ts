@@ -5,7 +5,7 @@ export interface Match {
   matchCode: string;
   matchType: number;
   matchNumber: number;
-  matchField: number;
+  fieldNumber: number;
   matchStartTime: string;
   matchEndTime: string | null;
 }
@@ -25,7 +25,7 @@ export function SampleMatchDetailDto(size: number): MatchDetailDto[] {
         matchCode: `Q${i}`,
         matchType: 1,
         matchNumber: i,
-        matchField: 1,
+        fieldNumber: 1,
         matchStartTime: new Date().toISOString(),
         matchEndTime: null
       },

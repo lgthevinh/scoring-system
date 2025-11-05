@@ -19,6 +19,7 @@ export abstract class MatchService {
     rounds: number;
     startTime: string;        // "yyyy-MM-dd'T'HH:mm"
     matchDuration: number;    // minutes
+    fieldCount?: number;    // optional, defaults to number of available fields
     timeBlocks: TimeBlock[];  // breaks
   }): Observable<{ message: string }>;
 
@@ -50,6 +51,7 @@ export class ProdMatchService extends MatchService {
     rounds: number;
     startTime: string;
     matchDuration: number;
+    fieldCount: number | 1;
     timeBlocks: TimeBlock[];
   }): Observable<{ message: string }> {
     return this.http.post(`${this.apiUrl}/schedule/generate/v2`, payload, { observe: 'response' }).pipe(
@@ -89,7 +91,7 @@ export class MockMatchService extends MatchService {
             matchCode: `Q${i}`,
             matchType: 1,
             matchNumber: i,
-            matchField: 1,
+            fieldNumber: 1,
             matchStartTime: new Date().toISOString(),
             matchEndTime: null
           },

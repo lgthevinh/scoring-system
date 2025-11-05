@@ -30,6 +30,8 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   private hideTimer: any = null;
   private tickTimer: any = null;
 
+  fieldBindValue: number = 0;
+
   constructor(
     private broadcastService: BroadcastService
   ) {}
@@ -45,7 +47,7 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
-    this.broadcastService.subscribeToTopic("topic/display/command/*").subscribe({
+    this.broadcastService.subscribeToTopic("topic/display/field/*/command").subscribe({
       next: (msg) => {
         console.debug("FieldDisplay received message:", msg);
       },
@@ -54,7 +56,7 @@ export class ScoringDisplay implements OnInit, OnDestroy {
       }
     });
 
-    this.broadcastService.subscribeToTopic("/topic/display/timer/*").subscribe({
+    this.broadcastService.subscribeToTopic("/topic/display/field/*/timer").subscribe({
       next: (msg) => {
         console.log("FieldDisplay received timer message:", msg);
         if (msg.payload && msg.payload.remainingSeconds !== undefined) {
@@ -137,6 +139,16 @@ export class ScoringDisplay implements OnInit, OnDestroy {
       }
     }
   }
+
+  onFieldBindChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    this.fieldBindValue = target.value ? parseInt(target.value, 10) : 0;
+
+    // Unsubscribe from all previous field topics
+    this.broadcastService.unsubscribeAll();
+    this.subscribeToFieldTopic(this.fieldBindValue!);
+  }
+
   // ======================================
 
   // Timer logic
@@ -206,5 +218,54 @@ export class ScoringDisplay implements OnInit, OnDestroy {
       clearInterval(this.tickTimer);
       this.tickTimer = null;
     }
+  }
+
+  private subscribeToFieldTopic(fieldId: number) {
+    if (fieldId === null || fieldId === undefined) return;
+
+    let timerTopic: string;
+    let commandTopic: string;
+
+    if (fieldId === 0) {
+      timerTopic = `/topic/display/field/*/timer`;
+      commandTopic = `/topic/display/field/*/command`;
+    } else {
+      timerTopic = `/topic/display/field/${fieldId}/timer`;
+      commandTopic = `/topic/display/field/${fieldId}/command`;
+    }
+
+    this.broadcastService.subscribeToTopic(timerTopic).subscribe({
+      next: (msg) => {
+        console.debug("FieldDisplay received message:", msg);
+      },
+      error: (err) => {
+        console.error("FieldDisplay message error:", err);
+      }
+    });
+
+    this.broadcastService.subscribeToTopic(commandTopic).subscribe({
+      next: (msg) => {
+        console.log("FieldDisplay received timer message:", msg);
+        if (msg.payload && msg.payload.remainingSeconds !== undefined) {
+          this.timeLeft.set(msg.payload.remainingSeconds);
+        }
+      },
+      error: (err) => {
+        console.error("FieldDisplay timer message error:", err);
+      }
+    });
+  }
+
+  private unsubscribeFromFieldTopic(fieldId: number) {
+    if (fieldId === null || fieldId === undefined) return;
+
+    if (fieldId === 0) {
+      this.broadcastService.unsubscribeFromTopic(`/topic/display/field/*/command`);
+      this.broadcastService.unsubscribeFromTopic(`/topic/display/field/*/timer`);
+      return;
+    }
+
+    this.broadcastService.unsubscribeFromTopic(`/topic/display/field/${fieldId}/command`);
+    this.broadcastService.unsubscribeFromTopic(`/topic/display/field/${fieldId}/timer`);
   }
 }
