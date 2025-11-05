@@ -30,7 +30,6 @@ public class Main {
 
         scoringService.setSimpMessagingTemplate(simpMessagingTemplate);
         scoringService.init();
-        scoringService.run();
 
         scoringService.registerScoreClass(ScoreSeasonDemo.class);
 

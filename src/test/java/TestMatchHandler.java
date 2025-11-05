@@ -7,7 +7,7 @@ import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
-import org.thingai.app.scoringservice.handler.systembase.MatchHandler;
+import org.thingai.app.scoringservice.handler.entityhandler.MatchHandler;
 import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;

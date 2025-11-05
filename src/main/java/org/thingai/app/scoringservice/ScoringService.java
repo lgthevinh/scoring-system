@@ -4,8 +4,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
+import org.thingai.app.scoringservice.handler.BroadcastHandler;
 import org.thingai.app.scoringservice.handler.LiveScoreHandler;
-import org.thingai.app.scoringservice.handler.systembase.*;
+import org.thingai.app.scoringservice.handler.entityhandler.*;
 import org.thingai.base.Service;
 import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
@@ -34,8 +35,6 @@ public class ScoringService extends Service {
     private static BroadcastHandler broadcastHandler;
 
     private static LiveScoreHandler liveScoreHandler;
-
-    private Class<? extends Score> scoreClass;
 
     public ScoringService() {
 
@@ -70,11 +69,6 @@ public class ScoringService extends Service {
         liveScoreHandler.setBroadcastHandler(broadcastHandler);
     }
 
-    @Override
-    protected void onServiceRun() {
-
-    }
-
     public static AuthHandler authHandler() {
         return authHandler;
     }
@@ -105,7 +99,6 @@ public class ScoringService extends Service {
     }
 
     public void registerScoreClass(Class<? extends Score> scoreClass) {
-        this.scoreClass = scoreClass;
         scoreHandler().setScoreClass(scoreClass);
     }
 }
