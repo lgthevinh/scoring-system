@@ -1,7 +1,7 @@
 package org.thingai.app.scoringservice.dto;
 
 import org.thingai.app.scoringservice.entity.score.Score;
-import org.thingai.app.scoringservice.handler.systembase.ScoreHandler;
+import org.thingai.app.scoringservice.handler.entityhandler.ScoreHandler;
 
 public class ScoreDetailDto {
     private Score baseScore;
