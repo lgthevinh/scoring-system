@@ -168,9 +168,10 @@ public class MatchController {
             int rounds = (int) request.get("rounds");
             String startTime = (String) request.get("startTime");
             int matchDuration = (int) request.get("matchDuration");
+            int fieldCount = (int) request.get("fieldCount");
             List<Map<String, String>> timeBlockMaps = (List<Map<String, String>>) request.get("timeBlocks");
             TimeBlock[] timeBlocks = objectMapper.convertValue(timeBlockMaps, TimeBlock[].class);
-            ScoringService.matchHandler().generateMatchScheduleV2(rounds, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
+            ScoringService.matchHandler().generateMatchScheduleV2(rounds, startTime, matchDuration, fieldCount, timeBlocks, new RequestCallback<Void>() {
                 @Override
                 public void onSuccess(Void result, String successMessage) {
                     future.complete(ResponseEntity.ok(Map.of("message", successMessage)));

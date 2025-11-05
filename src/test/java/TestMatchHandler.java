@@ -60,7 +60,7 @@ public class TestMatchHandler {
     public void testGenerateMatchSchedule() {
         int rounds = 5;
         System.out.println("Generating match schedule for " + rounds + " rounds.");
-        matchHandler.generateMatchScheduleV2(rounds, "11", 5, new TimeBlock[]{}, new RequestCallback<Void>() {
+        matchHandler.generateMatchScheduleV2(rounds, "11", 5,1, new TimeBlock[]{}, new RequestCallback<Void>() {
             @Override
             public void onSuccess(Void responseObject, String message) {
                 System.out.println("Match schedule generated successfully: " + responseObject);

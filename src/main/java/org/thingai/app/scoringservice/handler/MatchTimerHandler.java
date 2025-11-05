@@ -14,14 +14,16 @@ public class MatchTimerHandler {
 
     private int remainingSeconds;
     private String matchId;
+    private int fieldNumber;
     private boolean isRunning;
     private BroadcastHandler broadcastHandler;
 
     private TimerCallback callback;
 
-    public void startTimer(String matchId, int totalSeconds) {
+    public void startTimer(String matchId, int fieldNumber, int totalSeconds) {
         stopTimer();
         this.matchId = matchId;
+        this.fieldNumber = fieldNumber;
         this.remainingSeconds = totalSeconds;
         this.timerTask = scheduler.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
     }
@@ -56,7 +58,7 @@ public class MatchTimerHandler {
 
     private void broadcastTimerUpdate() {
         MatchTimeStatusDto dto = new MatchTimeStatusDto(matchId, remainingSeconds);
-        String topic = "/topic/display/timer/" + matchId;
+        String topic = "/topic/display/field/" + fieldNumber + "/timer";
         broadcastHandler.broadcast(topic, dto, BroadcastMessageType.MATCH_STATUS);
     }
 

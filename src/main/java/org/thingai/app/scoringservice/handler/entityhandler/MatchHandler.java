@@ -288,7 +288,7 @@ public class MatchHandler {
      * - Maps team numbers in the file as 1-based indices into a SHUFFLED team list from DAO.
      * - Keeps existing time generation (start time, duration, TimeBlocks).
      */
-    public void generateMatchScheduleV2(int rounds, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
+    public void generateMatchScheduleV2(int rounds, String startTime, int matchDuration, int fieldCount, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
         ILog.d("MatchHandler", "Generating match schedule V2 with rounds=" + rounds + ", start=" + startTime + ", duration=" + matchDuration + " min");
         try {
             // 1) Load teams and reset schedule-related tables and caches
@@ -327,7 +327,7 @@ public class MatchHandler {
 
             // Small retry to ensure file is fully materialized
             List<String> lines = null;
-            final long deadline = System.currentTimeMillis() + 2000; // up to 2s
+            final long deadline = System.currentTimeMillis() + 2000; // up to 2 s
             while (System.currentTimeMillis() < deadline) {
                 if (Files.exists(schedulePath)) {
                     try {
@@ -356,6 +356,8 @@ public class MatchHandler {
 
             int matchNumber = 1;
             for (ParsedMatch pm : parsedMatches) {
+                int fieldNumber = ((matchNumber - 1) % fieldCount) + 1;
+
                 // Respect time blocks by skipping breaks
                 if (timeBlocks != null) {
                     for (TimeBlock block : timeBlocks) {
@@ -387,7 +389,7 @@ public class MatchHandler {
                 ILog.d("MatchHandler", Arrays.toString(redTeamIds) + " vs " + Arrays.toString(blueTeamIds) + " at " + currentTime.format(timeFormatter));
 
                 // Create the match and scores
-                createMatchInternal(MatchType.QUALIFICATION, matchNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
+                createMatchInternal(MatchType.QUALIFICATION, matchNumber, fieldNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
 
                 // Advance time for next match
                 currentTime = currentTime.plusMinutes(matchDuration);
@@ -489,6 +491,8 @@ public class MatchHandler {
             LocalDateTime currentTime = LocalDateTime.parse(startTime, timeFormatter);
 
             for (int i = 1; i <= numberOfMatches; i++) {
+                int fieldNumber = ((i - 1) % 4) + 1;
+
                 for (TimeBlock block : timeBlocks) {
                     LocalDateTime breakStart = LocalDateTime.parse(block.getStartTime(), timeFormatter);
                     long breakDuration = Long.parseLong(block.getDuration());
@@ -508,7 +512,7 @@ public class MatchHandler {
 
                 ILog.d("MatchHandler", Arrays.toString(redTeamIds) + " vs " + Arrays.toString(blueTeamIds) + " at " + currentTime.format(timeFormatter));
 
-                createMatchInternal(MatchType.QUALIFICATION, i, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
+                createMatchInternal(MatchType.QUALIFICATION, i, fieldNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
 
                 currentTime = currentTime.plusMinutes(matchDuration);
             }
@@ -521,11 +525,12 @@ public class MatchHandler {
         }
     }
 
-    private void createMatchInternal(int matchType, int matchNumber, String matchStartTime, String[] redTeamIds, String[] blueTeamIds) throws Exception {
+    private void createMatchInternal(int matchType, int matchNumber, int field, String matchStartTime, String[] redTeamIds, String[] blueTeamIds) throws Exception {
         Match match = new Match();
         match.setMatchType(matchType);
         match.setMatchNumber(matchNumber);
         match.setMatchStartTime(matchStartTime);
+        match.setFieldNumber(field);
 
         String matchCode = "Q" + matchNumber;
         match.setMatchCode(matchCode);

@@ -67,7 +67,7 @@ public class LiveScoreHandler {
         currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
         currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-        matchTimerHandler.startTimer(currentMatch.getMatch().getId(), 150);
+        matchTimerHandler.startTimer(currentMatch.getMatch().getId(), currentMatch.getMatch().getFieldNumber(), 150);
         callback.onSuccess(true, "Match started");
     }
 

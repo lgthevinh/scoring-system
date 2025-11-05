@@ -11,8 +11,11 @@ public class Event {
     @DaoColumn(name = "name")
     private String name;
 
+    @DaoColumn(name = "eventCode")
+    private String eventCode;
+
     @DaoColumn(name = "fieldCount")
-    private int fieldCount;
+    private int fieldCount = 1;
 
     @DaoColumn(name = "date")
     private String date;
@@ -91,5 +94,13 @@ public class Event {
 
     public void setOrganizer(String organizer) {
         this.organizer = organizer;
+    }
+
+    public String getEventCode() {
+        return eventCode;
+    }
+
+    public void setEventCode(String eventCode) {
+        this.eventCode = eventCode;
     }
 }
