@@ -1,11 +1,50 @@
-INSERT INTO team (id, name, school, region) VALUES
-(1, 'Team Alpha', 'School A', 'North'),
-(2, 'Team Beta', 'School B', 'South'),
-(3, 'Team Gamma', 'School C', 'East'),
-(4, 'Team Delta', 'School D', 'West'),
-(5, 'Team Epsilon', 'School E', 'Central'),
-(6, 'Team Zeta', 'School F', 'North'),
-(7, 'Team Eta', 'School G', 'South'),
-(8, 'Team Theta', 'School H', 'East'),
-(9, 'Team Iota', 'School I', 'West'),
-(10, 'Team Kappa', 'School J', 'Central');
+insert into team (id, name, school, region) values (17913, 'yneylan0', 'Wayridge', 'CA-BC');
+insert into team (id, name, school, region) values (43071, 'ccosins1', 'Loftsgordon', 'VG-U-A');
+insert into team (id, name, school, region) values (18292, 'tgaiter2', 'Roth', 'CA-ON');
+insert into team (id, name, school, region) values (2912, 'bmousby3', 'Portage', 'NP-SE');
+insert into team (id, name, school, region) values (25210, 'daspall4', 'Derek', 'LA-AT');
+insert into team (id, name, school, region) values (44712, 'dantwis5', 'Logan', 'AU-WA');
+insert into team (id, name, school, region) values (16412, 'cfuzzey6', 'Memorial', 'AO-LNO');
+insert into team (id, name, school, region) values (9281, 'awhether7', 'Parkside', 'AU-NSW');
+insert into team (id, name, school, region) values (37911, 'jflintoffe8', 'Tennyson', 'CA-NT');
+insert into team (id, name, school, region) values (39962, 'mkaygill9', 'Commercial', 'US-UT');
+insert into team (id, name, school, region) values (12930, 'ghellekera', 'Dennis', 'BR-GO');
+insert into team (id, name, school, region) values (4543, 'rrissob', 'Mariners Cove', 'FJ-N');
+insert into team (id, name, school, region) values (29956, 'fnaughtonc', 'American', 'CO-VID');
+insert into team (id, name, school, region) values (46293, 'coleahyd', 'Hoard', 'BR-MA');
+insert into team (id, name, school, region) values (10084, 'ihurdwelle', 'Lien', 'IN-UP');
+insert into team (id, name, school, region) values (38478, 'vearryf', 'Stoughton', 'PG-CPM');
+insert into team (id, name, school, region) values (36004, 'msongistg', 'Village', 'RU-KHM');
+insert into team (id, name, school, region) values (49633, 'bbracchih', 'Luster', 'BR-MT');
+insert into team (id, name, school, region) values (1856, 'srusselli', 'Westport', 'AU-QLD');
+insert into team (id, name, school, region) values (35948, 'gmougeotj', 'Aberg', 'PG-ESW');
+insert into team (id, name, school, region) values (3885, 'rbeechenok', 'Walton', 'CA-AB');
+insert into team (id, name, school, region) values (30588, 'mcluneyl', 'Cottonwood', 'EC-A');
+insert into team (id, name, school, region) values (10667, 'mchessellm', 'Di Loreto', 'PG-WPD');
+insert into team (id, name, school, region) values (10268, 'arabbetn', 'Loomis', 'JP-23');
+insert into team (id, name, school, region) values (2705, 'jpueso', 'Kingsford', 'US-WY');
+insert into team (id, name, school, region) values (12441, 'droylep', 'Randy', 'TR-03');
+insert into team (id, name, school, region) values (24103, 'kezzleq', 'Sloan', 'PE-CAJ');
+insert into team (id, name, school, region) values (24258, 'gcresswellr', 'Oxford', 'CA-QC');
+insert into team (id, name, school, region) values (49657, 'kgovers', 'Moland', 'AU-WA');
+insert into team (id, name, school, region) values (10950, 'jlochet', 'Homewood', 'BJ-BO');
+insert into team (id, name, school, region) values (7380, 'eklausewitzu', 'Merchant', 'US-MO');
+insert into team (id, name, school, region) values (1591, 'npleveyv', 'Mockingbird', 'PG-SAN');
+insert into team (id, name, school, region) values (47620, 'crathkew', 'Memorial', 'LA-LP');
+insert into team (id, name, school, region) values (47376, 'emakepeacex', 'Transport', 'ID-NT');
+insert into team (id, name, school, region) values (41328, 'mgaythory', 'Service', 'GP-U-A');
+insert into team (id, name, school, region) values (5551, 'gcrickmoorz', 'Grasskamp', 'VE-F');
+insert into team (id, name, school, region) values (27476, 'bmatthis10', 'Monterey', 'ES-AN');
+insert into team (id, name, school, region) values (21937, 'kbourke11', 'Nelson', 'AU-QLD');
+insert into team (id, name, school, region) values (27060, 'elossman12', 'Alpine', 'RU-IRK');
+insert into team (id, name, school, region) values (28635, 'lwestwood13', 'Banding', 'TR-48');
+insert into team (id, name, school, region) values (20138, 'jdearell14', 'Loftsgordon', 'BR-PI');
+insert into team (id, name, school, region) values (7095, 'jhartill15', 'Roxbury', 'BR-RJ');
+insert into team (id, name, school, region) values (16060, 'amordue16', 'Briar Crest', 'AU-QLD');
+insert into team (id, name, school, region) values (15875, 'eedmand17', 'Merchant', 'ID-JK');
+insert into team (id, name, school, region) values (45070, 'rgaylor18', 'Fieldstone', 'GL-U-A');
+insert into team (id, name, school, region) values (38204, 'daskem19', 'Pawling', 'VU-MAP');
+insert into team (id, name, school, region) values (6873, 'mrowledge1a', 'Erie', 'US-OH');
+insert into team (id, name, school, region) values (23658, 'sdigiacomettino1b', 'Old Gate', 'US-AK');
+insert into team (id, name, school, region) values (1912, 'crheubottom1c', 'Sundown', 'US-IL');
+insert into team (id, name, school, region) values (31820, 'jneville1d', 'Sommers', 'AU-WA');
