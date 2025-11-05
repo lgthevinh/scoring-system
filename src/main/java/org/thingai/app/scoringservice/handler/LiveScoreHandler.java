@@ -56,6 +56,10 @@ public class LiveScoreHandler {
         currentMatch = nextMatch;
         nextMatch = null;
 
+        broadcastHandler.broadcast("/topic/display/field/" + currentMatch.getMatch().getFieldNumber() + "/match/",
+                currentMatch,
+                BroadcastMessageType.MATCH_STATUS);
+
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         LocalDateTime currentTime = LocalDateTime.now();
 
@@ -76,12 +80,12 @@ public class LiveScoreHandler {
 
         if (isRedAlliance) {
             currentRedScoreHolder.fromJson(updatedScoreJson);
-            broadcastHandler.broadcast("/topic/live/alliance/score/" + currentRedScoreHolder.getAllianceId(),
+            broadcastHandler.broadcast("/topic/live/alliance/" + currentRedScoreHolder.getAllianceId() + "/score/",
                     currentRedScoreHolder,
                     BroadcastMessageType.SCORE_UPDATE);
         } else {
             currentBlueScoreHolder.fromJson(updatedScoreJson);
-            broadcastHandler.broadcast("/topic/live/alliance/score/" + currentBlueScoreHolder.getAllianceId(),
+            broadcastHandler.broadcast("/topic/live/alliance/" + currentBlueScoreHolder.getAllianceId() + "/score/",
                     currentBlueScoreHolder,
                     BroadcastMessageType.SCORE_UPDATE);
         }
@@ -140,11 +144,30 @@ public class LiveScoreHandler {
         callback.onSuccess(true, "Match aborted");
     }
 
-    public void initialSyncFrontend(RequestCallback<MatchDetailDto[]> callback) {
+    public void getCurrentPlayingMatches(RequestCallback<MatchDetailDto[]> callback) {
         try {
             callback.onSuccess(new MatchDetailDto[]{currentMatch, nextMatch}, "Initial sync success");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Initial sync failed: " + e.getMessage());
+        }
+    }
+
+    public void getCurrentMatchField(int fieldNumber, RequestCallback<MatchDetailDto> callback) {
+        try {
+            if (fieldNumber == 0) {
+                callback.onSuccess(currentMatch, "Current match field retrieved successfully");
+                return;
+            }
+
+            if (currentMatch != null && currentMatch.getMatch().getFieldNumber() == fieldNumber) {
+                callback.onSuccess(currentMatch, "Current match field retrieved successfully");
+            } else if (nextMatch != null && nextMatch.getMatch().getFieldNumber() == fieldNumber) {
+                callback.onSuccess(nextMatch, "Next match field retrieved successfully");
+            } else {
+                callback.onFailure(ErrorCode.NOT_FOUND, "No match found for field number: " + fieldNumber);
+            }
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to get current match field: " + e.getMessage());
         }
     }
 

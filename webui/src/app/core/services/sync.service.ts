@@ -10,7 +10,11 @@ export class SyncService {
 
   constructor(private http: HttpClient) {}
 
-  syncPlayingMatches(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/playing-matches`);
+  syncPlayingMatches(): Observable<MatchDetailDto[]> {
+    return this.http.get<MatchDetailDto[]>(`${this.apiUrl}/playing-matches`);
+  }
+
+  getCurrentMatchField(fieldNumber: number): Observable<MatchDetailDto> {
+    return this.http.get<MatchDetailDto>(`${this.apiUrl}/current-match/field/${fieldNumber}`);
   }
 }

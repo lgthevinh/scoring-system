@@ -24,127 +24,28 @@ Every message will be a JSON object with two top-level properties:
 }
 ```
 ### Defined Message Types and Payload Formats
-1. **Score Update**
-- Topic: `/topic/scores`
-- Message Type: `SCORE_UPDATE`
-- Description: Sent whenever a score for an alliance is submitted or changed. 
-Example Payload:
-```json
-{
-    "type": "SCORE_UPDATE",
-    "payload": {
-        "allianceId": 1001,
-        "score": {
-            "id": "Q1_R",
-            "status": 1,
-            "totalScore": 125,
-            "penaltiesScore": 15,
-            "rawScoreData": {
-                "robotHanged":1,
-                "robotParked":2,
-                "ballEntered":20,
-                "minorFault":1,
-                "majorFault":1
-            }
-        }
-    }
-}
-```
-
-2. **Current Match Change** 
-- Topic: `/topic/match-state`
-- Type: `CURRENT_MATCH_UPDATE`
-- Description: Sent by an admin or field controller to designate which match is currently active on the main field.
-Example Payload:
-```json
-{
-    "type": "CURRENT_MATCH_UPDATE",
-    "payload": {
-        "match": {
-            "id": "Q2",
-            "matchCode": "Q2",
-            "matchType": 1,
-            "matchNumber": 2,
-            "matchStartTime": "2025-10-18T10:15:00"
-        },
-        "redTeams": [
-            { "teamId": "103", "teamName": "RoboRaiders", "teamSchool": "Tech High" },
-            { "teamId": "104", "teamName": "Circuit Breakers", "teamSchool": "STEM Academy" }
-        ],
-        "blueTeams": [
-            { "teamId": "203", "teamName": "Voltage", "teamSchool": "Innovation High" },
-            { "teamId": "204", "teamName": "MechaKnights", "teamSchool": "Engineering Prep" }
-        ]
-    }
-}
-```
-3. **Match Timer State**
-- Topic: `/topic/match-timer`
-- Type: `MATCH_TIMER_UPDATE`
-- Description: Sent periodically during a match to update the match clock.
-Example Payload:
-```json
-{
-    "type": "MATCH_TIMER_UPDATE",
-    "payload": {
-        "matchId": "Q2",
-        "timeRemaining": 120, // in seconds
-        "state": "IN_PROGRESS" // Possible values: NOT_STARTED, IN_PROGRESS, PAUSED, FINISHED
-    }
-}
-```
-
-## Role-based Message Structure
-
-### Role Definitions
-- **Local**: Full all access, to control and system.
-- **Scorekeeper**: Full access to all messages and can send control messages. But cannot change system settings.
-- **Referee**: Access to match control messages and score updates.
-- **Display**: Read-only access to all messages for display purposes and live update. (Receive only)
-- **Common**: Read-only access to score updates and match status. (Receive only)
-
-1. **Local**
-2. **Scorekeeper**
-3. **Referee**
-- **Live match score update** (Send every change event of score) 
-  - Action: `Publish`
-  - Topic: `/topic/live/scores/{allianceId}`
-  - Payload: 
-```json
-{
-    "id": "Q1_R",
-    "robotHanged":1,
-    "robotParked":2,
-    "ballEntered":20,
-    "minorFault":1,
-    "majorFault":1,
-}
-```
-
-- **Live match update** (Send when current match status is changed)
-  - Action: `Publish`
-  - Topic: `/topic/live/match/{matchId}/state`
+1. **Display**
+- Timer 
+  - Topic `/topic/display/field/{fieldNumber}/timer`
   - Payload:
-```json
-{
-    "payload": {
-        "match": {
-            "id": "Q2",
-            "matchCode": "Q2",
-            "matchType": 1,
-            "matchNumber": 2,
-            "matchStartTime": "2025-10-18T10:15:00"
-        },
-        "redTeams": [
-            { "teamId": "103", "teamName": "RoboRaiders", "teamSchool": "Tech High" },
-            { "teamId": "104", "teamName": "Circuit Breakers", "teamSchool": "STEM Academy" }
-        ],
-        "blueTeams": [
-            { "teamId": "203", "teamName": "Voltage", "teamSchool": "Innovation High" },
-            { "teamId": "204", "teamName": "MechaKnights", "teamSchool": "Engineering Prep" }
-        ]
+    ```json
+    {
+      "type": "FIELD_TIMER",
+      "payload": {
+        "matchId": "Q1",
+        "remainingSeconds": 150
+      }
     }
-}
-```
-4. **Display**
-5. **Common**
+    ```
+- Command
+  - Topic `/topic/display/field/{fieldNumber}/command`
+  - Payload:
+    ```json
+    {
+      "type": "SHOW_SPONSORS" | "SHOW_BLANK" | "SHOW_UPNEXT" | "SHOW_TIMER"
+      "payload": {
+        ...
+      }
+    }
+    ```
+2. **Score**

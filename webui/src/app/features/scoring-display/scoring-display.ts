@@ -2,6 +2,9 @@ import { Component, OnDestroy, OnInit, signal, WritableSignal } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {BroadcastService} from "../../core/services/broadcast.service";
+import {FieldDisplayCommand} from '../../core/define/FieldDisplayCommand';
+import {SyncService} from '../../core/services/sync.service';
+import {Team} from '../../core/models/team.model';
 
 @Component({
   selector: 'app-field-display',
@@ -17,8 +20,8 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   running: WritableSignal<boolean> = signal(false);
 
   // Teams and scores (placeholder values; wire to your services later)
-  redTeams: WritableSignal<string[]> = signal(["Team 1", "Team 2", "Team 3"]);
-  blueTeams: WritableSignal<string[]> = signal(["Team 4", "Team 5", "Team 6"]);
+  redTeams: WritableSignal<Team[]> = signal([]);
+  blueTeams: WritableSignal<Team[]> = signal([]);
   redScore: WritableSignal<number> = signal(0);
   blueScore: WritableSignal<number> = signal(0);
 
@@ -33,6 +36,7 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   fieldBindValue: number = 0;
 
   constructor(
+    private syncService: SyncService,
     private broadcastService: BroadcastService
   ) {}
 
@@ -47,6 +51,19 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
+    this.syncService.getCurrentMatchField(0).subscribe({
+      next: (match) => {
+        console.log("Fetched current match field data:", match);
+
+        if (match !== null) {
+          this.redTeams.set(match.redTeams);
+          this.blueTeams.set(match.blueTeams);
+        }},
+      error: (err) => {
+        console.error("Error fetching current match field data:", err.message);
+      }
+    })
+
     this.broadcastService.subscribeToTopic("topic/display/field/*/command").subscribe({
       next: (msg) => {
         console.debug("FieldDisplay received message:", msg);
@@ -237,6 +254,11 @@ export class ScoringDisplay implements OnInit, OnDestroy {
     this.broadcastService.subscribeToTopic(timerTopic).subscribe({
       next: (msg) => {
         console.debug("FieldDisplay received message:", msg);
+        if (msg.payload.command === FieldDisplayCommand.SHOW_TIMER ) {
+          console.log("FieldDisplay SHOW_TIMER command received");
+
+
+        }
       },
       error: (err) => {
         console.error("FieldDisplay message error:", err);

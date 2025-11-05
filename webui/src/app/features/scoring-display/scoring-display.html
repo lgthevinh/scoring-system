@@ -24,7 +24,9 @@
       <!-- Bottom dock (overlaps under timer) -->
       <div class="dock">
         <div class="dock-cell dock-red-list">
-          <div class="team" *ngFor="let t of redTeams()">{{ t }}</div>
+          @for (team of redTeams(); track team.teamId) {
+            <div class="team" >{{ team.teamId }}</div>
+          }
         </div>
         <div class="dock-cell dock-red-score">
           <div class="score">{{ redScore() }}</div>
@@ -33,7 +35,9 @@
           <div class="score">{{ blueScore() }}</div>
         </div>
         <div class="dock-cell dock-blue-list">
-          <div class="team" *ngFor="let t of blueTeams()">{{ t }}</div>
+          @for (team of blueTeams(); track team.teamId) {
+            <div class="team" >{{ team.teamId }}</div>
+          }
         </div>
       </div>
     </div>
