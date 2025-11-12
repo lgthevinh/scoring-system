@@ -1,0 +1,11 @@
+root {
+  --red: #ff4b4b;
+  --blue: #4b6aff;
+  --green: #4bff4b;
+  --yellow: #ffff4b;
+  --background-color: #1e1e1e;
+  --text-color: #f0f0f0;
+  --button-color: #333333;
+  --button-hover-color: #444444;
+  --border-color: #555555;
+}

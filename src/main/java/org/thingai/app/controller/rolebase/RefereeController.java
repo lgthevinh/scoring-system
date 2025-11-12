@@ -7,11 +7,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/api/referee")
+@RequestMapping("/api/ref")
 public class RefereeController {
 
-    @GetMapping("/match/available")
-    public RequestEntity<Object> getAvailableMatches(@RequestParam(name = "color", required = true) boolean isRed) {
+    @GetMapping("/{field}/available-matches")
+    public RequestEntity<Object> getAvailableMatches(
+            @RequestParam(name = "color", required = true) boolean isRed,
+            @PathVariable String field
+    ) {
         if (isRed) {
 
         } else {

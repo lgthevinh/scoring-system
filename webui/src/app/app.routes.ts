@@ -8,6 +8,8 @@ import {CreateAccount} from './features/event-dashboard/create-account/create-ac
 import {ManageTeam} from './features/event-dashboard/manage-team/manage-team';
 import {GenerateSchedule} from './features/event-dashboard/generate-schedule/generate-schedule';
 import {ScoringDisplay} from './features/scoring-display/scoring-display';
+import {BlueAlliance} from './features/score-tracking/blue-alliance/blue-alliance';
+import {RedAlliance} from './features/score-tracking/red-alliance/red-alliance';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -19,6 +21,9 @@ export const routes: Routes = [
   { path: 'event-dashboard/generate-schedule', component: GenerateSchedule },
 
   { path: 'display', component: ScoringDisplay },
+
+  { path: 'ref/blue', component: BlueAlliance },
+  { path: 'ref/red', component: RedAlliance },
 
   { path: 'match-control', component: MatchControl }
 ];
