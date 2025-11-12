@@ -19,7 +19,7 @@ export class BroadcastService implements OnDestroy {
     const brokerUrl: string = environment.production ? ('ws://' + window.location.host + '/ws') : ('ws://localhost:9090/ws');
     this.client = new Client({
       brokerURL: brokerUrl,
-      debug: (str) => { console.log(new Date(), str); },
+      debug: (str) => { console.debug(new Date(), str); },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,

@@ -64,26 +64,7 @@ export class ScoringDisplay implements OnInit, OnDestroy {
       }
     })
 
-    this.broadcastService.subscribeToTopic("topic/display/field/*/command").subscribe({
-      next: (msg) => {
-        console.debug("FieldDisplay received message:", msg);
-      },
-      error: (err) => {
-        console.error("FieldDisplay message error:", err);
-      }
-    });
-
-    this.broadcastService.subscribeToTopic("/topic/display/field/*/timer").subscribe({
-      next: (msg) => {
-        console.log("FieldDisplay received timer message:", msg);
-        if (msg.payload && msg.payload.remainingSeconds !== undefined) {
-          this.timeLeft.set(msg.payload.remainingSeconds);
-        }
-      },
-      error: (err) => {
-        console.error("FieldDisplay timer message error:", err);
-      }
-    });
+    this.subscribeToFieldTopic(0);
 
     // Notify that the field display is active
     this.resetHideTimer();
@@ -164,6 +145,20 @@ export class ScoringDisplay implements OnInit, OnDestroy {
     // Unsubscribe from all previous field topics
     this.broadcastService.unsubscribeAll();
     this.subscribeToFieldTopic(this.fieldBindValue!);
+
+    this.syncService.getCurrentMatchField(this.fieldBindValue).subscribe({
+      next: (match) => {
+        console.log("Fetched current match field data:", match);
+
+        if (match !== null) {
+          this.redTeams.set(match.redTeams);
+          this.blueTeams.set(match.blueTeams);
+        }
+      },
+      error: (err) => {
+        console.error("Error fetching current match field data:", err.message);
+      }
+    });
   }
 
   // ======================================
@@ -251,13 +246,14 @@ export class ScoringDisplay implements OnInit, OnDestroy {
       commandTopic = `/topic/display/field/${fieldId}/command`;
     }
 
-    this.broadcastService.subscribeToTopic(timerTopic).subscribe({
+    this.broadcastService.subscribeToTopic(commandTopic).subscribe({
       next: (msg) => {
-        console.debug("FieldDisplay received message:", msg);
-        if (msg.payload.command === FieldDisplayCommand.SHOW_TIMER ) {
+        console.log("FieldDisplay received message:", msg);
+        if (msg.type === FieldDisplayCommand.SHOW_TIMER ) {
           console.log("FieldDisplay SHOW_TIMER command received");
 
-
+          this.redTeams.set(msg.payload.redTeams);
+          this.blueTeams.set(msg.payload.blueTeams);
         }
       },
       error: (err) => {
@@ -265,9 +261,9 @@ export class ScoringDisplay implements OnInit, OnDestroy {
       }
     });
 
-    this.broadcastService.subscribeToTopic(commandTopic).subscribe({
+    this.broadcastService.subscribeToTopic(timerTopic).subscribe({
       next: (msg) => {
-        console.log("FieldDisplay received timer message:", msg);
+        console.debug("FieldDisplay received timer message:", msg);
         if (msg.payload && msg.payload.remainingSeconds !== undefined) {
           this.timeLeft.set(msg.payload.remainingSeconds);
         }

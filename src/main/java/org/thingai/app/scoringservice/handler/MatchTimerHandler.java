@@ -16,7 +16,6 @@ public class MatchTimerHandler {
     private String matchId;
     private int fieldNumber;
     private boolean isRunning;
-    private BroadcastHandler broadcastHandler;
 
     private TimerCallback callback;
 
@@ -43,35 +42,26 @@ public class MatchTimerHandler {
     public void stopTimer() {
         isRunning = false;
         if (timerTask != null) timerTask.cancel(true);
-        broadcastTimerUpdate();
+        callback.onTimerUpdated(matchId, String.valueOf(fieldNumber), remainingSeconds);
     }
 
     private void tick() {
         if (remainingSeconds > 0) {
             remainingSeconds--;
-            broadcastTimerUpdate();
+            callback.onTimerUpdated(matchId, String.valueOf(fieldNumber), remainingSeconds);
         } else {
             stopTimer();
             callback.onTimerEnded(matchId);
         }
     }
 
-    private void broadcastTimerUpdate() {
-        MatchTimeStatusDto dto = new MatchTimeStatusDto(matchId, remainingSeconds);
-        String topic = "/topic/display/field/" + fieldNumber + "/timer";
-        broadcastHandler.broadcast(topic, dto, BroadcastMessageType.MATCH_STATUS);
-    }
-
     public void setCallback(TimerCallback callback) {
         this.callback = callback;
     }
 
-    public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
-        this.broadcastHandler = broadcastHandler;
-    }
-
     public interface TimerCallback {
         void onTimerEnded(String matchId);
+        void onTimerUpdated(String matchId, String fieldNumber, int remainingSeconds);
     }
 }
 
