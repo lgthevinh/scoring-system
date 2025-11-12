@@ -1,0 +1,14 @@
+.selection-container {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.match-card {
+  border-width: 2px;
+  padding: 0.9rem 1.2rem;
+  font-size: 1.15rem;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
