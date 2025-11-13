@@ -1,0 +1,28 @@
+<div class="container w-75 my-3">
+  <div class="d-flex justify-content-center align-items-center my-3 p-3 rounded-3 bg-danger">
+    <span class="text-center fw-semibold fs-3 text-white">Match Selection</span>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center my-4">
+      <div class="spinner-border text-primary" role="status" aria-label="Loading"></div>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-warning text-center">{{ error() }}</div>
+  } @else if (matches().length) {
+    <div class="vstack gap-3">
+      @for (m of matches(); track m) {
+        @if (m != null) {
+          <a class="btn btn-outline-primary w-100 py-2"
+             [routerLink]="['/ref/', 'red', m.match.id]">
+            <span class="fw-semibold">Match {{ m.match.matchCode }}</span>
+            <span class="ms-3">Red Teams:</span>
+            <span class="ms-2">{{ redTeamLine(m) }}</span>
+          </a>
+        }
+      }
+    </div>
+  } @else {
+    <p class="text-center text-muted">No active match at this time</p>
+  }
+</div>
