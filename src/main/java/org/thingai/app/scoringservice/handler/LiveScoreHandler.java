@@ -3,6 +3,7 @@ package org.thingai.app.scoringservice.handler;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.define.ErrorCode;
+import org.thingai.app.scoringservice.dto.LiveScoreUpdateDto;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.dto.MatchTimeStatusDto;
 import org.thingai.app.scoringservice.entity.score.Score;
@@ -83,17 +84,19 @@ public class LiveScoreHandler {
         callback.onSuccess(true, "Match started");
     }
 
-    public void handleLiveScoreUpdate(String updatedScoreJson, boolean isRedAlliance) {
-        ILog.d(TAG, "Live Score Update Received: " + updatedScoreJson);
+    public void handleLiveScoreUpdate(LiveScoreUpdateDto liveScoreUpdate, boolean isRedAlliance) {
+        ILog.d(TAG, "Live Score Update Received: " + liveScoreUpdate);
 
         if (isRedAlliance) {
-            currentRedScoreHolder.fromJson(updatedScoreJson);
-            broadcastHandler.broadcast("/topic/live/alliance/" + currentRedScoreHolder.getAllianceId() + "/score",
+            currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
+            currentRedScoreHolder.calculateTotalScore();
+            broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/red",
                     currentRedScoreHolder,
                     BroadcastMessageType.SCORE_UPDATE);
         } else {
-            currentBlueScoreHolder.fromJson(updatedScoreJson);
-            broadcastHandler.broadcast("/topic/live/alliance/" + currentBlueScoreHolder.getAllianceId() + "/score",
+            currentBlueScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
+            currentBlueScoreHolder.calculateTotalScore();
+            broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/blue",
                     currentBlueScoreHolder,
                     BroadcastMessageType.SCORE_UPDATE);
         }
