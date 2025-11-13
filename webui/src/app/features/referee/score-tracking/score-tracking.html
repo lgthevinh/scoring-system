@@ -1,0 +1,90 @@
+<div class="container st-container my-3">
+  <!-- Title -->
+  <div class="d-flex justify-content-center align-items-center my-3 p-3 rounded-3"
+       [class.bg-danger]="color === 'red'"
+       [class.bg-primary]="color === 'blue'">
+    <span class="text-center fw-semibold fs-4 text-white">{{ titleText() }}</span>
+  </div>
+
+  @if (loading()) {
+    <div class="d-flex justify-content-center my-4">
+      <div class="spinner-border text-primary" role="status" aria-label="Loading"></div>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-warning text-center">{{ error() }}</div>
+  } @else if (match()) {
+    <!-- Match summary -->
+    <div class="summary card mb-3">
+      <div class="card-body d-flex flex-wrap gap-3 justify-content-center">
+        <div><span class="text-muted me-2">Match:</span><span class="fw-semibold">{{ match()?.match?.matchCode }}</span></div>
+        @if (color === 'red') {
+          <div><span class="badge bg-danger me-2">Red</span><span class="fw-semibold">{{ redTeamLine() }}</span></div>
+        } @else {
+          <div><span class="badge bg-primary me-2">Blue</span><span class="fw-semibold">{{ blueTeamLine() }}</span></div>
+        }
+      </div>
+    </div>
+
+    <!-- Single-phase counters -->
+    <div class="row g-4">
+      <div class="col-12 col-md-6">
+        <div class="section-card">
+          <div class="section-title">Robot</div>
+
+          <div class="counter-row">
+            <div class="label">Parked</div>
+            <div class="counter">
+              <button class="btn-minus" (click)="dec('robotParked')">−</button>
+              <div class="value">{{ counters.robotParked() }}</div>
+              <button class="btn-plus" (click)="inc('robotParked')">+</button>
+            </div>
+          </div>
+
+          <div class="counter-row">
+            <div class="label">Hanged</div>
+            <div class="counter">
+              <button class="btn-minus" (click)="dec('robotHanged')">−</button>
+              <div class="value">{{ counters.robotHanged() }}</div>
+              <button class="btn-plus" (click)="inc('robotHanged')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-6">
+        <div class="section-card">
+          <div class="section-title">Game Actions</div>
+
+          <div class="counter-row">
+            <div class="label">Items Scored</div>
+            <div class="counter">
+              <button class="btn-minus" (click)="dec('ballEntered')">−</button>
+              <div class="value">{{ counters.ballEntered() }}</div>
+              <button class="btn-plus" (click)="inc('ballEntered')">+</button>
+            </div>
+          </div>
+
+          <div class="counter-row">
+            <div class="label">Minor Fault</div>
+            <div class="counter">
+              <button class="btn-minus" (click)="dec('minorFault')">−</button>
+              <div class="value">{{ counters.minorFault() }}</div>
+              <button class="btn-plus" (click)="inc('minorFault')">+</button>
+            </div>
+          </div>
+
+          <div class="counter-row">
+            <div class="label">Major Fault</div>
+            <div class="counter">
+              <button class="btn-minus" (click)="dec('majorFault')">−</button>
+              <div class="value">{{ counters.majorFault() }}</div>
+              <button class="btn-plus" (click)="inc('majorFault')">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <p class="text-center text-muted">Match not found: {{ matchId }}</p>
+  }
+</div>

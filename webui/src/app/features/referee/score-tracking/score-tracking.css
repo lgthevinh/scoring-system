@@ -1,0 +1,56 @@
+.st-container { max-width: 980px; margin: 0 auto; }
+
+.summary .badge { vertical-align: middle; }
+
+.section-card {
+  background: #fff;
+  border: 1px solid #e6e9ef;
+  border-radius: .75rem;
+  padding: 1rem .9rem;
+}
+
+.section-title {
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: .5px;
+  color: #334155;
+  margin-bottom: .5rem;
+}
+
+.counter-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: .75rem;
+  padding: .5rem 0;
+}
+
+.label { font-weight: 600; color: #475569; }
+
+.counter {
+  display: inline-grid;
+  grid-auto-flow: column;
+  align-items: center;
+  border-radius: .6rem;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.btn-minus, .btn-plus {
+  border: 0;
+  outline: 0;
+  padding: .45rem .7rem;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btn-minus { background: #e5e7eb; color: #111827; }
+.btn-plus  { background: #0d6efd; color: #fff; }
+
+.value {
+  min-width: 3.2rem;
+  text-align: center;
+  background: #fff;
+  font-weight: 700;
+}
