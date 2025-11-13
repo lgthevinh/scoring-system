@@ -21,9 +21,13 @@ export class RedAlliance implements OnInit {
   ngOnInit(): void {
     this.syncService.syncPlayingMatches().subscribe({
       next: (list) => {
-        this.matches.set(list || []);
+
+        // Remove nulls just in case
+        const filtered = list.filter(m => m !== null) as MatchDetailDto[];
+        this.matches.set(filtered);
+
         this.loading.set(false);
-        console.log('RedAlliance playing matches:', list);
+        console.log('RedAlliance playing matches:', list.length);
       },
       error: (err) => {
         this.error.set(err?.error?.message || 'Failed to load playing matches.');

@@ -237,13 +237,19 @@ export class ScoringDisplay implements OnInit, OnDestroy {
 
     let timerTopic: string;
     let commandTopic: string;
+    let scoreTopicRed: string;
+    let scoreTopicBlue: string;
 
     if (fieldId === 0) {
       timerTopic = `/topic/display/field/*/timer`;
       commandTopic = `/topic/display/field/*/command`;
+      scoreTopicRed = `/topic/live/field/*/score/red`;
+      scoreTopicBlue = `/topic/live/field/*/score/blue`;
     } else {
       timerTopic = `/topic/display/field/${fieldId}/timer`;
       commandTopic = `/topic/display/field/${fieldId}/command`;
+      scoreTopicRed = `/topic/live/field/${fieldId}/score/red`;
+      scoreTopicBlue = `/topic/live/field/${fieldId}/score/blue`;
     }
 
     this.broadcastService.subscribeToTopic(commandTopic).subscribe({
@@ -272,6 +278,30 @@ export class ScoringDisplay implements OnInit, OnDestroy {
         console.error("FieldDisplay timer message error:", err);
       }
     });
+
+    this.broadcastService.subscribeToTopic(scoreTopicRed).subscribe({
+      next: (msg) => {
+        console.debug("FieldDisplay received score message:", msg);
+        if (msg.payload) {
+          this.redScore.set(msg.payload.totalScore);
+        }
+      },
+      error: (err) => {
+        console.error("FieldDisplay score message error:", err);
+      }
+    });
+
+    this.broadcastService.subscribeToTopic(scoreTopicBlue).subscribe({
+      next: (msg) => {
+        console.debug("FieldDisplay received score message:", msg);
+        if (msg.payload) {
+          this.blueScore.set(msg.payload.totalScore);
+        }
+      },
+      error: (err) => {
+        console.error("FieldDisplay score message error:", err);
+      }
+    });
   }
 
   private unsubscribeFromFieldTopic(fieldId: number) {
@@ -280,10 +310,15 @@ export class ScoringDisplay implements OnInit, OnDestroy {
     if (fieldId === 0) {
       this.broadcastService.unsubscribeFromTopic(`/topic/display/field/*/command`);
       this.broadcastService.unsubscribeFromTopic(`/topic/display/field/*/timer`);
+      this.broadcastService.unsubscribeFromTopic(`/topic/live/field/*/score`);
+      this.broadcastService.unsubscribeFromTopic(`/topic/live/field/*/score/red`);
+      this.broadcastService.unsubscribeFromTopic(`/topic/live/field/*/score/blue`);
       return;
     }
 
     this.broadcastService.unsubscribeFromTopic(`/topic/display/field/${fieldId}/command`);
     this.broadcastService.unsubscribeFromTopic(`/topic/display/field/${fieldId}/timer`);
+    this.broadcastService.unsubscribeFromTopic(`/topic/live/field/${fieldId}/score/red`);
+    this.broadcastService.unsubscribeFromTopic(`/topic/live/field/${fieldId}/score/blue`);
   }
 }

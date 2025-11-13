@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { SyncService } from '../../../core/services/sync.service';
 import { MatchDetailDto } from '../../../core/models/match.model';
+import {BroadcastService} from '../../../core/services/broadcast.service';
 
 type CounterKey =
   | 'robotParked'
@@ -47,7 +48,11 @@ export class ScoreTracking implements OnInit, OnDestroy {
 
   private sub: any;
 
-  constructor(private route: ActivatedRoute, private sync: SyncService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private sync: SyncService,
+    private broadcastService: BroadcastService
+  ) {}
 
   ngOnInit(): void {
     this.sub = this.route.paramMap.subscribe(params => {
@@ -144,6 +149,7 @@ export class ScoreTracking implements OnInit, OnDestroy {
     const snapshot = this.buildFullSnapshot(reason, key, value);
 
     // TODO: Publish snapshot in realtime
+    this.broadcastService.publishMessage(`/app/live/score/update/${this.color}`, snapshot);
     // Option A (WebSocket/STOMP):
     //   this.broadcastService.send('/app/live-score/update', snapshot);
     // Option B (HTTP PATCH):
@@ -168,7 +174,7 @@ export class ScoreTracking implements OnInit, OnDestroy {
         state: {
           robotParked: this.counters.robotParked(),
           robotHanged: this.counters.robotHanged(),
-          itemsScored: this.counters.ballEntered(),
+          ballEntered: this.counters.ballEntered(),
           minorFault: this.counters.minorFault(),
           majorFault: this.counters.majorFault()
         },

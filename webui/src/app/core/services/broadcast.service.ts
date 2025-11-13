@@ -95,6 +95,11 @@ export class BroadcastService implements OnDestroy {
     return topicSubject.asObservable();
   }
 
+  subscribeToTopics(topics: string[]): Observable<BroadcastMessage> {
+    topics.forEach(topic => this.subscribeToTopicInternal(topic));
+    return this.messages$;
+  }
+
   unsubscribeFromTopic(topic: string) {
     const subscription = this.subscriptions.get(topic);
     if (subscription) {
@@ -110,6 +115,18 @@ export class BroadcastService implements OnDestroy {
     this.subscriptions.forEach(sub => sub.unsubscribe());
     this.subscriptions.clear();
     console.log("STOMP: Unsubscribed from all topics.");
+  }
+
+  publishMessage(topic: string, message: BroadcastMessage) {
+    if (this.client && this.client.connected) {
+      this.client.publish({
+        destination: topic,
+        body: JSON.stringify(message)
+      });
+      console.log(`STOMP: Published message to ${topic}`, message);
+    } else {
+      console.error("STOMP: Cannot publish message, client not connected.");
+    }
   }
 
   ngOnDestroy() {

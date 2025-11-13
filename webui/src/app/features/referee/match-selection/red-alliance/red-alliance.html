@@ -9,7 +9,7 @@
     </div>
   } @else if (error()) {
     <div class="alert alert-warning text-center">{{ error() }}</div>
-  } @else if (matches().length) {
+  } @else if (matches().length > 0) {
     <div class="vstack gap-3">
       @for (m of matches(); track m) {
         @if (m != null) {
