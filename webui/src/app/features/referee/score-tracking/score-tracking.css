@@ -43,14 +43,24 @@
   font-weight: 800;
   font-size: 1rem;
   cursor: pointer;
+  transition: background .15s;
 }
 
 .btn-minus { background: #e5e7eb; color: #111827; }
+.btn-minus:disabled { opacity: .5; }
+
 .btn-plus  { background: #0d6efd; color: #fff; }
+.btn-plus:disabled { opacity: .5; }
 
 .value {
   min-width: 3.2rem;
   text-align: center;
   background: #fff;
   font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: .5px;
 }
+
+.action-bar button { min-width: 140px; }
+.action-bar .btn-primary:disabled,
+.action-bar .btn-danger:disabled { opacity: .6; }
