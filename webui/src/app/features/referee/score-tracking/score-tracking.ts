@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, signal, WritableSignal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { SyncService } from '../../../core/services/sync.service';
 import { MatchDetailDto } from '../../../core/models/match.model';
@@ -51,7 +51,8 @@ export class ScoreTracking implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private sync: SyncService,
-    private broadcastService: BroadcastService
+    private broadcastService: BroadcastService,
+    private location: Location
   ) {}
 
   ngOnInit(): void {
@@ -137,24 +138,20 @@ export class ScoreTracking implements OnInit, OnDestroy {
       this.submitMessage.set('Score submitted (placeholder). Implement backend.');
       setTimeout(() => this.submitMessage.set(''), 4000);
     }, 600);
+
+    // TODO: navigate back to match list or another page if needed
+    this.location.back();
   }
 
   /**
-   * Re-implemented onScoreUpdate to send FULL SNAPSHOT each time.
-   * This is more robust on local networks and with few referee devices.
-   *
-   * TODO: Publish snapshot over WebSocket (BroadcastService) or HTTP PATCH to your live-update endpoint.
+   * Handle score updates by broadcasting a full snapshot, so receivers can stay in sync.
+   * @param reason
+   * @param key
+   * @param value
    */
   onScoreUpdate(reason: UpdateReason, key: CounterKey, value: number) {
     const snapshot = this.buildFullSnapshot(reason, key, value);
-
-    // TODO: Publish snapshot in realtime
     this.broadcastService.publishMessage(`/app/live/score/update/${this.color}`, snapshot);
-    // Option A (WebSocket/STOMP):
-    //   this.broadcastService.send('/app/live-score/update', snapshot);
-    // Option B (HTTP PATCH):
-    //   this.http.patch('/api/score/live-update', snapshot.payload).subscribe(...)
-    // Option C (Server-Sent Events not needed for upstream).
     console.debug('[LIVE_SCORE_SNAPSHOT]', snapshot);
   }
 

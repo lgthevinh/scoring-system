@@ -80,12 +80,24 @@ public class LiveScoreHandler {
         currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
         currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
+        broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/red",
+                currentRedScoreHolder,
+                BroadcastMessageType.SCORE_UPDATE);
+
+        broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/blue",
+                currentBlueScoreHolder,
+                BroadcastMessageType.SCORE_UPDATE);
+
         matchTimerHandler.startTimer(currentMatch.getMatch().getId(), currentMatch.getMatch().getFieldNumber(), 150);
         callback.onSuccess(true, "Match started");
     }
 
     public void handleLiveScoreUpdate(LiveScoreUpdateDto liveScoreUpdate, boolean isRedAlliance) {
         ILog.d(TAG, "Live Score Update Received: " + liveScoreUpdate);
+        if (liveScoreUpdate.payload.matchId == null || !liveScoreUpdate.payload.matchId.equals(currentMatch.getMatch().getId())) {
+            ILog.d(TAG, "Live score update match ID does not match current match ID");
+            return;
+        }
 
         if (isRedAlliance) {
             currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());

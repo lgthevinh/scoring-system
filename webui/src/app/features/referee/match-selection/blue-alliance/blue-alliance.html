@@ -15,9 +15,9 @@
         @if (m != null) {
           <a class="btn btn-outline-primary w-100 py-2"
              [routerLink]="['/ref/', 'blue', m.match.id]">
-            <span class="fw-semibold text-primary">Match {{ m.match.matchCode }}</span>
-            <span class="ms-3 text-muted">Blue Teams:</span>
-            <span class="ms-2 text-primary">{{ blueTeamLine(m) }}</span>
+            <span class="fw-semibold">Match {{ m.match.matchCode }}</span>
+            <span class="ms-3">Blue Teams:</span>
+            <span class="ms-2">{{ blueTeamLine(m) }}</span>
           </a>
         }
       }
