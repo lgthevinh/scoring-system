@@ -28,6 +28,9 @@ public class LiveScoreHandler {
     private static Score currentRedScoreHolder;
     private static Score currentBlueScoreHolder;
 
+    private static boolean isRedCommitable = false;
+    private static boolean isBlueCommitable = false;
+
     public LiveScoreHandler(MatchHandler matchHandler, ScoreHandler scoreHandler) {
         this.matchHandler = matchHandler;
         this.scoreHandler = scoreHandler;
@@ -115,6 +118,11 @@ public class LiveScoreHandler {
     }
 
     public void commitFinalScore(RequestCallback<Score[]> callback) {
+        if (!isRedCommitable || !isBlueCommitable) {
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Scores are not commitable yet");
+            return;
+        }
+
         final Score[] result = new Score[2];
         scoreHandler.submitScore(currentBlueScoreHolder, true, new RequestCallback<Score>() {;
             @Override
@@ -147,6 +155,9 @@ public class LiveScoreHandler {
         // Update next match to current match
         currentMatch = nextMatch;
         nextMatch = null;
+
+        isRedCommitable = false;
+        isBlueCommitable = false;
     }
 
     /**
@@ -198,5 +209,47 @@ public class LiveScoreHandler {
     public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
         ILog.d(TAG, "Broadcast Handler: " + broadcastHandler);
         this.broadcastHandler = broadcastHandler;
+    }
+
+    public void handleScoreSubmission(boolean isRed, String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
+        // Check if allianceId matches current match
+        String currentAllianceId;
+        boolean isCommited;
+        if (isRed) {
+            currentAllianceId = currentRedScoreHolder.getAllianceId();
+            isCommited = isRedCommitable;
+        } else {
+            currentAllianceId = currentBlueScoreHolder.getAllianceId();
+            isCommited = isBlueCommitable;
+        }
+
+        if (!allianceId.equals(currentAllianceId) && isCommited) {
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Current alliance is not commitable");
+            return;
+        }
+
+        try {
+            Score submittedScore = ScoreHandler.factoryScore();
+            submittedScore.setAllianceId(allianceId);
+            submittedScore.fromJson(jsonScoreData);
+            submittedScore.calculateTotalScore();
+            submittedScore.calculatePenalties();
+
+            // Update current score holder
+            if (isRed) {
+                currentRedScoreHolder = submittedScore;
+                isRedCommitable = true;
+            } else {
+                currentBlueScoreHolder = submittedScore;
+                isBlueCommitable = true;
+            }
+
+            ILog.d(TAG, "Score submission received for alliance " + allianceId + ": Total=" + submittedScore.getTotalScore() + ", Penalties=" + submittedScore.getPenaltiesScore());
+
+            callback.onSuccess(true, "Score submission processed successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to process score submission: " + e.getMessage());
+        }
     }
 }
