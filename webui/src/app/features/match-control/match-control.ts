@@ -178,8 +178,14 @@ export class MatchControl implements OnInit {
 
   commitAndPostLastMatch() {
     this.scorekeeper.commitFinalScore().subscribe({
-      next: () => console.debug('Committed last match results'),
-      error: (e) => console.error('Failed to commit last match', e)
+      next: () => {
+        console.debug('Committed last match results')
+        alert('Successfully committed last match results');
+      },
+      error: (e) => {
+        console.error('Failed to commit last match', e)
+        alert('Failed to commit last match results');
+      }
     });
   }
 

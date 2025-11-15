@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { SyncService } from '../../../core/services/sync.service';
 import { MatchDetailDto } from '../../../core/models/match.model';
 import {BroadcastService} from '../../../core/services/broadcast.service';
+import {RefereeService} from '../../../core/services/referee.service';
 
 type CounterKey =
   | 'robotParked'
@@ -24,6 +25,7 @@ type UpdateReason = 'inc' | 'dec' | 'reset' | 'init';
 export class ScoreTracking implements OnInit, OnDestroy {
   color: 'red' | 'blue' = 'red';
   matchId = '';
+  allianceId = '';
 
   loading: WritableSignal<boolean> = signal(true);
   error: WritableSignal<string | null> = signal(null);
@@ -52,6 +54,7 @@ export class ScoreTracking implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private sync: SyncService,
     private broadcastService: BroadcastService,
+    private refereeService: RefereeService,
     private location: Location
   ) {}
 
@@ -60,6 +63,7 @@ export class ScoreTracking implements OnInit, OnDestroy {
       const colorParam = (params.get('color') || 'red').toLowerCase();
       this.color = (colorParam === 'blue' ? 'blue' : 'red');
       this.matchId = params.get('matchId') || '';
+      this.allianceId = this.color === 'red' ? this.matchId + "_R" : this.matchId + "_B";
       this.fetchMatch();
     });
   }
@@ -129,18 +133,19 @@ export class ScoreTracking implements OnInit, OnDestroy {
     this.submitting.set(true);
     this.submitMessage.set('');
 
-    const payload = this.buildFullSnapshot('init', 'ballEntered', this.counters.ballEntered());
-    // TODO: Replace with backend submit (finalize) call
-    console.log('[ScoreTracking] Submit placeholder payload:', payload);
-
-    setTimeout(() => {
-      this.submitting.set(false);
-      this.submitMessage.set('Score submitted (placeholder). Implement backend.');
-      setTimeout(() => this.submitMessage.set(''), 4000);
-    }, 600);
-
-    // TODO: navigate back to match list or another page if needed
-    this.location.back();
+    const payload = this.buildScorePayload();
+    this.refereeService.submitFinalScore(this.color, this.allianceId, payload).subscribe({
+      next: (res) => {
+        this.submitting.set(false);
+        this.submitMessage.set('Score submitted successfully.');
+        setTimeout(() => this.submitMessage.set(''), 4000);
+      },
+      error: (err) => {
+        this.submitting.set(false);
+        this.submitMessage.set('Failed to submit score: ' + (err?.error?.message || 'Unknown error'));
+        setTimeout(() => this.submitMessage.set(''), 6000);
+      }
+    });
   }
 
   /**
@@ -178,6 +183,16 @@ export class ScoreTracking implements OnInit, OnDestroy {
         lastChange: { key, reason, value }
       }
     };
+  }
+
+  private buildScorePayload() {
+    return {
+      robotParked: this.counters.robotParked(),
+      robotHanged: this.counters.robotHanged(),
+      ballEntered: this.counters.ballEntered(),
+      minorFault: this.counters.minorFault(),
+      majorFault: this.counters.majorFault()
+    }
   }
 
   // Generate or retrieve a stable device id for auditing

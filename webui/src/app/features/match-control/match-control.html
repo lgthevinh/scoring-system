@@ -180,14 +180,12 @@
                 <th class="text-start">Match</th>
                 <th>Field</th>
                 <th>State</th>
-                <th>Red Score</th>
                 <th>Red 1</th>
                 <th>Red 2</th>
                 <th>Red 3</th>
                 <th>Blue 1</th>
                 <th>Blue 2</th>
                 <th>Blue 3</th>
-                <th>Blue Score</th>
                 <th class="text-center" style="width: 90px;">Load</th>
                 <th class="text-center" style="width: 120px;">Enter Scores</th>
               </tr>
@@ -197,15 +195,13 @@
                   <tr>
                     <td class="text-start">{{ m.match.matchCode }}</td>
                     <td>{{ m.match.fieldNumber }}</td>
-                    <td>UNPLAYED</td>
-                    <td>0</td>
+                    <td>{{ m.match.matchEndTime != null ? "PLAYED" : "UNPLAYED" }}</td>
                     <td>{{ m.redTeams[0]?.teamId }}</td>
                     <td>{{ m.redTeams[1]?.teamId }}</td>
                     <td>{{ m.redTeams[2]?.teamId }}</td>
                     <td>{{ m.blueTeams[0]?.teamId }}</td>
                     <td>{{ m.blueTeams[1]?.teamId }}</td>
                     <td>{{ m.blueTeams[2]?.teamId }}</td>
-                    <td>0</td>
                     <td class="text-center">
                       <button class="btn btn-outline-primary btn-sm px-2" (click)="playMatch(m)">Load</button>
                     </td>
