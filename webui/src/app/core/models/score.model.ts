@@ -12,3 +12,7 @@ export interface Score {
   minorFault?: number;
   majorFault?: number;
 }
+
+export interface CustomScoreData {
+  [key: string]: number | boolean;
+}
