@@ -3,9 +3,11 @@ package org.thingai.app.scoringservice.handler;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.BroadcastMessageType;
 import org.thingai.app.scoringservice.define.ErrorCode;
+import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.app.scoringservice.dto.LiveScoreUpdateDto;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.dto.MatchTimeStatusDto;
+import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.entityhandler.MatchHandler;
 import org.thingai.app.scoringservice.handler.entityhandler.ScoreHandler;
@@ -124,7 +126,7 @@ public class LiveScoreHandler {
         }
 
         final Score[] result = new Score[2];
-        scoreHandler.submitScore(currentBlueScoreHolder, true, new RequestCallback<Score>() {;
+        scoreHandler.submitScore(currentRedScoreHolder, true, new RequestCallback<Score>() {;
             @Override
             public void onSuccess(Score responseObject, String message) {
                 ILog.d(TAG, "Red alliance score submitted: " + message);
@@ -151,6 +153,23 @@ public class LiveScoreHandler {
         });
 
         callback.onSuccess(result, "Scores committed successfully");
+
+        // update current match end time
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        LocalDateTime currentTime = LocalDateTime.now();
+        currentMatch.getMatch().setMatchEndTime(currentTime.format(timeFormatter));
+
+        matchHandler.updateMatch(currentMatch.getMatch(), new RequestCallback<Match>() {
+            @Override
+            public void onSuccess(Match responseObject, String message) {
+                ILog.d(TAG, "Match end time updated: " + message);
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                ILog.d(TAG, "Failed to update match end time: " + errorMessage);
+            }
+        });
 
         // Update next match to current match
         currentMatch = nextMatch;
@@ -229,20 +248,21 @@ public class LiveScoreHandler {
         }
 
         try {
-            Score submittedScore = ScoreHandler.factoryScore();
-            submittedScore.setAllianceId(allianceId);
-            submittedScore.fromJson(jsonScoreData);
-            submittedScore.calculateTotalScore();
-            submittedScore.calculatePenalties();
+            Score submittedScore;
 
             // Update current score holder
             if (isRed) {
-                currentRedScoreHolder = submittedScore;
+                submittedScore = currentRedScoreHolder;
                 isRedCommitable = true;
             } else {
-                currentBlueScoreHolder = submittedScore;
+                submittedScore = currentBlueScoreHolder;
                 isBlueCommitable = true;
             }
+
+            submittedScore.fromJson(jsonScoreData);
+            submittedScore.calculatePenalties();
+            submittedScore.calculateTotalScore();
+            submittedScore.setStatus(ScoreStatus.SCORED);
 
             ILog.d(TAG, "Score submission received for alliance " + allianceId + ": Total=" + submittedScore.getTotalScore() + ", Penalties=" + submittedScore.getPenaltiesScore());
 
