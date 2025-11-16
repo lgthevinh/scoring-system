@@ -19,6 +19,8 @@ import org.thingai.app.scoringservice.entity.config.DbMapEntity;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.base.log.ILog;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 public class ScoringService extends Service {
@@ -67,6 +69,18 @@ public class ScoringService extends Service {
 
         liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
         liveScoreHandler.setBroadcastHandler(broadcastHandler);
+
+        String ipAddress;
+        try {
+            ipAddress = InetAddress.getLocalHost().getHostAddress();
+        } catch (UnknownHostException e) {
+            ipAddress = "localhost";
+        }
+
+        ILog.i(SERVICE_NAME, "ScoringService initialized.");
+        ILog.i(SERVICE_NAME, "Running on URL: http://" + ipAddress);
+        ILog.i(SERVICE_NAME, "Database initialized at: " + appDir + "/scoring_system.db");
+        ILog.i(SERVICE_NAME, "File storage initialized at: " + appDir + "/files");
     }
 
     public static AuthHandler authHandler() {

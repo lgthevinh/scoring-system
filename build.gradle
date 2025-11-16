@@ -41,6 +41,54 @@ test {
     useJUnitPlatform()
 }
 
+sourceSets {
+    desktop {
+        java {
+            srcDir 'src/desktop/java'
+        }
+        resources.srcDir 'src/desktop/resources'
+
+        // Do NOT reference configurations.implementation (non-resolvable).
+        // Option A: only main output (sufficient for Swing-only launcher):
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += output + sourceSets.main.output
+
+        // Option B: if launcher needs main’s external deps too, use resolvable classpaths:
+        // compileClasspath += sourceSets.main.output + configurations.getByName('compileClasspath')
+        // runtimeClasspath += output + sourceSets.main.output + configurations.getByName('runtimeClasspath')
+    }
+}
+tasks.register('desktopJar', Jar) {
+    group = 'build'
+    description = 'Build the desktop launcher JAR'
+    archiveFileName = 'scoring-launcher.jar'
+    from sourceSets.desktop.output
+    manifest {
+        attributes(
+                'Main-Class': 'org.thingai.app.desktop.DesktopLauncher',
+                'Implementation-Title': 'Scoring System Desktop Launcher',
+                'Implementation-Version': (project.version ?: 'dev')
+        )
+    }
+}
+
+/* include launcher and scripts in distribution */
+distributions {
+    main {
+        contents {
+            from({ tasks.named('desktopJar').get().archiveFile }) { into 'app' }
+            // scripts already included by your existing config
+        }
+    }
+}
+
+tasks.named('distZip') { dependsOn 'bootJar', 'desktopJar' }
+tasks.register('packageAll') {
+    group = 'distribution'
+    description = 'Build boot jar and dist zip'
+    dependsOn tasks.named('bootJar'), tasks.named('distZip')
+}
+
 /* ==== Frontend build config ==== */
 def webUiDir = "${projectDir}/webui"
 def webUiDistDir = "${webUiDir}/dist"      // adjust if Angular outputs dist/<app>/browser
@@ -110,8 +158,3 @@ distributions {
 }
 
 tasks.named('distZip') { dependsOn 'bootJar' }
-
-/* Convenience */
-tasks.register('packageAll') {
-    dependsOn 'bootJar', 'distZip'
-}
