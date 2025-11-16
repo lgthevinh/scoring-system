@@ -45,7 +45,7 @@ export class Schedule implements OnInit {
   }
 
   loadSchedule(type: number) {
-    this.matchService.getMatches(type).subscribe(
+    this.matchService.getMatches(type, false).subscribe(
       {
         next: (matches: MatchDetailDto[]) => {
           this.schedule.set(matches);

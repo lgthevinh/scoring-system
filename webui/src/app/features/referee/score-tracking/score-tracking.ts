@@ -139,6 +139,8 @@ export class ScoreTracking implements OnInit, OnDestroy {
         this.submitting.set(false);
         this.submitMessage.set('Score submitted successfully.');
         setTimeout(() => this.submitMessage.set(''), 4000);
+
+        this.location.back();
       },
       error: (err) => {
         this.submitting.set(false);
