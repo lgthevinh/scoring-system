@@ -223,7 +223,7 @@ public class MatchHandler {
         }
     }
 
-    public void listMatchDetails(int matchType, RequestCallback<MatchDetailDto[]> callback) {
+    public void listMatchDetails(int matchType, boolean withScore, RequestCallback<MatchDetailDto[]> callback) {
         try {
             Match[] matches = dao.query(Match.class, new String[]{"matchType"}, new String[]{String.valueOf(matchType)});
             List<MatchDetailDto> detailsList = new ArrayList<>();
@@ -271,6 +271,15 @@ public class MatchHandler {
                         })
                         .filter(Objects::nonNull)
                         .toArray(Team[]::new);
+
+                if (withScore) {
+                    String redAllianceScoreId = match.getMatchCode() + "_R";
+                    String blueAllianceScoreId = match.getMatchCode() + "_B";
+                    Score redScore = dao.query(Score.class, new String[]{"id"}, new String[]{redAllianceScoreId})[0];
+                    Score blueScore = dao.query(Score.class, new String[]{"id"}, new String[]{blueAllianceScoreId})[0];
+                    detailsList.add(new MatchDetailDto(match, redTeams, blueTeams, redScore, blueScore));
+                    continue;
+                }
 
                 detailsList.add(new MatchDetailDto(match, redTeams, blueTeams));
             }

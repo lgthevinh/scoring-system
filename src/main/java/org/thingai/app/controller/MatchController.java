@@ -9,6 +9,7 @@ import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
+import org.thingai.base.log.ILog;
 
 import java.util.List;
 import java.util.Map;
@@ -92,9 +93,13 @@ public class MatchController {
     }
 
     @GetMapping("/list/details/{matchType}")
-    public ResponseEntity<Object> listMatchDetails(@PathVariable int matchType) {
+    public ResponseEntity<Object> listMatchDetails(@PathVariable int matchType, @RequestParam(required = false) boolean withScore) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        ScoringService.matchHandler().listMatchDetails(matchType, new RequestCallback<MatchDetailDto[]>() {
+        if (withScore) {
+            ILog.d("MatchController", "Listing match details for matchType %d with scores included.");
+        }
+
+        ScoringService.matchHandler().listMatchDetails(matchType, withScore, new RequestCallback<MatchDetailDto[]>() {
             @Override
             public void onSuccess(MatchDetailDto[] matchDetails, String successMessage) {
                 future.complete(ResponseEntity.ok(matchDetails));
@@ -107,7 +112,6 @@ public class MatchController {
         });
         return getObjectResponse(future);
     }
-
 
     @PutMapping("/update")
     public ResponseEntity<Object> updateMatch(@RequestBody Match match) {
