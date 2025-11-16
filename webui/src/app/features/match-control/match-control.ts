@@ -99,7 +99,7 @@ export class MatchControl implements OnInit {
 
   // ---- Data loading ----
   loadSchedule(matchType: number) {
-    this.matchService.getMatches(matchType).subscribe({
+    this.matchService.getMatches(matchType, false).subscribe({
       next: (list) => this.schedule.set(list),
       error: (e) => console.error('Failed to load schedule', e)
     });

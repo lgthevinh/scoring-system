@@ -1,4 +1,5 @@
 import { Team } from "./team.model";
+import {Score} from './score.model';
 
 export interface Match {
   id: string;
@@ -14,6 +15,8 @@ export interface MatchDetailDto {
   match: Match;
   redTeams: Team[];
   blueTeams: Team[];
+  redScore?: Score;
+  blueScore?: Score;
 }
 
 export function SampleMatchDetailDto(size: number): MatchDetailDto[] {

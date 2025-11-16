@@ -11,7 +11,7 @@ export abstract class MatchService {
   protected abstract apiUrl: string;
   protected abstract scoreApiUrl: string;
 
-  abstract getMatches(matchType: number): Observable<MatchDetailDto[]>;
+  abstract getMatches(matchType: number, withScore: boolean): Observable<MatchDetailDto[]>;
   abstract generateSchedule(scheduleConfig: any): Observable<any>;
 
   // Add V2 signature
@@ -38,7 +38,11 @@ export class ProdMatchService extends MatchService {
     super();
   }
 
-  override getMatches(matchType: number): Observable<MatchDetailDto[]> {
+  override getMatches(matchType: number, withScore: boolean = false): Observable<MatchDetailDto[]> {
+    if (withScore) {
+      // add withScore as query param
+      return this.http.get<MatchDetailDto[]>(`${this.apiUrl}/list/details/${matchType}?withScore=true`);
+    }
     return this.http.get<MatchDetailDto[]>(`${this.apiUrl}/list/details/${matchType}`);
   }
 
@@ -81,7 +85,7 @@ export class MockMatchService extends MatchService {
 
   constructor() { super(); }
 
-  override getMatches(matchType: number): Observable<MatchDetailDto[]> {
+  override getMatches(matchType: number, withScore: boolean): Observable<MatchDetailDto[]> {
     return new Observable<MatchDetailDto[]>(observer => {
       const mockMatches: MatchDetailDto[] = [];
       for (let i = 1; i <= 20; i++) {
