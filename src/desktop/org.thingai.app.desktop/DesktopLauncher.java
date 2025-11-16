@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class    DesktopLauncher {
+public class DesktopLauncher {
 
     private JFrame frame;
     private JLabel statusLabel;
