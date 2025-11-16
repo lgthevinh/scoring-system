@@ -1,0 +1,33 @@
+.results-container {
+  max-width: 980px;
+}
+
+.table-secondary {
+  background-color: #f8f9fa !important;
+}
+
+.table-light {
+  background-color: #f1f1f1 !important;
+}
+
+.bg-danger,
+.bg-primary {
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.text-primary {
+  color: #007bff !important;
+}
+
+.print-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
