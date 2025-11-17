@@ -24,4 +24,8 @@ export class ScorekeeperService {
   overrideScore(allianceId: string, scoreData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/override-score/${allianceId}`, scoreData);
   }
+
+  abortCurrentMatch(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/abort-current-match`, {});
+  }
 }

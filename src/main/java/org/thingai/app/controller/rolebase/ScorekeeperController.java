@@ -67,8 +67,37 @@ public class ScorekeeperController {
     }
 
     @PostMapping("/override-score/{allianceId}")
-    public ResponseEntity<Object> overrideScore(@PathVariable("allianceId") String allianceId, @RequestBody Object scoreDetailsDto) {
-        return null;
+    public ResponseEntity<Object> overrideScore(@PathVariable("allianceId") String allianceId, @RequestBody String jsonScoreData) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.liveScoreHandler().overrideScore(allianceId, jsonScoreData, new RequestCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean responseObject, String message) {
+                future.complete(ResponseEntity.ok().body(responseObject));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(ResponseEntity.badRequest().body(errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @PostMapping("/abort-current-match")
+    public ResponseEntity<Object> abortCurrentMatch() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.liveScoreHandler().abortCurrentMatch(new RequestCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean responseObject, String message) {
+                future.complete(ResponseEntity.ok().body(responseObject));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(ResponseEntity.badRequest().body(errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
     }
 
 }

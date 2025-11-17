@@ -193,10 +193,6 @@ public class LiveScoreHandler {
             }
         });
 
-        // Update next match to current match
-        currentMatch = nextMatch;
-        nextMatch = null;
-
         isRedCommitable = false;
         isBlueCommitable = false;
 
@@ -206,12 +202,11 @@ public class LiveScoreHandler {
     /**
      * Override the score for an alliance
      * @param allianceId
-     * @param isRed
      * @param jsonScoreData format for this params should only contain the detail score element according to the season.
      *                    <p>Example {"robotHanged": 2, "robotParked": 1, "ballCollected": 15}</p>
      * @param callback
      */
-    public void overrideScore(boolean isRed, String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
+    public void overrideScore(String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
         Score targetScore = ScoreHandler.factoryScore();
         try {
             targetScore.setAllianceId(allianceId);
@@ -241,8 +236,6 @@ public class LiveScoreHandler {
 
     public void abortCurrentMatch(RequestCallback<Boolean> callback) {
         matchTimerHandler.stopTimer();
-        currentRedScoreHolder = null;
-        currentBlueScoreHolder = null;
         callback.onSuccess(true, "Match aborted");
     }
 

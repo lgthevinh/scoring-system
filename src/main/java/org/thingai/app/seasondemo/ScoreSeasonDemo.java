@@ -2,6 +2,8 @@ package org.thingai.app.seasondemo;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.thingai.app.scoringservice.define.EUiType;
+import org.thingai.app.scoringservice.define.EValueType;
 import org.thingai.app.scoringservice.entity.score.IScoreConfig;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.score.ScoreDefine;
@@ -67,6 +69,14 @@ public class ScoreSeasonDemo extends Score implements IScoreConfig {
 
     @Override
     public HashMap<String, ScoreDefine> getScoreDefinitions() {
-        return null;
+        HashMap<String, ScoreDefine> definitions = new HashMap<>();
+
+        definitions.put("robotParked", new ScoreDefine("Robots Parked", EUiType.COUNTER, EValueType.INTEGER));
+        definitions.put("robotHanged", new ScoreDefine("Robots Hanged", EUiType.COUNTER, EValueType.INTEGER));
+        definitions.put("ballEntered", new ScoreDefine("Balls Entered", EUiType.COUNTER, EValueType.INTEGER));
+        definitions.put("minorFault", new ScoreDefine("Minor Faults", EUiType.COUNTER, EValueType.INTEGER));
+        definitions.put("majorFault", new ScoreDefine("Major Faults", EUiType.COUNTER, EValueType.INTEGER));
+
+        return definitions;
     }
 }
