@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.handler.entityhandler.AuthHandler;
+import org.thingai.base.log.ILog;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,7 +26,14 @@ public class AuthController {
 
         // --- LOCAL LOGIN IMPLEMENTATION ---
         String remoteAddr = servletRequest.getRemoteAddr();
-        boolean isLocalhost = "127.0.0.1".equals(remoteAddr) || "0:0:0:0:0:0:0:1".equals(remoteAddr);
+        boolean isLocalhost;
+        try {
+            isLocalhost = "127.0.0.1".equals(remoteAddr) ||
+                    "0:0:0:0:0:0:0:1".equals(remoteAddr) ||
+                    InetAddress.getLocalHost().getHostAddress().equals(remoteAddr);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
 
         if ("local".equalsIgnoreCase(username) && isLocalhost) {
             // Bypass normal authentication for local development.
