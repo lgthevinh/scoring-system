@@ -1,33 +1,91 @@
-.results-container {
-  max-width: 980px;
+/* Header controls */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-
-.table-secondary {
-  background-color: #f8f9fa !important;
-}
-
-.table-light {
-  background-color: #f1f1f1 !important;
-}
-
-.bg-danger,
-.bg-primary {
-  color: #fff;
-  font-weight: bold;
-  text-align: center;
-}
-
-.text-danger {
-  color: #dc3545 !important;
-}
-
-.text-primary {
-  color: #007bff !important;
-}
-
 .print-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+}
+
+/* Title */
+.event-title {
+  margin: 12px 0 8px;
+}
+
+/* Table */
+.results-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 1rem;
+}
+.results-table thead th {
+  background: #f3f4f6;
+  font-weight: 700;
+  padding: 3px 4px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.results-table td {
+  padding: 3px 4px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+.results-table .group-alt td {
+  background: #e9ecef; /* stripe for match groups */
+}
+
+/* Result tile for winner highlight */
+.result-tile {
+  width: 100%;
+  height: 100%;
+}
+
+/* Condensed mode reduces paddings */
+.condensed .results-table thead th {
+  padding: 1px;
+}
+.condensed .results-table td {
+  padding: 1px;
+}
+/* Hide certain columns when printing */
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+
+  .print-keep-bg .bg-danger,
+  .print-keep-bg .bg-primary,
+  .print-keep-bg .results-table thead th,
+  .print-keep-bg .results-table .group-alt td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+  .print-area, .print-area * {
+    visibility: visible !important;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    background: white;
+    z-index: 9999;
+    /* Optional: remove box-shadow or other screen-only styles */
+    box-shadow: none;
+  }
+
+  .print-result-text {
+    color: black !important;
+  }
+
+  .print-keep-bg .print-result-text {
+    color: white !important;
+  }
 }
