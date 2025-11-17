@@ -76,27 +76,37 @@ public class LiveScoreHandler {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No match found");
         }
 
-        int fieldNumber = currentMatch.getMatch().getFieldNumber();
-        String rootTopic = "/topic/display/field/" + fieldNumber;
+        try {
+            currentMatch = nextMatch;
+            nextMatch = null;
 
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-        LocalDateTime currentTime = LocalDateTime.now();
+            int fieldNumber = currentMatch.getMatch().getFieldNumber();
+            String rootTopic = "/topic/display/field/" + fieldNumber;
 
-        currentMatch.getMatch().setActualStartTime(currentTime.format(timeFormatter));
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            LocalDateTime currentTime = LocalDateTime.now();
 
-        currentRedScoreHolder = ScoreHandler.factoryScore();
-        currentBlueScoreHolder = ScoreHandler.factoryScore();
+            currentMatch.getMatch().setActualStartTime(currentTime.format(timeFormatter));
 
-        currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
-        currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
+            currentRedScoreHolder = ScoreHandler.factoryScore();
+            currentBlueScoreHolder = ScoreHandler.factoryScore();
 
-        matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, 150);
+            currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
+            currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-        broadcastHandler.broadcast(rootTopic +  "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
-        broadcastHandler.broadcast(rootTopic +  "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
-        broadcastHandler.broadcast(rootTopic +  "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, 150);
 
-        callback.onSuccess(true, "Match started");
+            broadcastHandler.broadcast(rootTopic +  "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
+            broadcastHandler.broadcast(rootTopic +  "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic +  "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+
+            callback.onSuccess(true, "Match started");
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to start match: " + e.getMessage());
+        }
+
+
     }
 
     public void handleLiveScoreUpdate(LiveScoreUpdateDto liveScoreUpdate, boolean isRedAlliance) {
@@ -106,18 +116,25 @@ public class LiveScoreHandler {
             return;
         }
 
-        int fieldNumber = currentMatch.getMatch().getFieldNumber();
-        String rootTopic = "/topic/display/field/" + fieldNumber;
+        try {
+            int fieldNumber = currentMatch.getMatch().getFieldNumber();
+            String rootTopic = "/topic/live/field/" + fieldNumber;
 
-        if (isRedAlliance) {
-            currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
-            currentRedScoreHolder.calculateTotalScore();
-            broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
-        } else {
-            currentBlueScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
-            currentBlueScoreHolder.calculateTotalScore();
-            broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            if (isRedAlliance) {
+                currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
+                currentRedScoreHolder.calculateTotalScore();
+                broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            } else {
+                currentBlueScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
+                currentBlueScoreHolder.calculateTotalScore();
+                broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            ILog.d(TAG, "Failed to process live score update: " + e.getMessage());
         }
+
+
     }
 
     public void commitFinalScore(RequestCallback<Score[]> callback) {
