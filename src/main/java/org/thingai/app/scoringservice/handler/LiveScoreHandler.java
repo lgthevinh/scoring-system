@@ -21,17 +21,18 @@ public class LiveScoreHandler {
     private static final MatchTimerHandler matchTimerHandler = new MatchTimerHandler();
 
     private final MatchHandler matchHandler;
+    private final ScoreHandler scoreHandler;
+
     private BroadcastHandler broadcastHandler;
-    private ScoreHandler scoreHandler;
 
-    private static MatchDetailDto currentMatch;
-    private static MatchDetailDto nextMatch;
+    private MatchDetailDto currentMatch;
+    private MatchDetailDto nextMatch;
+    private Score currentRedScoreHolder;
+    private Score currentBlueScoreHolder;
 
-    private static Score currentRedScoreHolder;
-    private static Score currentBlueScoreHolder;
-
-    private static boolean isRedCommitable = false;
-    private static boolean isBlueCommitable = false;
+    /* Flags */
+    private boolean isRedCommitable = false;
+    private boolean isBlueCommitable = false;
 
     public LiveScoreHandler(MatchHandler matchHandler, ScoreHandler scoreHandler) {
         this.matchHandler = matchHandler;
@@ -51,11 +52,19 @@ public class LiveScoreHandler {
         });
     }
 
+    /**
+     * Set the next match to be played, the broadcast notify all clients about the new match set.
+     * @param matchId
+     * @param callback
+     */
     public void setNextMatch(String matchId, RequestCallback<MatchDetailDto> callback) {
         try {
+            // Retrieve match detail and return callback response
             nextMatch = matchHandler.getMatchDetailSync(matchId);
-            callback.onSuccess(nextMatch, "Set next match success");
             broadcastHandler.broadcast("/topic/match/available", nextMatch, BroadcastMessageType.MATCH_STATUS);
+
+            callback.onSuccess(nextMatch, "Set next match success");
+            // Broadcast the next match info to all clients
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to set next match: " + e.getMessage());
@@ -67,12 +76,8 @@ public class LiveScoreHandler {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No match found");
         }
 
-        currentMatch = nextMatch;
-        nextMatch = null;
-
-        broadcastHandler.broadcast("/topic/display/field/" + currentMatch.getMatch().getFieldNumber() + "/command",
-                currentMatch,
-                BroadcastMessageType.SHOW_TIMER);
+        int fieldNumber = currentMatch.getMatch().getFieldNumber();
+        String rootTopic = "/topic/display/field/" + fieldNumber;
 
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         LocalDateTime currentTime = LocalDateTime.now();
@@ -85,15 +90,12 @@ public class LiveScoreHandler {
         currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
         currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-        broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/red",
-                currentRedScoreHolder,
-                BroadcastMessageType.SCORE_UPDATE);
+        matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, 150);
 
-        broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/blue",
-                currentBlueScoreHolder,
-                BroadcastMessageType.SCORE_UPDATE);
+        broadcastHandler.broadcast(rootTopic +  "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
+        broadcastHandler.broadcast(rootTopic +  "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+        broadcastHandler.broadcast(rootTopic +  "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
 
-        matchTimerHandler.startTimer(currentMatch.getMatch().getId(), currentMatch.getMatch().getFieldNumber(), 150);
         callback.onSuccess(true, "Match started");
     }
 
@@ -104,18 +106,17 @@ public class LiveScoreHandler {
             return;
         }
 
+        int fieldNumber = currentMatch.getMatch().getFieldNumber();
+        String rootTopic = "/topic/display/field/" + fieldNumber;
+
         if (isRedAlliance) {
             currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
             currentRedScoreHolder.calculateTotalScore();
-            broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/red",
-                    currentRedScoreHolder,
-                    BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
         } else {
             currentBlueScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
             currentBlueScoreHolder.calculateTotalScore();
-            broadcastHandler.broadcast("/topic/live/field/" + currentMatch.getMatch().getFieldNumber() + "/score/blue",
-                    currentBlueScoreHolder,
-                    BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
         }
     }
 
@@ -124,6 +125,12 @@ public class LiveScoreHandler {
             callback.onFailure(ErrorCode.CUSTOM_ERR, "Scores are not commitable yet");
             return;
         }
+
+        // Re-calculate final scores
+        currentRedScoreHolder.calculatePenalties();
+        currentRedScoreHolder.calculateTotalScore();
+        currentBlueScoreHolder.calculatePenalties();
+        currentBlueScoreHolder.calculateTotalScore();
 
         final Score[] result = new Score[2];
         scoreHandler.submitScore(currentRedScoreHolder, true, new RequestCallback<Score>() {;
@@ -152,13 +159,11 @@ public class LiveScoreHandler {
             }
         });
 
-        callback.onSuccess(result, "Scores committed successfully");
-
         // update current match end time
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
         LocalDateTime currentTime = LocalDateTime.now();
-        currentMatch.getMatch().setMatchEndTime(currentTime.format(timeFormatter));
 
+        currentMatch.getMatch().setMatchEndTime(currentTime.format(timeFormatter));
         matchHandler.updateMatch(currentMatch.getMatch(), new RequestCallback<Match>() {
             @Override
             public void onSuccess(Match responseObject, String message) {
@@ -177,17 +182,44 @@ public class LiveScoreHandler {
 
         isRedCommitable = false;
         isBlueCommitable = false;
+
+        callback.onSuccess(result, "Scores committed successfully");
     }
 
     /**
      * Override the score for an alliance
      * @param allianceId
-     * @param detailScore format for this params should only contain the detail score element according to the season.
+     * @param isRed
+     * @param jsonScoreData format for this params should only contain the detail score element according to the season.
      *                    <p>Example {"robotHanged": 2, "robotParked": 1, "ballCollected": 15}</p>
      * @param callback
      */
-    public void overrideScore(String allianceId, Object detailScore, RequestCallback<Boolean> callback) {
+    public void overrideScore(boolean isRed, String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
+        Score targetScore = ScoreHandler.factoryScore();
+        try {
+            targetScore.setAllianceId(allianceId);
+            targetScore.fromJson(jsonScoreData);
+            targetScore.calculatePenalties();
+            targetScore.calculateTotalScore();
+            targetScore.setStatus(ScoreStatus.SCORED);
 
+            scoreHandler.submitScore(targetScore, true, new RequestCallback<Score>() {
+                @Override
+                public void onSuccess(Score responseObject, String message) {
+                    ILog.d(TAG, "Score override submitted for alliance " + allianceId + ": " + message);
+                    callback.onSuccess(true, "Score override successful");
+                }
+
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    ILog.d(TAG, "Failed to submit score override for alliance " + allianceId + ": " + errorMessage);
+                    callback.onFailure(errorCode, "Score override failed: " + errorMessage);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to parse score data: " + e.getMessage());
+        }
     }
 
     public void abortCurrentMatch(RequestCallback<Boolean> callback) {
@@ -223,11 +255,6 @@ public class LiveScoreHandler {
             e.printStackTrace();
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to get current match field: " + e.getMessage());
         }
-    }
-
-    public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
-        ILog.d(TAG, "Broadcast Handler: " + broadcastHandler);
-        this.broadcastHandler = broadcastHandler;
     }
 
     public void handleScoreSubmission(boolean isRed, String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
@@ -271,5 +298,9 @@ public class LiveScoreHandler {
             e.printStackTrace();
             callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to process score submission: " + e.getMessage());
         }
+    }
+
+    public void setBroadcastHandler(BroadcastHandler broadcastHandler) {
+        this.broadcastHandler = broadcastHandler;
     }
 }
