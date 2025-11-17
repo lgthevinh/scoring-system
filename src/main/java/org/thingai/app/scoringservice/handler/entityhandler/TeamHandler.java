@@ -7,8 +7,10 @@ import org.thingai.base.cache.LRUCache;
 import org.thingai.base.dao.Dao;
 
 public class TeamHandler {
-    private final Dao dao;
     private final LRUCache<String, Team> teamCache;
+
+    private Dao dao;
+
 
     public TeamHandler(Dao dao, LRUCache<String, Team> teamCache) {
         this.dao = dao;
@@ -112,5 +114,13 @@ public class TeamHandler {
         } catch (Exception e) {
             callback.onFailure(ErrorCode.DELETE_FAILED, e.getMessage());
         }
+    }
+
+    public void setDao(Dao dao) {
+        this.dao = dao;
+    }
+
+    public void clearCache() {
+        teamCache.clear();
     }
 }

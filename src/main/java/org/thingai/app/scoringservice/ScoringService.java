@@ -30,12 +30,16 @@ public class ScoringService extends Service {
     private final LRUCache<String, AllianceTeam[]> allianceTeamCache = new LRUCache<>(100, new HashMap<>());
     private final LRUCache<String, Team> teamCache = new LRUCache<>(30, new HashMap<>());
 
+    private Dao sysdao;
+    private Dao eventDao;
+
+    private DaoFile eventDaoFile;
+
     private static AuthHandler authHandler;
     private static TeamHandler teamHandler;
     private static ScoreHandler scoreHandler;
     private static MatchHandler matchHandler;
     private static BroadcastHandler broadcastHandler;
-
     private static LiveScoreHandler liveScoreHandler;
 
     public ScoringService() {
@@ -44,12 +48,14 @@ public class ScoringService extends Service {
 
     @Override
     protected void onServiceInit() {
-        Dao dao = new DaoSqlite(appDir + "/scoring_system.db");
-        DaoFile daoFile = new DaoFile(appDir + "/files");
+        sysdao = new DaoSqlite(appDir + "/scoring_system.db");
+        eventDao = new DaoSqlite(appDir + "/event.db");
+
+        eventDaoFile = new DaoFile(appDir + "/event_files");
 
         System.out.println("Service initialized with app directory: " + appDir);
 
-        dao.initDao(new Class[]{
+        sysdao.initDao(new Class[]{
                 Event.class,
                 Match.class,
                 AllianceTeam.class,
@@ -61,11 +67,20 @@ public class ScoringService extends Service {
                 AccountRole.class,
                 DbMapEntity.class
         });
+
+        eventDao.initDao(new Class[]{
+                Match.class,
+                AllianceTeam.class,
+                Team.class,
+                Score.class,
+
+                DbMapEntity.class,
+        });
         // Initialize handler
-        authHandler = new AuthHandler(dao);
-        teamHandler = new TeamHandler(dao, teamCache);
-        matchHandler = new MatchHandler(dao, matchCache, allianceTeamCache, teamCache);
-        scoreHandler = new ScoreHandler(dao, daoFile);
+        authHandler = new AuthHandler(sysdao);
+        teamHandler = new TeamHandler(eventDao, teamCache);
+        matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
+        scoreHandler = new ScoreHandler(eventDao, eventDaoFile);
 
         liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
         liveScoreHandler.setBroadcastHandler(broadcastHandler);
@@ -81,6 +96,30 @@ public class ScoringService extends Service {
         ILog.i(SERVICE_NAME, "Running on URL: http://" + ipAddress);
         ILog.i(SERVICE_NAME, "Database initialized at: " + appDir + "/scoring_system.db");
         ILog.i(SERVICE_NAME, "File storage initialized at: " + appDir + "/files");
+    }
+
+    public void switchEvent() {
+        // TODO: Implement event switching logic
+    }
+
+    public void createNewEvent(Event event) {
+        sysdao.insert(Event.class, event);
+        eventDao = new DaoSqlite(this.appDir + "/" + event.getEventCode() + ".db");
+        eventDao.initDao(new Class[]{
+                Match.class,
+                AllianceTeam.class,
+                Team.class,
+                Score.class,
+
+                DbMapEntity.class,
+        });
+        eventDaoFile = new DaoFile(this.appDir + "/" + event.getEventCode() + "_files");
+        // Reinitialize handlers with new event DAO and file storage
+        teamHandler.setDao(eventDao);
+        matchHandler.setDao(eventDao);
+        scoreHandler.setDao(eventDao, eventDaoFile);
+
+        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
     }
 
     public static AuthHandler authHandler() {

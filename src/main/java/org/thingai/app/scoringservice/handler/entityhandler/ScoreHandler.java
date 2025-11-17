@@ -10,11 +10,12 @@ import org.thingai.base.dao.DaoFile;
 import org.thingai.base.log.ILog;
 
 public class ScoreHandler {
-    private final Dao dao;
-    private final DaoFile daoFile;
     private final ObjectMapper objectMapper = new ObjectMapper(); // For converting DTO to JSON
 
     private static Class<? extends Score> scoreClass;
+
+    private Dao dao;
+    private DaoFile daoFile;
 
     public ScoreHandler(Dao dao, DaoFile daoFile) {
         this.dao = dao;
@@ -221,6 +222,11 @@ public class ScoreHandler {
 
     public void setScoreClass(Class<? extends Score> scoreClass) {
         ScoreHandler.scoreClass = scoreClass;
+    }
+
+    public void setDao(Dao dao, DaoFile daoFile) {
+        this.dao = dao;
+        this.daoFile = daoFile;
     }
 }
 

@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MatchHandler {
-    private final Dao dao;
+    private Dao dao;
 
     private final MatchMakerHandler matchMakerHandler = new MatchMakerHandler();
 
@@ -652,6 +652,10 @@ public class MatchHandler {
 
     public void setMatchCache(LRUCache<String, Match> matchCache) {
         this.matchCache = matchCache;
+    }
+
+    public void setDao(Dao dao) {
+        this.dao = dao;
     }
 }
 
