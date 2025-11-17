@@ -51,7 +51,7 @@
             <tr [class.group-alt]="gi % 2 === 1">
               @if (r === 0) {
                 <td class="text-center" [attr.rowspan]="teamRowCount(match)">
-                  {{ match.match.matchCode || ('Q' + match.match.matchNumber) }}
+                  {{ match.match.matchCode }}
                 </td>
 
                 <td class="text-center" [attr.rowspan]="teamRowCount(match)"
