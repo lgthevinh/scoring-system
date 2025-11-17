@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+@Depricated
 public class DesktopLauncher {
 
     private JFrame frame;
