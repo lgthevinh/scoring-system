@@ -53,8 +53,8 @@ export class MatchResults implements OnInit {
   formatResult(match: MatchDetailDto): string {
     const redScore = match?.redScore?.totalScore ?? 0;
     const blueScore = match?.blueScore?.totalScore ?? 0;
-    if (redScore > blueScore) return `${redScore}-${blueScore} R`;
-    if (blueScore > redScore) return `${redScore}-${blueScore} B`;
+    if (redScore > blueScore) return `${redScore} - ${blueScore} R`;
+    if (blueScore > redScore) return `${redScore} - ${blueScore} B`;
     return `${redScore}-${blueScore}`;
   }
 
