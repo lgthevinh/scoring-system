@@ -56,6 +56,17 @@
     display: none !important;
   }
 
+  /* Optional: shrink table to remaining columns */
+  .results-table {
+    width: 100%;
+  }
+
+  /* Keep each match group on one page */
+  tr, td, th {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
   .print-keep-bg .bg-danger,
   .print-keep-bg .bg-primary,
   .print-keep-bg .results-table thead th,
@@ -67,9 +78,11 @@
   body * {
     visibility: hidden !important;
   }
+
   .print-area, .print-area * {
     visibility: visible !important;
   }
+
   .print-area {
     position: absolute;
     left: 0;
