@@ -44,12 +44,12 @@ public class ScoringService extends Service {
 
     @Override
     protected void onServiceInit() {
-        Dao daoSqlite = new DaoSqlite(appDir + "/scoring_system.db");
+        Dao dao = new DaoSqlite(appDir + "/scoring_system.db");
         DaoFile daoFile = new DaoFile(appDir + "/files");
 
         System.out.println("Service initialized with app directory: " + appDir);
 
-        daoSqlite.initDao(new Class[]{
+        dao.initDao(new Class[]{
                 Event.class,
                 Match.class,
                 AllianceTeam.class,
@@ -62,10 +62,10 @@ public class ScoringService extends Service {
                 DbMapEntity.class
         });
         // Initialize handler
-        authHandler = new AuthHandler(daoSqlite);
-        teamHandler = new TeamHandler(daoSqlite, teamCache);
-        matchHandler = new MatchHandler(daoSqlite, matchCache, allianceTeamCache, teamCache);
-        scoreHandler = new ScoreHandler(daoSqlite, daoFile);
+        authHandler = new AuthHandler(dao);
+        teamHandler = new TeamHandler(dao, teamCache);
+        matchHandler = new MatchHandler(dao, matchCache, allianceTeamCache, teamCache);
+        scoreHandler = new ScoreHandler(dao, daoFile);
 
         liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
         liveScoreHandler.setBroadcastHandler(broadcastHandler);
