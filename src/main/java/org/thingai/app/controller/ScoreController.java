@@ -16,16 +16,17 @@ import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorRes
 public class ScoreController {
     /**
      * Retrieves the current score for a specific alliance.
+     * 
      * @param allianceId The unique ID of the alliance (e.g., "Q1_R").
      * @return A ResponseEntity containing the Score object or an error.
      */
     @GetMapping("/alliance/{allianceId}")
     public ResponseEntity<Object> getScore(@PathVariable String allianceId) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        ScoringService.scoreHandler().getScoreByAllianceId(allianceId, new RequestCallback<String>() {
+        ScoringService.scoreHandler().getScoreByAllianceId(allianceId, new RequestCallback<Score>() {
             @Override
-            public void onSuccess(String responseObject, String message) {
-                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseObject));
+            public void onSuccess(Score score, String message) {
+                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(score));
             }
 
             @Override
@@ -54,10 +55,13 @@ public class ScoreController {
     }
 
     /**
-     * Submits raw scoring data for an alliance, triggers calculation, and saves the result.
-     * @param allianceId The unique ID of the alliance to score.
+     * Submits raw scoring data for an alliance, triggers calculation, and saves the
+     * result.
+     * 
+     * @param allianceId      The unique ID of the alliance to score.
      * @param scoreDetailsDto The JSON body representing the raw score details.
-     * @return A ResponseEntity containing the final calculated Score object or an error.
+     * @return A ResponseEntity containing the final calculated Score object or an
+     *         error.
      */
     @PostMapping("/submit/{allianceId}")
     public ResponseEntity<Object> submitScore(@PathVariable String allianceId, @RequestBody Object scoreDetailsDto) {

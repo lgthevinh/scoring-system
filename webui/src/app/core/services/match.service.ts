@@ -106,7 +106,33 @@ export class MockMatchService extends MatchService {
           blueTeams: [
             { teamId: `B${i}1`, teamName: `Blue Team ${i}1`, teamSchool: `School ${i}1`, teamRegion: `Region ${i}1` },
             { teamId: `B${i}2`, teamName: `Blue Team ${i}2`, teamSchool: `School ${i}2`, teamRegion: `Region ${i}2` },
-          ]
+          ],
+          redScore: {
+            id: `red-${i}`,
+            status: 1,
+            totalScore: 100,
+            penaltiesScore: 0,
+            rawScoreData: JSON.stringify({
+              robotParked: 2,
+              robotHanged: 1,
+              ballEntered: 10,
+              minorFault: 1,
+              majorFault: 0
+            })
+          },
+          blueScore: {
+            id: `blue-${i}`,
+            status: 1,
+            totalScore: 80,
+            penaltiesScore: 0,
+            rawScoreData: JSON.stringify({
+              robotParked: 1,
+              robotHanged: 0,
+              ballEntered: 5,
+              minorFault: 0,
+              majorFault: 0
+            })
+          }
         });
       }
       observer.next(mockMatches);
@@ -140,7 +166,13 @@ export class MockMatchService extends MatchService {
         status: 1,
         penaltiesScore: RandomUtils.generateRandomNumber(0, 50),
         totalScore: RandomUtils.generateRandomNumber(100, 300),
-        rawScoreData: ""
+        rawScoreData: JSON.stringify({
+          robotParked: 2,
+          robotHanged: 1,
+          ballEntered: 10,
+          minorFault: 1,
+          majorFault: 0
+        })
       };
       observer.next(mockScore);
       observer.complete();

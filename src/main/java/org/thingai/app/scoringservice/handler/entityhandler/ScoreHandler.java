@@ -23,6 +23,7 @@ public class ScoreHandler {
 
     /**
      * Factory method to create a Score object. Uses the configured scoreClass.
+     * 
      * @return A new Score object instance.
      */
     public static Score factoryScore() {
@@ -36,11 +37,13 @@ public class ScoreHandler {
     }
 
     /**
-     * Retrieves a score object for a specific alliance, fully populated with its raw details.
+     * Retrieves a score object for a specific alliance, fully populated with its
+     * raw details.
+     * 
      * @param allianceId The unique ID of the alliance (e.g., "Q1_R").
      * @param callback   Callback to return the populated Score object or an error.
      */
-    public void getScoreByAllianceId(String allianceId, RequestCallback<String> callback) {
+    public void getScoreByAllianceId(String allianceId, RequestCallback<Score> callback) {
         try {
             // 1. Read the base score object from the database.
             Score score = dao.read(Score.class, allianceId);
@@ -59,7 +62,9 @@ public class ScoreHandler {
                 jsonRawScoreData = newScore.getRawScoreData();
             }
 
-            callback.onSuccess(jsonRawScoreData, "Score retrieved successfully.");
+            score.setRawScoreData(jsonRawScoreData);
+
+            callback.onSuccess(score, "Score retrieved successfully.");
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve score: " + e.getMessage());
@@ -108,12 +113,15 @@ public class ScoreHandler {
     }
 
     /**
-     * Takes raw scoring data (as a DTO), calculates the final score, and persists the result.
+     * Takes raw scoring data (as a DTO), calculates the final score, and persists
+     * the result.
+     * 
      * @param allianceId      The unique ID of the alliance being scored.
      * @param scoreDetailsDto A DTO representing the raw scoring inputs from the UI.
      * @param callback        Callback to signal completion.
      */
-    public void submitScore(String allianceId, Object scoreDetailsDto, boolean isForceUpdate, RequestCallback<Score> callback) {
+    public void submitScore(String allianceId, Object scoreDetailsDto, boolean isForceUpdate,
+            RequestCallback<Score> callback) {
         try {
             // 1. Retrieve the existing score object.
             Score score = dao.read(Score.class, allianceId);
@@ -140,7 +148,8 @@ public class ScoreHandler {
             finalScore.calculatePenalties();
             finalScore.setStatus(ScoreStatus.SCORED);
 
-            ILog.d("ScoreHandler", "Final calculated score for alliance " + allianceId + ": Total=" + finalScore.getTotalScore() + ", Penalties=" + finalScore.getPenaltiesScore());
+            ILog.d("ScoreHandler", "Final calculated score for alliance " + allianceId + ": Total="
+                    + finalScore.getTotalScore() + ", Penalties=" + finalScore.getPenaltiesScore());
 
             // 5. Call the existing save method to persist the changes.
             updateAndSaveScore(finalScore, new RequestCallback<Void>() {
@@ -198,7 +207,8 @@ public class ScoreHandler {
 
     /**
      * Updates the score in the database and writes its raw data to a JSON file.
-     * @param score The fully calculated Score object.
+     * 
+     * @param score    The fully calculated Score object.
      * @param callback Callback to signal completion.
      */
     public void updateAndSaveScore(Score score, RequestCallback<Void> callback) {
@@ -215,7 +225,7 @@ public class ScoreHandler {
             callback.onSuccess(null, "Score data saved successfully.");
         } catch (Exception e) {
             e.printStackTrace();
-            callback.onFailure(ErrorCode.UPDATE_FAILED,"Failed to save score data: " + e.getMessage());
+            callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to save score data: " + e.getMessage());
         }
     }
 
@@ -223,4 +233,3 @@ public class ScoreHandler {
         ScoreHandler.scoreClass = scoreClass;
     }
 }
-

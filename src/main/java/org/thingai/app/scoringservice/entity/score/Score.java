@@ -30,15 +30,21 @@ public class Score {
     public void calculateTotalScore() {
 
     }
+
     public void calculatePenalties() {
 
     }
+
     public void fromJson(String json) {
 
     }
 
     public String getRawScoreData() {
         return rawScoreData;
+    }
+
+    public void setRawScoreData(String rawScoreData) {
+        this.rawScoreData = rawScoreData;
     }
 
     public String getAllianceId() {
