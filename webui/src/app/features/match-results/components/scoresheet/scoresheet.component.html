@@ -1,0 +1,25 @@
+@if (match) {
+<div class="my-3">
+    <div class="row g-4" [class.justify-content-center]="alliance">
+        <!-- Red Alliance -->
+        @if (!alliance || alliance === 'red') {
+        <div class="col-md-6">
+            <app-alliance-scoresheet [score]="match.redScore" [teams]="getTeams('red')" [config]="config"
+                [alliance]="'red'" [matchInfo]="getMatchInfo()">
+            </app-alliance-scoresheet>
+        </div>
+
+        }
+        @if (!alliance || alliance === 'blue') {
+        <!-- Blue Alliance -->
+        <div class="col-md-6">
+            <app-alliance-scoresheet [score]="match.blueScore" [teams]="getTeams('blue')" [config]="config"
+                [alliance]="'blue'" [matchInfo]="getMatchInfo()">
+            </app-alliance-scoresheet>
+        </div>
+
+        }
+    </div>
+</div>
+
+}

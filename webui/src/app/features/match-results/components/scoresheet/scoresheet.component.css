@@ -1,0 +1,43 @@
+.scoresheet-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.alliance-header {
+  font-size: 1.5rem;
+  border-radius: 4px;
+}
+
+.period-header {
+  background-color: #d3d3d3 !important; /* Light gray like in the image */
+  color: black !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.section-title {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 10px;
+}
+
+.table th {
+  font-size: 0.75rem;
+  color: #555;
+}
+
+.table td {
+  font-size: 0.9rem;
+}
+
+/* Custom checkbox style if needed, but browser default is usually fine for read-only view */
+input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+/* Ensure borders match the image style */
+.border-bottom {
+  border-bottom: 2px solid #000 !important;
+}
