@@ -260,6 +260,9 @@ export class ScoringDisplay implements OnInit, OnDestroy {
 
           this.redTeams.set(msg.payload.redTeams);
           this.blueTeams.set(msg.payload.blueTeams);
+
+          this.redScore.set(0);
+          this.blueScore.set(0);
         }
       },
       error: (err) => {
