@@ -16,7 +16,7 @@ export class BroadcastService implements OnDestroy {
   private subscriptions: Map<string, StompSubscription> = new Map();
 
   constructor() {
-    const brokerUrl: string = environment.production ? ('ws://' + window.location.host + '/ws') : ('ws://localhost:9090/ws');
+    const brokerUrl: string = environment.production ? ('ws://' + window.location.host + '/ws') : ('ws://localhost/ws');
     this.client = new Client({
       brokerURL: brokerUrl,
       debug: (str) => { console.debug(new Date(), str); },

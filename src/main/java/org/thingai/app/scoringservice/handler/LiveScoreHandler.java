@@ -207,6 +207,7 @@ public class LiveScoreHandler {
      * @param callback
      */
     public void overrideScore(String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
+        ILog.d(TAG, "Override score request received for alliance " + allianceId + ": " + jsonScoreData);
         Score targetScore = ScoreHandler.factoryScore();
         try {
             targetScore.setAllianceId(allianceId);

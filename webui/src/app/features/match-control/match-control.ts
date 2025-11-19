@@ -1,6 +1,8 @@
 import { Component, OnInit, signal, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Observable, map, forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import {
   MatchService,
   MockMatchService,
@@ -9,8 +11,9 @@ import {
 import { environment } from '../../../environments/environment';
 import { MatchDetailDto } from '../../core/models/match.model';
 import { ScorekeeperService } from '../../core/services/scorekeeper.service';
-import {BroadcastService} from '../../core/services/broadcast.service';
-import {SyncService} from '../../core/services/sync.service';
+import { BroadcastService } from '../../core/services/broadcast.service';
+import { SyncService } from '../../core/services/sync.service';
+import { ScoresheetComponent } from '../match-results/components/scoresheet/scoresheet.component';
 
 type TabKey =
   | 'schedule'
@@ -26,7 +29,7 @@ type TabKey =
 @Component({
   selector: 'app-match-control',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ScoresheetComponent],
   providers: [
     {
       provide: MatchService,
@@ -57,12 +60,18 @@ export class MatchControl implements OnInit {
   active = signal<MatchDetailDto | null>(null);
   activeMatchTimer: WritableSignal<number | null> = signal<number | null>(null);
 
+  // Editing
+  editingMatch = signal<MatchDetailDto | null>(null);
+  isSaving = signal<boolean>(false);
+  redScoreData: any = {};
+  blueScoreData: any = {};
+
   constructor(
     private matchService: MatchService,
     private scorekeeper: ScorekeeperService,
     private broadcastService: BroadcastService,
     private syncService: SyncService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadSchedule(1);
@@ -99,7 +108,8 @@ export class MatchControl implements OnInit {
 
   // ---- Data loading ----
   loadSchedule(matchType: number) {
-    this.matchService.getMatches(matchType, false).subscribe({
+    // Fetch matches WITH scores so we can edit them
+    this.matchService.getMatches(matchType, true).subscribe({
       next: (list) => this.schedule.set(list),
       error: (e) => console.error('Failed to load schedule', e)
     });
@@ -119,8 +129,113 @@ export class MatchControl implements OnInit {
   }
 
   enterScores(match: MatchDetailDto) {
-    // TODO: Navigate or open a dialog to enter/override scores for match.match.id
-    console.debug('Enter scores for match', match.match.id);
+    console.log('Entering scores for match:', match.match.matchCode);
+    this.editingMatch.set(match);
+
+    // Initialize with current data to ensure we have something to save
+    // even if the user doesn't edit anything (or if they only edit one side)
+    this.redScoreData = match.redScore?.rawScoreData ? this.safeParse(match.redScore.rawScoreData) : {};
+    this.blueScoreData = match.blueScore?.rawScoreData ? this.safeParse(match.blueScore.rawScoreData) : {};
+
+    console.log('Initialized Red Data:', this.redScoreData);
+    console.log('Initialized Blue Data:', this.blueScoreData);
+
+    this.setTab('score-edit');
+  }
+
+  private safeParse(json: string): any {
+    try {
+      return JSON.parse(json);
+    } catch (e) {
+      console.error('Failed to parse score JSON', e);
+      return {};
+    }
+  }
+
+  saveScores() {
+    const m = this.editingMatch();
+    console.log('Saving scores for match:', m?.match?.matchCode);
+    console.log('Red Data:', this.redScoreData);
+    console.log('Blue Data:', this.blueScoreData);
+
+    if (!m) {
+      console.error('No match is being edited.');
+      alert('Error: No match is being edited.');
+      return;
+    }
+
+    this.isSaving.set(true);
+    const requests: Observable<any>[] = [];
+
+    // Submit red
+    if (m.redScore) {
+      console.log('Submitting red score override for alliance ID:', m.redScore.id);
+      requests.push(
+        this.scorekeeper.overrideScore(m.match.id + "_R", this.redScoreData).pipe(
+          catchError(e => {
+            console.error('Failed to update red score', e);
+            return of({ error: true, alliance: 'red' });
+          })
+        )
+      );
+    }
+
+    // Submit blue
+    if (m.blueScore) {
+      console.log("Submitting blue score override");
+      requests.push(
+        this.scorekeeper.overrideScore(m.match.id + "_B", this.blueScoreData).pipe(
+          catchError(e => {
+            console.error('Failed to update blue score', e);
+            return of({ error: true, alliance: 'blue' });
+          })
+        )
+      );
+    }
+
+    if (requests.length === 0) {
+      console.warn('No score objects found to update. Match might not have scores initialized.');
+      alert('Error: No score objects found to update.');
+      this.isSaving.set(false);
+      return;
+    }
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        const errors = results.filter(r => r && r.error);
+        if (errors.length > 0) {
+          alert('Some scores failed to save. Check console.');
+        } else {
+          // Success
+          this.editingMatch.set(null);
+          this.setTab('schedule');
+          // Reload schedule to get updated scores
+          this.loadSchedule(1);
+        }
+      },
+      error: (err) => {
+        console.error('Error saving scores', err);
+        alert('Error saving scores');
+      },
+      complete: () => {
+        this.isSaving.set(false);
+      }
+    });
+  }
+
+  cancelEdit() {
+    this.editingMatch.set(null);
+    this.setTab('schedule');
+  }
+
+  onRedScoreChange(data: any) {
+    console.log('MatchControl: Red score changed', data);
+    this.redScoreData = data;
+  }
+
+  onBlueScoreChange(data: any) {
+    console.log('MatchControl: Blue score changed', data);
+    this.blueScoreData = data;
   }
 
   // ---- Top buttons (Loaded section) ----

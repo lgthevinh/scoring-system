@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatchDetailDto } from '../../../../core/models/match.model';
 import { Team } from '../../../../core/models/team.model';
@@ -15,6 +15,10 @@ import { AllianceScoresheetComponent } from './alliance-scoresheet/alliance-scor
 export class ScoresheetComponent {
     @Input() match: MatchDetailDto | null = null;
     @Input() alliance: 'red' | 'blue' | null = null;
+    @Input() editable: boolean = false;
+
+    @Output() redScoreChange = new EventEmitter<any>();
+    @Output() blueScoreChange = new EventEmitter<any>();
 
     config: ScoresheetConfig = CUSTOM_SEASON_CONFIG;
 
