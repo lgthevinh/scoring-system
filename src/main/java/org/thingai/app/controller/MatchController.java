@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
+import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
 import org.thingai.base.log.ILog;
@@ -193,8 +194,34 @@ public class MatchController {
         return getObjectResponse(future);
     }
 
-    // --- Helper Methods for DRY code ---
+    @PostMapping("/schedule/generate/playoff")
+    public ResponseEntity<Object> generatePlayoffSchedule(@RequestBody Map<String, Object> request) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        try {
+            int playoffType = Integer.parseInt(request.get("playoffType").toString());
+            String startTime = request.get("startTime").toString();
+            int matchDuration = Integer.parseInt(request.get("matchDuration").toString());
+            int fieldCount = Integer.parseInt(request.get("fieldCount").toString());
+            AllianceTeam[] allianceTeams = objectMapper.convertValue(request.get("allianceTeams"), AllianceTeam[].class);
+            TimeBlock[] timeBlocks = objectMapper.convertValue(request.get("timeBlocks"), TimeBlock[].class);
+            ScoringService.matchHandler().generatePlayoffSchedule(playoffType, fieldCount, allianceTeams, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, String successMessage) {
+                    future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
+                }
 
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    future.complete(createErrorResponse(errorCode, errorMessage));
+                }
+            });
+        } catch (Exception e) {
+            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
+        }
+        return getObjectResponse(future);
+    }
+
+    // --- Helper Methods for DRY code ---
     private RequestCallback<Match> createMatchCallback(CompletableFuture<ResponseEntity<Object>> future) {
         return new RequestCallback<>() {
             @Override

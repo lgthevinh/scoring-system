@@ -4,6 +4,7 @@ import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.MatchType;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
+import org.thingai.app.scoringservice.entity.config.DbMapEntity;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.team.Team;
@@ -37,6 +38,8 @@ public class MatchHandler {
     // Flag to indicate if the cache is stale and needs to be refreshed from the database.
     private boolean matchUpdateFlag = true; // Start as true to force initial loads.
 
+    private int currentEventMatchType;
+
     public MatchHandler(Dao dao, LRUCache<String, Match> matchCache, LRUCache<String, AllianceTeam[]> allianceTeamCache, LRUCache<String, Team> teamCache) {
         this.dao = dao;
         this.matchCache = matchCache;
@@ -59,6 +62,28 @@ public class MatchHandler {
         String outDir = outPath.toAbsolutePath() + "/match_schedule.txt";
         ILog.d("MatchHandler", "Match schedule output path set to: " + outDir);
         this.matchMakerHandler.setOutPath(outDir);
+
+        // Get event match type from dao
+        try {
+            DbMapEntity eventMatchType = dao.read(DbMapEntity.class, "event_match_type_key");
+            if (eventMatchType != null) {
+                currentEventMatchType = Integer.parseInt(eventMatchType.getValue());
+            } else {
+                currentEventMatchType = MatchType.QUALIFICATION;
+                dao.insertOrUpdate(DbMapEntity.class, new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+            }
+        } catch (Exception e) {
+            currentEventMatchType = MatchType.QUALIFICATION;
+        }
+    }
+
+    public void updateEventMatchType(int matchType) {
+        currentEventMatchType = matchType;
+        try {
+            dao.insertOrUpdate(DbMapEntity.class, new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+        } catch (Exception e) {
+            ILog.e("MatchHandler", "Failed to update event match type in DB: " + e.getMessage());
+        }
     }
 
     // Methods use outside system implementation
@@ -71,6 +96,7 @@ public class MatchHandler {
 
             String matchCode = switch (matchType) {
                 case MatchType.QUALIFICATION -> "Q" + matchNumber;
+                case MatchType.PLAYOFF -> "P" + matchNumber;
                 case MatchType.SEMIFINAL -> "SF" + matchNumber;
                 case MatchType.FINAL -> "F" + matchNumber;
                 default -> "";
@@ -409,6 +435,100 @@ public class MatchHandler {
             callback.onSuccess(null, "Match schedule generated successfully by MatchMaker (shuffled mapping) and times assigned.");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.CREATE_FAILED, "Failed to generate match schedule: " + e.getMessage());
+        }
+    }
+
+    public void generatePlayoffSchedule(int playoffType, int fieldCount, AllianceTeam[] allianceTeams, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
+        int exitCode = matchMakerHandler.generateMatchSchedule(1, allianceTeams.length / 2, 1);
+        if (exitCode != 0) {
+            callback.onFailure(ErrorCode.CREATE_FAILED, "MatchMaker.exe failed (exitCode=" + exitCode + "). Check matchmaker.log for details.");
+            return;
+        }
+
+        // Read generated schedule from output file
+        Path schedulePath = Paths.get(matchMakerHandler.getOutPath()).toAbsolutePath().normalize();
+        if (Files.isDirectory(schedulePath)) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "OutPath is a directory. Please set MatchMakerHandler.outPath to the schedule file.");
+            return;
+        }
+
+        // Small retry to ensure file is fully materialized
+        List<String> lines = null;
+        final long deadline = System.currentTimeMillis() + 2000; // up to 2 s
+        while (System.currentTimeMillis() < deadline) {
+            if (Files.exists(schedulePath)) {
+                try {
+                    lines = Files.readAllLines(schedulePath);
+                    if (!lines.isEmpty()) break;
+                } catch (IOException ignored) {}
+            }
+            try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+        }
+        if (lines == null || lines.isEmpty()) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Schedule file not readable at: " + schedulePath);
+            return;
+        }
+
+        List<ParsedMatch> parsedMatches = parseMatchMakerSchedule(lines);
+        if (parsedMatches.isEmpty()) {
+            // Last defensive check: if we still don't see "Match Schedule", dump first few lines to logs
+            ILog.w("MatchHandler", "Schedule header not found. First lines: " + String.join(" | ", lines.subList(0, Math.min(5, lines.size()))));
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No matches parsed from schedule file. Ensure it contains a 'Match Schedule' section.");
+            return;
+        }
+
+        // 5) Time keeping: same as V1 (apply TimeBlocks)
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+        LocalDateTime currentTime = LocalDateTime.parse(startTime, timeFormatter);
+
+        int matchNumber = 1;
+        for (ParsedMatch pm : parsedMatches) {
+            int fieldNumber = ((matchNumber - 1) % fieldCount) + 1;
+
+            // Respect time blocks by skipping breaks
+            if (timeBlocks != null) {
+                for (TimeBlock block : timeBlocks) {
+                    LocalDateTime breakStart = LocalDateTime.parse(block.getStartTime(), timeFormatter);
+                    long breakDuration = Long.parseLong(block.getDuration());
+                    LocalDateTime breakEnd = breakStart.plusMinutes(breakDuration);
+
+                    if (!currentTime.isBefore(breakStart) && currentTime.isBefore(breakEnd)) {
+                        currentTime = breakEnd;
+                    }
+                }
+            }
+
+            if (pm.red.length < 2 || pm.blue.length < 2) {
+                ILog.w("MatchHandler", "Skipping malformed match line: " + Arrays.toString(pm.red) + " vs " + Arrays.toString(pm.blue));
+                continue;
+            }
+
+            int startRedAllianceOrder = (pm.red[0] - 1) * 2;
+            int startBlueAllianceOrder = (pm.blue[0] - 1) * 2;
+
+            String[] redTeamIds = new String[] {
+                    allianceTeams[startRedAllianceOrder].getTeamId(),
+                    allianceTeams[startRedAllianceOrder + 1].getTeamId()
+            };
+
+            String[] blueTeamIds = new String[] {
+                    allianceTeams[startBlueAllianceOrder].getTeamId(),
+                    allianceTeams[startBlueAllianceOrder + 1].getTeamId()
+            };
+
+            // Create the match and scores
+            try {
+                createMatchInternal(MatchType.PLAYOFF, matchNumber, fieldNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
+                // Advance time for next match
+                currentTime = currentTime.plusMinutes(matchDuration);
+                matchNumber++;
+            } catch (Exception e) {
+                callback.onFailure(ErrorCode.CREATE_FAILED, "Failed to create playoff match: " + e.getMessage());
+                return;
+            }
+
+            setMatchUpdateFlag(true);
+            callback.onSuccess(null, "Playoff match schedule generated successfully by MatchMaker and times assigned.");
         }
     }
 

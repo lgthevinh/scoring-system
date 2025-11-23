@@ -7,6 +7,7 @@ import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.app.scoringservice.dto.LiveScoreUpdateDto;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.dto.MatchTimeStatusDto;
+import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.entityhandler.MatchHandler;
@@ -105,8 +106,6 @@ public class LiveScoreHandler {
             e.printStackTrace();
             callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to start match: " + e.getMessage());
         }
-
-
     }
 
     public void handleLiveScoreUpdate(LiveScoreUpdateDto liveScoreUpdate, boolean isRedAlliance) {
