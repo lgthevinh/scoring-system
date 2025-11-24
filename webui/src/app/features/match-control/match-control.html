@@ -173,6 +173,19 @@
     <div>
       @if (selectedTab() === 'schedule') {
       <div class="card">
+        <div class="card-header bg-white py-2">
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-semibold">View Schedule:</label>
+            <select class="form-select form-select-sm w-auto" [(ngModel)]="viewMatchType"
+              (change)="onViewMatchTypeChange()">
+              <option [ngValue]="0">Practice</option>
+              <option [ngValue]="1">Qualification</option>
+              <option [ngValue]="2">Playoff</option>
+              <option [ngValue]="3">Semi-final</option>
+              <option [ngValue]="4">Final</option>
+            </select>
+          </div>
+        </div>
         <div class="table-responsive position-relative">
           <table class="table table-sm table-hover align-middle mb-0 tableFixHead">
             <thead class="table-primary">
@@ -266,7 +279,49 @@
       } @else if (selectedTab() === 'alliance-selection') {
       <div class="card">
         <div class="card-body">
-          <p class="mb-0 text-muted">Alliance selection (placeholder)</p>
+          <h5 class="card-title mb-4">Alliance Selection & Match Creation</h5>
+
+          <div class="row">
+
+            <!-- Manual Match Creation -->
+            <div class="col-12 col-lg-6 mb-4">
+              <div class="card h-100 border-secondary">
+                <div class="card-header bg-secondary text-white">Manual Match Creation</div>
+                <div class="card-body">
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <label class="form-label">Match Type</label>
+                      <select class="form-select" [(ngModel)]="manualMatchType">
+                        <option [ngValue]="0">Practice</option>
+                        <option [ngValue]="1">Qualification</option>
+                        <option [ngValue]="2">Playoff</option>
+                        <option [ngValue]="3">Semi-final</option>
+                        <option [ngValue]="4">Final</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Match Number</label>
+                      <input type="number" class="form-control" [(ngModel)]="manualMatchNumber">
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Start Time</label>
+                    <input type="datetime-local" class="form-control" [(ngModel)]="manualStartTime">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Red Teams (comma sep)</label>
+                    <input type="text" class="form-control" [(ngModel)]="manualRedTeams" placeholder="R1, R2">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Blue Teams (comma sep)</label>
+                    <input type="text" class="form-control" [(ngModel)]="manualBlueTeams" placeholder="B1, B2">
+                  </div>
+                  <button class="btn btn-secondary w-100" (click)="createManualMatch()">Create Match</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
       } @else if (selectedTab() === 'video-switch') {

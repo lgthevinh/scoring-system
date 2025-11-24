@@ -23,6 +23,23 @@ export abstract class MatchService {
     timeBlocks: TimeBlock[];  // breaks
   }): Observable<{ message: string }>;
 
+  abstract generatePlayoffSchedule(scheduleConfig: {
+    playoffType: number;
+    startTime: string;
+    matchDuration: number;
+    fieldCount: number;
+    allianceTeams: { allianceId: string; teamId: string }[];
+    timeBlocks: TimeBlock[];
+  }): Observable<{ message: string }>;
+
+  abstract createMatch(matchConfig: {
+    matchType: number;
+    matchNumber: number;
+    matchStartTime: string;
+    redTeamIds: string[];
+    blueTeamIds: string[];
+  }): Observable<{ message: string; matchId?: string }>;
+
   abstract getScore(allianceId: string): Observable<Score>;
   abstract submitScore(allianceId: string, scoreData: any): Observable<Score>;
 }
@@ -63,6 +80,40 @@ export class ProdMatchService extends MatchService {
         const body = res.body as any;
         const message = body?.message ?? 'Schedule generated successfully.';
         return { message };
+      })
+    );
+  }
+
+  override generatePlayoffSchedule(payload: {
+    playoffType: number;
+    startTime: string;
+    matchDuration: number;
+    fieldCount: number;
+    allianceTeams: { allianceId: string; teamId: string }[];
+    timeBlocks: TimeBlock[];
+  }): Observable<{ message: string }> {
+    return this.http.post(`${this.apiUrl}/schedule/generate/playoff`, payload, { observe: 'response' }).pipe(
+      map(res => {
+        const body = res.body as any;
+        const message = body?.message ?? 'Playoff schedule generated successfully.';
+        return { message };
+      })
+    );
+  }
+
+  override createMatch(payload: {
+    matchType: number;
+    matchNumber: number;
+    matchStartTime: string;
+    redTeamIds: string[];
+    blueTeamIds: string[];
+  }): Observable<{ message: string; matchId?: string }> {
+    return this.http.post(`${this.apiUrl}/create`, payload, { observe: 'response' }).pipe(
+      map(res => {
+        const body = res.body as any;
+        const message = body?.message ?? 'Match created successfully.';
+        const matchId = body?.matchId;
+        return { message, matchId };
       })
     );
   }
@@ -155,6 +206,20 @@ export class MockMatchService extends MatchService {
   }): Observable<{ message: string }> {
     return new Observable(observer => {
       observer.next({ message: 'Mock schedule generated (V2)' });
+      observer.complete();
+    });
+  }
+
+  override generatePlayoffSchedule(_: any): Observable<{ message: string }> {
+    return new Observable(observer => {
+      observer.next({ message: 'Mock playoff schedule generated' });
+      observer.complete();
+    });
+  }
+
+  override createMatch(_: any): Observable<{ message: string; matchId?: string }> {
+    return new Observable(observer => {
+      observer.next({ message: 'Mock match created', matchId: 'mock-match-id' });
       observer.complete();
     });
   }

@@ -60,11 +60,28 @@ export class MatchControl implements OnInit {
   active = signal<MatchDetailDto | null>(null);
   activeMatchTimer: WritableSignal<number | null> = signal<number | null>(null);
 
+  // View Control
+  viewMatchType: number = 1; // Default to Qualification
+
   // Editing
   editingMatch = signal<MatchDetailDto | null>(null);
   isSaving = signal<boolean>(false);
   redScoreData: any = {};
   blueScoreData: any = {};
+
+  // Playoff Generation
+  playoffType: number = 3; // Default to Elimination Bracket
+  playoffStartTime: string = new Date().toISOString().slice(0, 16);
+  playoffMatchDuration: number = 10;
+  playoffFieldCount: number = 2;
+  playoffAllianceTeamsJson: string = '[{"allianceId":"1","teamId":"123A"},{"allianceId":"2","teamId":"456B"}]';
+
+  // Manual Match Creation
+  manualMatchType: number = 1;
+  manualMatchNumber: number = 1;
+  manualStartTime: string = new Date().toISOString().slice(0, 16);
+  manualRedTeams: string = '';
+  manualBlueTeams: string = '';
 
   constructor(
     private matchService: MatchService,
@@ -74,7 +91,7 @@ export class MatchControl implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loadSchedule(1);
+    this.loadSchedule();
     this.syncService.syncPlayingMatches().subscribe({
       next: (matches) => {
         console.log('Synced playing matches', matches);
@@ -107,12 +124,17 @@ export class MatchControl implements OnInit {
   }
 
   // ---- Data loading ----
-  loadSchedule(matchType: number) {
+  loadSchedule(matchType?: number) {
+    const typeToLoad = matchType !== undefined ? matchType : this.viewMatchType;
     // Fetch matches WITH scores so we can edit them
-    this.matchService.getMatches(matchType, true).subscribe({
+    this.matchService.getMatches(typeToLoad, true).subscribe({
       next: (list) => this.schedule.set(list),
       error: (e) => console.error('Failed to load schedule', e)
     });
+  }
+
+  onViewMatchTypeChange() {
+    this.loadSchedule();
   }
 
   // ---- Schedule row actions ----
@@ -359,6 +381,8 @@ export class MatchControl implements OnInit {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
+
+
   private formatLocalTime(iso: string | null | undefined): string {
     if (!iso) return '';
     try {
@@ -367,5 +391,72 @@ export class MatchControl implements OnInit {
     } catch {
       return '';
     }
+  }
+
+  // ---- Alliance Selection / Playoff / Manual Match ----
+
+  generatePlayoff() {
+    try {
+      const allianceTeams = JSON.parse(this.playoffAllianceTeamsJson);
+      if (!Array.isArray(allianceTeams)) {
+        alert('Alliance Teams JSON must be an array.');
+        return;
+      }
+
+      const payload = {
+        playoffType: this.playoffType,
+        startTime: this.playoffStartTime,
+        matchDuration: this.playoffMatchDuration,
+        fieldCount: this.playoffFieldCount,
+        allianceTeams: allianceTeams,
+        timeBlocks: [] // Optional for now
+      };
+
+      this.matchService.generatePlayoffSchedule(payload).subscribe({
+        next: (res) => {
+          alert(res.message);
+          this.loadSchedule(this.playoffType); // Reload schedule
+        },
+        error: (e: any) => {
+          console.error('Failed to generate playoff schedule', e);
+          alert('Failed to generate playoff schedule: ' + (e.error?.message || e.message));
+        }
+      });
+    } catch (e) {
+      alert('Invalid JSON format for Alliance Teams.');
+    }
+  }
+
+  createManualMatch() {
+    // Remove duplicate team IDs and trim whitespace
+    const cleanTeamIds = (ids: string) => {
+      const idSet = new Set<string>();
+      ids.split(',').forEach(id => {
+        const trimmed = id.trim();
+        if (trimmed) {
+          idSet.add(trimmed);
+        }
+      });
+      return Array.from(idSet);
+    }
+
+    const payload = {
+      matchType: this.manualMatchType,
+      matchNumber: this.manualMatchNumber,
+      matchStartTime: this.manualStartTime,
+      redTeamIds: cleanTeamIds(this.manualRedTeams),
+      blueTeamIds: cleanTeamIds(this.manualBlueTeams)
+    };
+
+    this.matchService.createMatch(payload).subscribe({
+      next: (res) => {
+        alert(res.message);
+        this.loadSchedule(this.manualMatchType); // Reload schedule
+      },
+      error: (e: any) => {
+        console.error('Failed to create match', e);
+        alert('Failed to create match: ' + (e.error?.message || e.message));
+      }
+    });
   }
 }
