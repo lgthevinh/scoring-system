@@ -3,8 +3,8 @@ import { CommonModule, Location } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { SyncService } from '../../../core/services/sync.service';
 import { MatchDetailDto } from '../../../core/models/match.model';
-import {BroadcastService} from '../../../core/services/broadcast.service';
-import {RefereeService} from '../../../core/services/referee.service';
+import { BroadcastService } from '../../../core/services/broadcast.service';
+import { RefereeService } from '../../../core/services/referee.service';
 
 type CounterKey =
   | 'robotParked'
@@ -56,7 +56,7 @@ export class ScoreTracking implements OnInit, OnDestroy {
     private broadcastService: BroadcastService,
     private refereeService: RefereeService,
     private location: Location
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.sub = this.route.paramMap.subscribe(params => {
@@ -93,7 +93,7 @@ export class ScoreTracking implements OnInit, OnDestroy {
   }
 
   titleText(): string {
-    return `${this.matchId || '-' } score tracking`;
+    return `${this.matchId || '-'} score tracking`;
   }
 
   inc(key: CounterKey) {
