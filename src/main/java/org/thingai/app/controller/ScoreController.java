@@ -7,7 +7,9 @@ import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.controller.utils.ResponseEntityUtil;
+import org.thingai.app.scoringservice.entity.score.ScoreDefine;
 
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorResponse;
 
@@ -70,6 +72,23 @@ public class ScoreController {
             @Override
             public void onSuccess(Score score, String message) {
                 future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(score));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @GetMapping("/ui-definitions")
+    public ResponseEntity<Object> getScoreUIDefinitions() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.scoreHandler().getScoreUi(new RequestCallback<HashMap<String, ScoreDefine>>() {
+            @Override
+            public void onSuccess(HashMap<String, ScoreDefine> responseObject, String message) {
+                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseObject));
             }
 
             @Override

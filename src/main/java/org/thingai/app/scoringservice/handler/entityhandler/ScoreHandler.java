@@ -5,9 +5,12 @@ import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.app.scoringservice.entity.score.Score;
+import org.thingai.app.scoringservice.entity.score.ScoreDefine;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.log.ILog;
+
+import java.util.HashMap;
 
 public class ScoreHandler {
     private final Dao dao;
@@ -226,6 +229,18 @@ public class ScoreHandler {
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.UPDATE_FAILED, "Failed to save score data: " + e.getMessage());
+        }
+    }
+
+    public void getScoreUi(RequestCallback<HashMap<String, ScoreDefine>> callback) {
+        try {
+            Score score = factoryScore();
+            HashMap<String, ScoreDefine> scoreUiMap = score.getScoreDefinitions();
+
+            callback.onSuccess(scoreUiMap, "Score UI definitions retrieved successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve score UI definitions: " + e.getMessage());
         }
     }
 

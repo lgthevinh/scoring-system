@@ -4,8 +4,10 @@ import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.base.dao.annotations.DaoColumn;
 import org.thingai.base.dao.annotations.DaoTable;
 
+import java.util.HashMap;
+
 @DaoTable(name = "score")
-public class Score {
+public class Score implements IScoreConfig {
     // As alliance ID
     @DaoColumn(name = "id", primaryKey = true)
     private String id;
@@ -41,6 +43,11 @@ public class Score {
 
     public String getRawScoreData() {
         return rawScoreData;
+    }
+
+    @Override
+    public HashMap<String, ScoreDefine> getScoreDefinitions() {
+        return null;
     }
 
     public void setRawScoreData(String rawScoreData) {
