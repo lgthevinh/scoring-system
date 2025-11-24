@@ -32,8 +32,8 @@ public class MatchController {
             int matchType = Integer.parseInt(request.get("matchType").toString());
             int matchNumber = Integer.parseInt(request.get("matchNumber").toString());
             String matchStartTime = request.get("matchStartTime").toString();
-            String[] redTeamIds = request.get("redTeamIds").toString().split(",");
-            String[] blueTeamIds = request.get("blueTeamIds").toString().split(",");
+            String[] redTeamIds = ((List<String>) request.get("redTeamIds")).toArray(new String[0]);
+            String[] blueTeamIds = ((List<String>) request.get("blueTeamIds")).toArray(new String[0]);
 
             ScoringService.matchHandler().createMatch(matchType, matchNumber, matchStartTime, redTeamIds, blueTeamIds, createMatchCallback(future));
         } catch (Exception e) {
@@ -212,6 +212,7 @@ public class MatchController {
 
                 @Override
                 public void onFailure(int errorCode, String errorMessage) {
+                    ILog.e("MatchController", "Failed to generate playoff schedule: " + errorMessage);
                     future.complete(createErrorResponse(errorCode, errorMessage));
                 }
             });
