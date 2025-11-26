@@ -16,3 +16,27 @@ export interface Score {
 export interface CustomScoreData {
   [key: string]: number | boolean;
 }
+
+export enum EUiType {
+  COUNTER = 'COUNTER',
+  TOGGLE = 'TOGGLE',
+  TEXT = 'TEXT'
+}
+
+export enum EValueType {
+  NUMBER = 'NUMBER',
+  BOOLEAN = 'BOOLEAN',
+  STRING = 'STRING'
+}
+
+export interface ScoreDefine {
+  key: string;
+  displayName: string;
+  uiType: EUiType;
+  valueType: EValueType;
+  min?: number;
+  max?: number;
+  step?: number;
+  defaultValue?: any;
+  order?: number;
+}

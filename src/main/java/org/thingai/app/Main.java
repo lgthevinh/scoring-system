@@ -31,7 +31,7 @@ public class Main {
         scoringService.setSimpMessagingTemplate(simpMessagingTemplate);
         scoringService.init();
 
-        scoringService.registerScoreClass(ScoreSeasonDemo.class);
+        scoringService.registerScoreClass(ScoreSeasonDemo.class); // Register the scoring class for the season specific logic
 
     }
 

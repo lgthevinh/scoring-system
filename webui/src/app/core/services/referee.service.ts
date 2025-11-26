@@ -14,4 +14,9 @@ export class RefereeService {
     console.log('Submitting final score:', color, allianceId, scoreData);
     return this.http.post(`${this.apiUrl}/submit/${color}/${allianceId}/final-score`, scoreData);
   }
+
+  getScoreUiDefinitions() {
+    return this.http.get<any[]>(`${environment.apiBaseUrl}/api/score/ui-definitions`);
+  }
+
 }

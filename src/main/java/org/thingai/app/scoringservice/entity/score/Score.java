@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 @DaoTable(name = "score")
 public class Score implements IScoreConfig {
-    // As alliance ID
+    // As alliance ID, Q1_R
     @DaoColumn(name = "id", primaryKey = true)
     private String id;
 
