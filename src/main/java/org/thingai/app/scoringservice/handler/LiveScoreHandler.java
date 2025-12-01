@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter;
 public class LiveScoreHandler {
     private static final String TAG = "ScorekeeperHandler";
     private static final MatchTimerHandler matchTimerHandler = new MatchTimerHandler();
+    private static final int MATCH_DURATION_SECONDS = 150; // modify this based on season rules
 
     private final MatchHandler matchHandler;
     private final ScoreHandler scoreHandler;
@@ -94,7 +95,7 @@ public class LiveScoreHandler {
             currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
             currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, 150);
+            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS);
 
             broadcastHandler.broadcast(rootTopic +  "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
             broadcastHandler.broadcast(rootTopic +  "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
