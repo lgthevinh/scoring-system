@@ -10,6 +10,8 @@ import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.log.ILog;
 
+import java.util.Arrays;
+
 public class RankingHandler {
     private static final String TAG = "RankingHandler";
 
@@ -76,6 +78,16 @@ public class RankingHandler {
     static class DefaultRankingStrategy implements IRankingStrategy {
         @Override
         public RankingEntry[] sortRankingEntries(RankingEntry[] entries) {
+            // Sort by ranking points descending, then by total score descending, then by penalties ascending
+            Arrays.sort(entries, (a, b) -> {
+                if (b.getRankingPoints() != a.getRankingPoints()) {
+                    return Integer.compare(b.getRankingPoints(), a.getRankingPoints());
+                } else if (b.getTotalScore() != a.getTotalScore()) {
+                    return Integer.compare(b.getTotalScore(), a.getTotalScore());
+                } else {
+                    return Integer.compare(a.getTotalPenalties(), b.getTotalPenalties());
+                }
+            });
             return entries;
         }
 
