@@ -5,5 +5,5 @@ import org.thingai.app.scoringservice.entity.score.Score;
 
 public interface IRankingStrategy {
     RankingEntry[] sortRankingEntries(RankingEntry[] entries);
-    RankingEntry[] updateRankingEntry(MatchDetailDto matchDetailDto, Score blueScore, Score redScore);
+    RankingStat[] setRankingStat(MatchDetailDto matchDetailDto, Score blueScore, Score redScore);
 }

@@ -9,9 +9,6 @@ public class RankingEntry {
     private String teamId;
 
     @DaoColumn
-    private int rank;
-
-    @DaoColumn
     private int matchesPlayed;
 
     @DaoColumn
@@ -38,14 +35,6 @@ public class RankingEntry {
 
     public void setTeamId(String teamId) {
         this.teamId = teamId;
-    }
-
-    public int getRank() {
-        return rank;
-    }
-
-    public void setRank(int rank) {
-        this.rank = rank;
     }
 
     public int getMatchesPlayed() {
