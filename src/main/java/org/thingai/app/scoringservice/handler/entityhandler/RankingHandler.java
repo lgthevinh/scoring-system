@@ -93,7 +93,7 @@ public class RankingHandler {
                 stat.setPenalties(blueScore.getPenaltiesScore());
                 boolean isWin = blueScore.getTotalScore() > redScore.getTotalScore();
                 stat.setWin(isWin);
-                stat.setRankingPoints(isWin ? 3 : 0);
+                stat.setRankingPoints(isWin ? 3 : 1);
                 stats[index++] = stat;
             }
 
@@ -104,7 +104,7 @@ public class RankingHandler {
                 stat.setPenalties(redScore.getPenaltiesScore());
                 boolean isWin = redScore.getTotalScore() > blueScore.getTotalScore();
                 stat.setWin(isWin);
-                stat.setRankingPoints(isWin ? 3 : 0);
+                stat.setRankingPoints(isWin ? 3 : 1);
                 stats[index++] = stat;
             }
 

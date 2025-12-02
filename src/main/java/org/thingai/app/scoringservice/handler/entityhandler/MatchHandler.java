@@ -188,7 +188,7 @@ public class MatchHandler {
             Team[] redTeams = Arrays.stream(redAllianceTeams)
                     .map(at -> {
                         try {
-                            return dao.query(Team.class, new String[]{"isd"}, new String[]{at.getTeamId()})[0];
+                            return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                         } catch (Exception e) {
                             return null;
                         }
@@ -198,7 +198,7 @@ public class MatchHandler {
             Team[] blueTeams = Arrays.stream(blueAllianceTeams)
                     .map(at -> {
                         try {
-                            return dao.query(Team.class, new String[]{"isd"}, new String[]{at.getTeamId()})[0];
+                            return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                         } catch (Exception e) {
                             return null;
                         }
@@ -300,7 +300,7 @@ public class MatchHandler {
                         .map(at -> {
                             Team team = teamCache.get(at.getTeamId());
                             if (team == null) {
-                                team = dao.query(Team.class, new String[]{"isd"}, new String[]{at.getTeamId()})[0];
+                                team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
                             return team;
@@ -312,7 +312,7 @@ public class MatchHandler {
                         .map(at -> {
                             Team team = teamCache.get(at.getTeamId());
                             if (team == null) {
-                                team = dao.query(Team.class, new String[]{"isd"}, new String[]{at.getTeamId()})[0];
+                                team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
                             return team;
@@ -675,7 +675,7 @@ public class MatchHandler {
         Team[] redTeams = Arrays.stream(redAllianceTeams)
                 .map(at -> {
                     try {
-                        return dao.query(Team.class, new String[]{"isd"}, new String[]{at.getTeamId()})[0];
+                        return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                     } catch (Exception e) {
                         return null;
                     }
@@ -685,7 +685,7 @@ public class MatchHandler {
         Team[] blueTeams = Arrays.stream(blueAllianceTeams)
                 .map(at -> {
                     try {
-                        return dao.query(Team.class, new String[]{"isd"}, new String[]{at.getTeamId()})[0];
+                        return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                     } catch (Exception e) {
                         return null;
                     }

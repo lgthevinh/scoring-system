@@ -220,7 +220,7 @@ public class ScoreHandler {
             String jsonRawScoreData = score.getRawScoreData();
 
             // 2. Update score record in the database.
-            dao.insertOrUpdate(score);
+            dao.insertOrUpdate(Score.class, score);
 
             // 3. Also write the raw data to a JSON file.
             daoFile.writeJsonFile("/scores/" + score.getAllianceId() + ".json", jsonRawScoreData);
