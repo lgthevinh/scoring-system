@@ -12,9 +12,10 @@ import org.thingai.base.log.ILog;
 public class Main {
 
     public static void main(String[] args) {
-        ScoringService.name = "Scoring System";
-        ScoringService.appDirName = "scoring_system";
-        ScoringService.version = "1.0.0";
+        ScoringService scoringService = new ScoringService();
+        scoringService.name = "Scoring System";
+        scoringService.appDirName = "scoring_system";
+        scoringService.version = "1.0.0";
 
         ILog.ENABLE_LOGGING = true;
         ILog.logLevel = ILog.DEBUG;
@@ -25,8 +26,6 @@ public class Main {
         // --- THIS IS THE BRIDGE ---
         // 2. Get the working BroadcastController that Spring created.
         SimpMessagingTemplate simpMessagingTemplate = context.getBean(SimpMessagingTemplate.class);
-
-        ScoringService scoringService = new ScoringService();
 
         scoringService.setSimpMessagingTemplate(simpMessagingTemplate);
         scoringService.init();

@@ -49,7 +49,7 @@ public class ScoreHandler {
     public void getScoreByAllianceId(String allianceId, RequestCallback<Score> callback) {
         try {
             // 1. Read the base score object from the database.
-            Score score = dao.read(Score.class, allianceId);
+            Score score = dao.query(Score.class, "id", allianceId)[0];
             if (score == null) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Score not found for alliance: " + allianceId);
                 return;
@@ -81,8 +81,8 @@ public class ScoreHandler {
             String blueAllianceId = matchId + "_B";
 
             // 1. Read both score objects from the database.
-            Score redScore = dao.read(Score.class, redAllianceId);
-            Score blueScore = dao.read(Score.class, blueAllianceId);
+            Score redScore = dao.query(Score.class, "id", redAllianceId)[0];
+            Score blueScore = dao.query(Score.class, "id", blueAllianceId)[0];
 
             if (redScore == null && blueScore == null) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "No scores found for match: " + matchId);
@@ -127,7 +127,7 @@ public class ScoreHandler {
             RequestCallback<Score> callback) {
         try {
             // 1. Retrieve the existing score object.
-            Score score = dao.read(Score.class, allianceId);
+            Score score = dao.query(Score.class, "id", allianceId)[0];
             if (score == null) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Cannot submit score, match/alliance not found: " + allianceId);
                 return;
@@ -179,7 +179,7 @@ public class ScoreHandler {
 
             String allianceId = score.getAllianceId();
             // 1. Retrieve the existing score object.
-            Score existingScore = dao.read(Score.class, allianceId);
+            Score existingScore = dao.query(Score.class, "id", allianceId)[0];
             if (existingScore == null) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Cannot submit score, match/alliance not found: " + allianceId);
                 return;
@@ -220,7 +220,7 @@ public class ScoreHandler {
             String jsonRawScoreData = score.getRawScoreData();
 
             // 2. Update score record in the database.
-            dao.update(Score.class, score.getAllianceId(), score);
+            dao.insertOrUpdate(score);
 
             // 3. Also write the raw data to a JSON file.
             daoFile.writeJsonFile("/scores/" + score.getAllianceId() + ".json", jsonRawScoreData);

@@ -93,8 +93,8 @@ public class AuthHandler {
         accountRole.setRole(role);
 
         try {
-            dao.insert(AuthData.class, authData);
-            dao.insert(AccountRole.class, accountRole);
+            dao.insertOrUpdate(authData);
+            dao.insertOrUpdate(accountRole);
             String token = generateToken(username);
             callback.onSuccess(token, "Authentication created successfully.");
         } catch (Exception e) {

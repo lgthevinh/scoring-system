@@ -23,7 +23,7 @@ public class TeamHandler {
             team.setTeamSchool(teamSchool);
             team.setTeamRegion(teamRegion);
 
-            dao.insert(Team.class, team);
+            dao.insertOrUpdate(team);
             // Add the new team to the cache
             teamCache.put(teamId, team);
             callback.onSuccess(team, "Team added successfully");
@@ -34,7 +34,7 @@ public class TeamHandler {
 
     public void addTeam(Team team, RequestCallback<Team> callback) {
         try {
-            dao.insert(Team.class, team);
+            dao.insertOrUpdate(team);
             // Add the new team to the cache
             teamCache.put(team.getTeamId(), team);
             callback.onSuccess(team, "Team added successfully");
@@ -46,7 +46,7 @@ public class TeamHandler {
     public void addTeams(Team[] teams, RequestCallback<Boolean> callback) {
         try {
             for (Team team : teams) {
-                dao.insert(Team.class, team);
+                dao.insertOrUpdate(team);
                 // Add each new team to the cache
                 teamCache.put(team.getTeamId(), team);
             }
@@ -79,7 +79,7 @@ public class TeamHandler {
 
         // 2. If not in cache, fetch from the database
         try {
-            Team team = dao.read(Team.class, teamId);
+            Team team = dao.query(Team.class, "id", teamId)[0];
             if (team != null) {
                 // 3. Add the fetched team to the cache for next time
                 teamCache.put(teamId, team);
@@ -94,7 +94,7 @@ public class TeamHandler {
 
     public void updateTeam(Team team, RequestCallback<Team> callback) {
         try {
-            dao.update(Team.class, team.getTeamId(), team);
+            dao.insertOrUpdate(team);
             // Update the cache with the new team data (Write-Through strategy)
             teamCache.put(team.getTeamId(), team);
             callback.onSuccess(team, "Team updated successfully");
