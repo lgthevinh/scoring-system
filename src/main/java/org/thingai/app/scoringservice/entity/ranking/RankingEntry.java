@@ -5,7 +5,7 @@ import org.thingai.base.dao.annotations.DaoTable;
 
 @DaoTable(name = "ranking_entry")
 public class RankingEntry {
-    @DaoColumn
+    @DaoColumn(name = "teamId", primaryKey = true)
     private String teamId;
 
     @DaoColumn

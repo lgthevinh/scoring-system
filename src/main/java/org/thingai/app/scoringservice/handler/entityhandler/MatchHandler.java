@@ -639,8 +639,8 @@ public class MatchHandler {
         blueScore.setAllianceId(blueAllianceId);
 
         dao.insertOrUpdate(match);
-        dao.insertOrUpdate(redScore);
-        dao.insertOrUpdate(blueScore);
+        dao.insertOrUpdate(Score.class, redScore);
+        dao.insertOrUpdate(Score.class, blueScore);
     }
 
     // Methods use inside system implementation

@@ -69,7 +69,7 @@ public class ScoringService extends Service {
         teamHandler = new TeamHandler(dao, teamCache);
         matchHandler = new MatchHandler(dao, matchCache, allianceTeamCache, teamCache);
         scoreHandler = new ScoreHandler(dao, daoFile);
-        rankingHandler = new RankingHandler(dao);
+        rankingHandler = new RankingHandler(dao, matchHandler);
 
         liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
         liveScoreHandler.setBroadcastHandler(broadcastHandler);

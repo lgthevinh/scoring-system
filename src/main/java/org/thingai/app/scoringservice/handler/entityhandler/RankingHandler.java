@@ -1,6 +1,7 @@
 package org.thingai.app.scoringservice.handler.entityhandler;
 
 import org.thingai.app.scoringservice.callback.RequestCallback;
+import org.thingai.app.scoringservice.define.MatchType;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
 import org.thingai.app.scoringservice.entity.ranking.IRankingStrategy;
 import org.thingai.app.scoringservice.entity.ranking.RankingEntry;
@@ -16,9 +17,11 @@ public class RankingHandler {
     private static final String TAG = "RankingHandler";
 
     private Dao dao;
+    private MatchHandler matchHandler;
     private IRankingStrategy rankingStrategy = new DefaultRankingStrategy();
 
-    public RankingHandler(Dao dao) {
+    public RankingHandler(Dao dao, MatchHandler matchHandler) {
+        this.matchHandler = matchHandler;
         this.dao = dao;
     }
 
@@ -54,6 +57,11 @@ public class RankingHandler {
                     entry.setWins(entry.getWins() + 1);
                 }
             }
+
+            if (stat.getScore() > entry.getHighestScore()) {
+                entry.setHighestScore(stat.getScore());
+            }
+
             dao.insertOrUpdate(entry);
         }
     }
@@ -65,6 +73,43 @@ public class RankingHandler {
             callback.onSuccess(sortedEntries, "All ranking entries fetched and sorted.");
         }
         return sortedEntries;
+    }
+    public void recalculateRankings(RequestCallback<Boolean> callback) {
+        dao.deleteAll(RankingEntry.class);
+        new Thread(() -> {
+            try {
+                matchHandler.listMatchDetails(MatchType.QUALIFICATION, true, new RequestCallback<MatchDetailDto[]>() {
+                    @Override
+                    public void onSuccess(MatchDetailDto[] result, String message) {
+                        for (MatchDetailDto matchDetail : result) {
+                            Score blueScore = matchDetail.getBlueScore();
+                            Score redScore = matchDetail.getRedScore();
+
+                            if (matchDetail.getMatch().getActualStartTime() == null) {
+                                continue; // Skip matches that haven't started or have no scores
+                            }
+
+                            updateRankingEntry(matchDetail, blueScore, redScore);
+                        }
+                        ILog.i(TAG, "Recalculated rankings for all qualification matches.");
+                    }
+
+                    @Override
+                    public void onFailure(int errorCode, String errorMessage) {
+                        ILog.e(TAG, "Failed to fetch match details for recalculating rankings: " + errorMessage);
+                    }
+                });
+                if (callback != null) {
+                    callback.onSuccess(true, "Recalculated rankings successfully.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (callback != null) {
+                    callback.onFailure(-1, "Error during recalculating rankings: " + e.getMessage());
+                }
+                ILog.e(TAG, "Error during recalculating rankings: " + e.getMessage());
+            }
+        }).start();
     }
 
     public void setRankingStrategy(IRankingStrategy strategy) {
