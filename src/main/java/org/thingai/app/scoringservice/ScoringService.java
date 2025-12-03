@@ -3,6 +3,7 @@ package org.thingai.app.scoringservice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
+import org.thingai.app.scoringservice.entity.ranking.RankingEntry;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.BroadcastHandler;
 import org.thingai.app.scoringservice.handler.LiveScoreHandler;
@@ -34,6 +35,7 @@ public class ScoringService extends Service {
     private static TeamHandler teamHandler;
     private static ScoreHandler scoreHandler;
     private static MatchHandler matchHandler;
+    private static RankingHandler rankingHandler;
     private static BroadcastHandler broadcastHandler;
 
     private static LiveScoreHandler liveScoreHandler;
@@ -55,6 +57,7 @@ public class ScoringService extends Service {
                 AllianceTeam.class,
                 Team.class,
                 Score.class,
+                RankingEntry.class,
 
                 // System entities
                 AuthData.class,
@@ -66,8 +69,9 @@ public class ScoringService extends Service {
         teamHandler = new TeamHandler(dao, teamCache);
         matchHandler = new MatchHandler(dao, matchCache, allianceTeamCache, teamCache);
         scoreHandler = new ScoreHandler(dao, daoFile);
+        rankingHandler = new RankingHandler(dao, matchHandler);
 
-        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
+        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
         liveScoreHandler.setBroadcastHandler(broadcastHandler);
 
         String ipAddress;
@@ -105,6 +109,10 @@ public class ScoringService extends Service {
 
     public static LiveScoreHandler liveScoreHandler() {
         return liveScoreHandler;
+    }
+
+    public static RankingHandler rankingHandler() {
+        return rankingHandler;
     }
 
     public void setSimpMessagingTemplate(SimpMessagingTemplate simpMessagingTemplate) {

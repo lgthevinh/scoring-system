@@ -70,7 +70,7 @@ public class MatchHandler {
                 currentEventMatchType = Integer.parseInt(eventMatchType.getValue());
             } else {
                 currentEventMatchType = MatchType.QUALIFICATION;
-                dao.insertOrUpdate(DbMapEntity.class, new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+                dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
             }
         } catch (Exception e) {
             currentEventMatchType = MatchType.QUALIFICATION;
@@ -80,7 +80,7 @@ public class MatchHandler {
     public void updateEventMatchType(int matchType) {
         currentEventMatchType = matchType;
         try {
-            dao.insertOrUpdate(DbMapEntity.class, new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+            dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
         } catch (Exception e) {
             ILog.e("MatchHandler", "Failed to update event match type in DB: " + e.getMessage());
         }
@@ -122,14 +122,14 @@ public class MatchHandler {
                 AllianceTeam team = new AllianceTeam();
                 team.setTeamId(teamId);
                 team.setAllianceId(redAllianceId);
-                dao.insert(AllianceTeam.class, team);
+                dao.insertOrUpdate(team);
             }
 
             for (String teamId : uniqueBlues) {
                 AllianceTeam team = new AllianceTeam();
                 team.setTeamId(teamId);
                 team.setAllianceId(blueAllianceId);
-                dao.insert(AllianceTeam.class, team);
+                dao.insertOrUpdate(team);
             }
 
             // Create scores (as per original code)
@@ -139,9 +139,9 @@ public class MatchHandler {
             Score blueScore = ScoreHandler.factoryScore();
             blueScore.setAllianceId(blueAllianceId);
 
-            dao.insert(Match.class, match);
-            dao.insert(Score.class, redScore);
-            dao.insert(Score.class, blueScore);
+            dao.insertOrUpdate(match);
+            dao.insertOrUpdate(redScore);
+            dao.insertOrUpdate(blueScore);
 
             setMatchUpdateFlag(true); // Invalidate cache
             callback.onSuccess(match, "Match created successfully.");
@@ -160,7 +160,7 @@ public class MatchHandler {
         }
 
         try {
-            Match match = dao.read(Match.class, matchId);
+            Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
             if (match != null) {
                 matchCache.put(matchId, match); // Add to cache
                 callback.onSuccess(match, "Match retrieved successfully.");
@@ -174,7 +174,7 @@ public class MatchHandler {
 
     public void getMatchDetail(String matchId, RequestCallback<MatchDetailDto> callback) {
         try {
-            Match match = dao.read(Match.class, matchId);
+            Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
             if (match == null) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Match not found.");
                 return;
@@ -188,7 +188,7 @@ public class MatchHandler {
             Team[] redTeams = Arrays.stream(redAllianceTeams)
                     .map(at -> {
                         try {
-                            return dao.read(Team.class, at.getTeamId());
+                            return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                         } catch (Exception e) {
                             return null;
                         }
@@ -198,7 +198,7 @@ public class MatchHandler {
             Team[] blueTeams = Arrays.stream(blueAllianceTeams)
                     .map(at -> {
                         try {
-                            return dao.read(Team.class, at.getTeamId());
+                            return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                         } catch (Exception e) {
                             return null;
                         }
@@ -214,7 +214,7 @@ public class MatchHandler {
 
     public void updateMatch(Match match, RequestCallback<Match> callback) {
         try {
-            dao.update(Match.class, match.getId(), match);
+            dao.insertOrUpdate(match);
             matchCache.put(match.getId(), match);
             setMatchUpdateFlag(true);
             callback.onSuccess(match, "Match updated successfully.");
@@ -300,7 +300,7 @@ public class MatchHandler {
                         .map(at -> {
                             Team team = teamCache.get(at.getTeamId());
                             if (team == null) {
-                                team = dao.read(Team.class, at.getTeamId());
+                                team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
                             return team;
@@ -312,7 +312,7 @@ public class MatchHandler {
                         .map(at -> {
                             Team team = teamCache.get(at.getTeamId());
                             if (team == null) {
-                                team = dao.read(Team.class, at.getTeamId());
+                                team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
                             return team;
@@ -622,14 +622,14 @@ public class MatchHandler {
             AllianceTeam team = new AllianceTeam();
             team.setTeamId(teamId);
             team.setAllianceId(redAllianceId);
-            dao.insert(AllianceTeam.class, team);
+            dao.insertOrUpdate(team);
         }
 
         for (String teamId : uniqueBlues) {
             AllianceTeam team = new AllianceTeam();
             team.setTeamId(teamId);
             team.setAllianceId(blueAllianceId);
-            dao.insert(AllianceTeam.class, team);
+            dao.insertOrUpdate(team);
         }
 
         Score redScore = ScoreHandler.factoryScore();
@@ -638,9 +638,9 @@ public class MatchHandler {
         Score blueScore = ScoreHandler.factoryScore();
         blueScore.setAllianceId(blueAllianceId);
 
-        dao.insert(Match.class, match);
-        dao.insert(Score.class, redScore);
-        dao.insert(Score.class, blueScore);
+        dao.insertOrUpdate(match);
+        dao.insertOrUpdate(Score.class, redScore);
+        dao.insertOrUpdate(Score.class, blueScore);
     }
 
     // Methods use inside system implementation
@@ -652,7 +652,7 @@ public class MatchHandler {
             }
         }
 
-        Match match = dao.read(Match.class, matchId);
+        Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
         if (match != null) {
             matchCache.put(matchId, match); // Add to cache
             return match;
@@ -662,7 +662,7 @@ public class MatchHandler {
     }
 
     public MatchDetailDto getMatchDetailSync(String matchId) throws Exception {
-        Match match = dao.read(Match.class, matchId);
+        Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
         if (match == null) {
             throw new Exception("Match not found.");
         }
@@ -675,7 +675,7 @@ public class MatchHandler {
         Team[] redTeams = Arrays.stream(redAllianceTeams)
                 .map(at -> {
                     try {
-                        return dao.read(Team.class, at.getTeamId());
+                        return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                     } catch (Exception e) {
                         return null;
                     }
@@ -685,7 +685,7 @@ public class MatchHandler {
         Team[] blueTeams = Arrays.stream(blueAllianceTeams)
                 .map(at -> {
                     try {
-                        return dao.read(Team.class, at.getTeamId());
+                        return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                     } catch (Exception e) {
                         return null;
                     }
