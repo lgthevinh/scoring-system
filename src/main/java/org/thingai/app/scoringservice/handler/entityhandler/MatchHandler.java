@@ -65,7 +65,6 @@ public class MatchHandler {
             try {
                 Files.createDirectories(outPath.getParent());
                 Files.createFile(outPath);
-                ILog.d("MatchHandler", "Created match schedule output file at: " + outPath.toAbsolutePath());
             } catch (Exception e) {
                 ILog.e("MatchHandler", "Error creating match schedule output file: " + e.getMessage());
             }

@@ -96,10 +96,6 @@ public class MatchController {
     @GetMapping("/list/details/{matchType}")
     public ResponseEntity<Object> listMatchDetails(@PathVariable int matchType, @RequestParam(required = false) boolean withScore) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        if (withScore) {
-            ILog.d("MatchController", "Listing match details for matchType %d with scores included.");
-        }
-
         ScoringService.matchHandler().listMatchDetails(matchType, withScore, new RequestCallback<MatchDetailDto[]>() {
             @Override
             public void onSuccess(MatchDetailDto[] matchDetails, String successMessage) {
