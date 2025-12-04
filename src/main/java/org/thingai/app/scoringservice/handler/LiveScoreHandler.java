@@ -100,9 +100,9 @@ public class LiveScoreHandler {
 
             matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS);
 
-            broadcastHandler.broadcast(rootTopic +  "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
-            broadcastHandler.broadcast(rootTopic +  "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
-            broadcastHandler.broadcast(rootTopic +  "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
+            broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
 
             callback.onSuccess(true, "Match started");
         } catch (Exception e) {
