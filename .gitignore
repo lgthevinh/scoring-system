@@ -44,3 +44,4 @@ bin/
 
 # Ignore generated .db
 **.db
+/files
