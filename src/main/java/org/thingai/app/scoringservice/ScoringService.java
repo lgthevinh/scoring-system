@@ -32,6 +32,7 @@ public class ScoringService extends Service {
     private final LRUCache<String, Team> teamCache = new LRUCache<>(30, new HashMap<>());
 
     private static AuthHandler authHandler;
+    private static EventHandler eventHandler;
     private static TeamHandler teamHandler;
     private static ScoreHandler scoreHandler;
     private static MatchHandler matchHandler;
@@ -47,17 +48,11 @@ public class ScoringService extends Service {
     @Override
     protected void onServiceInit() {
         Dao dao = new DaoSqlite(appDir + "/scoring_system.db");
-        DaoFile daoFile = new DaoFile(appDir + "/files");
 
         System.out.println("Service initialized with app directory: " + appDir);
 
         dao.initDao(new Class[]{
                 Event.class,
-                Match.class,
-                AllianceTeam.class,
-                Team.class,
-                Score.class,
-                RankingEntry.class,
 
                 // System entities
                 AuthData.class,
@@ -66,13 +61,23 @@ public class ScoringService extends Service {
         });
         // Initialize handler
         authHandler = new AuthHandler(dao);
-        teamHandler = new TeamHandler(dao, teamCache);
-        matchHandler = new MatchHandler(dao, matchCache, allianceTeamCache, teamCache);
-        scoreHandler = new ScoreHandler(dao, daoFile);
-        rankingHandler = new RankingHandler(dao, matchHandler);
+        eventHandler = new EventHandler(dao);
 
-        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
-        liveScoreHandler.setBroadcastHandler(broadcastHandler);
+        if (eventHandler.isCurrentEventSet()) {
+            ILog.i(SERVICE_NAME, "Current event is set to: " + eventHandler.getCurrentEvent().getEventCode());
+            Dao eventDao = eventHandler.getEventDao();
+            DaoFile eventDaoFile = eventHandler.getEventDaoFile();
+
+            teamHandler = new TeamHandler(eventDao, teamCache);
+            matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
+            scoreHandler = new ScoreHandler(eventDao, eventDaoFile);
+            rankingHandler = new RankingHandler(eventDao, matchHandler);
+
+            liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
+            liveScoreHandler.setBroadcastHandler(broadcastHandler);
+        } else {
+            ILog.w(SERVICE_NAME, "No current event is set.");
+        }
 
         String ipAddress;
         try {
@@ -89,6 +94,10 @@ public class ScoringService extends Service {
 
     public static AuthHandler authHandler() {
         return authHandler;
+    }
+
+    public static EventHandler eventHandler() {
+        return eventHandler;
     }
 
     public static TeamHandler teamHandler() {
@@ -121,6 +130,6 @@ public class ScoringService extends Service {
     }
 
     public void registerScoreClass(Class<? extends Score> scoreClass) {
-        scoreHandler().setScoreClass(scoreClass);
+        ScoreHandler.setScoreClass(scoreClass);
     }
 }

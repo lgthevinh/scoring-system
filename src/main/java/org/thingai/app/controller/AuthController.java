@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
+import org.thingai.app.scoringservice.entity.event.Event;
 import org.thingai.app.scoringservice.handler.entityhandler.AuthHandler;
 import org.thingai.base.log.ILog;
 
@@ -96,6 +97,16 @@ public class AuthController {
             return ResponseEntity.ok(Map.of("localIp", localIp));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unable to retrieve local IP address."));
+        }
+    }
+
+    @GetMapping("/current-event")
+    public ResponseEntity<Object> getCurrentEvent() {
+        try {
+            Event event = ScoringService.eventHandler().getCurrentEvent();
+            return ResponseEntity.ok(Map.of("currentEvent", event));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unable to retrieve current event."));
         }
     }
 

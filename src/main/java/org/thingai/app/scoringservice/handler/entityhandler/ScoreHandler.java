@@ -245,7 +245,7 @@ public class ScoreHandler {
         }
     }
 
-    public void setScoreClass(Class<? extends Score> scoreClass) {
+    public static void setScoreClass(Class<? extends Score> scoreClass) {
         ScoreHandler.scoreClass = scoreClass;
     }
 
