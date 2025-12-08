@@ -255,6 +255,8 @@ public class LiveScoreHandler {
 
     public void getCurrentMatchField(int fieldNumber, RequestCallback<MatchDetailDto> callback) {
         try {
+            currentMatch.setBlueScore(currentBlueScoreHolder);
+            currentMatch.setRedScore(currentRedScoreHolder);
             if (fieldNumber == 0) {
                 callback.onSuccess(currentMatch, "Current match field retrieved successfully");
                 return;

@@ -58,6 +58,8 @@ export class ScoringDisplay implements OnInit, OnDestroy {
         if (match !== null) {
           this.redTeams.set(match.redTeams);
           this.blueTeams.set(match.blueTeams);
+          this.redScore.set(match.redScore?.totalScore || 0);
+          this.blueScore.set(match.blueScore?.totalScore || 0);
         }},
       error: (err) => {
         console.error("Error fetching current match field data:", err.message);
