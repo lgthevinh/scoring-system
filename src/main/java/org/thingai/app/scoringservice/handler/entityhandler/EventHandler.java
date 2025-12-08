@@ -12,6 +12,9 @@ import org.thingai.app.scoringservice.entity.team.Team;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.dao.DaoSqlite;
+import org.thingai.base.log.ILog;
+
+import java.io.File;
 
 public class EventHandler {
     private static final String TAG = "EventHandler";
@@ -59,9 +62,72 @@ public class EventHandler {
         callback.onSuccess(event, "Event created successfully");
     }
 
-    public void setupCurrentEvent(String eventCode, RequestCallback<Event> callback) {
+    public void listEvents(RequestCallback<Event[]> callback) {
         try {
-            Event[] events = systemDao.query(Event.class, new String[]{"eventCode"}, new String[]{eventCode});
+            Event[] events = systemDao.readAll(Event.class);
+            callback.onSuccess(events, "Events retrieved successfully.");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Error retrieving events: " + e.getMessage());
+        }
+    }
+
+    public void getEventByCode(String eventCode, RequestCallback<Event> callback) {
+        try {
+            Event[] events = systemDao.query(Event.class, "eventCode", eventCode);
+            if (events.length == 0) {
+                callback.onFailure(ErrorCode.NOT_FOUND, "Event with code " + eventCode + " not found.");
+                return;
+            }
+            callback.onSuccess(events[0], "Event retrieved successfully.");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Error retrieving event: " + e.getMessage());
+        }
+    }
+
+    public void deleteEventByCode(String eventCode, boolean cleanDelete, RequestCallback<Void> callback) {
+        try {
+            Event[] events = systemDao.query(Event.class, "eventCode", eventCode);
+            if (events.length == 0) {
+                callback.onFailure(ErrorCode.NOT_FOUND, "Event with code " + eventCode + " not found.");
+                return;
+            }
+            systemDao.delete(events[0]);
+
+            if (cleanDelete) {
+                // delete event database file
+                File dbFile = new File(eventCode + ".db");
+                if (dbFile.exists()) {
+                    if (!dbFile.delete()) {
+                        callback.onFailure(ErrorCode.DELETE_FAILED, "Failed to delete event database file.");
+                        return;
+                    }
+                }
+                // delete event files folder
+                File eventFilesDir = new File("files/" + eventCode);
+                if (eventFilesDir.exists() && eventFilesDir.isDirectory()) {
+                    File[] files = eventFilesDir.listFiles();
+                    if (files == null) {
+                        return;
+                    }
+                    for (File file : files) {
+                        if (!file.delete()) {
+                            callback.onFailure(ErrorCode.DELETE_FAILED, "Failed to delete event file: " + file.getName());
+                            return;
+                        }
+                    }
+                }
+            }
+
+            callback.onSuccess(null, "Event deleted successfully.");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.DELETE_FAILED, "Error deleting event: " + e.getMessage());
+        }
+    }
+
+    public void setSystemEvent(String eventCode, RequestCallback<Event> callback) {
+        try {
+            ILog.d(TAG, eventCode);
+            Event[] events = systemDao.query(Event.class, "eventCode", eventCode);
             if (events.length == 0) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Event with code " + eventCode + " not found.");
                 return;
@@ -74,6 +140,7 @@ public class EventHandler {
                     Team.class,
                     Score.class,
                     RankingEntry.class,
+                    DbMapEntity.class
             });
 
             // init new folder for event files

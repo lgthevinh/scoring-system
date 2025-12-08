@@ -61,10 +61,8 @@ public class ScoringService extends Service {
         // Initialize handler
         authHandler = new AuthHandler(dao);
         eventHandler = new EventHandler(dao, new EventHandler.EventCallback() {
-
             @Override
             public void onSetEvent(Dao eventDao, DaoFile eventDaoFile) {
-                ILog.i(SERVICE_NAME, "Event is set to: " + eventHandler.getCurrentEvent().getEventCode());
 
                 teamHandler = new TeamHandler(eventDao, teamCache);
                 matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
@@ -77,7 +75,7 @@ public class ScoringService extends Service {
 
             @Override
             public void isCurrentEventSet(Event currentEvent, Dao eventDao, DaoFile eventDaoFile) {
-                ILog.i(SERVICE_NAME, "Current event is set to: " + eventHandler.getCurrentEvent().getEventCode());
+                ILog.i(SERVICE_NAME, "Current event is set to: ", currentEvent.getEventCode());
 
                 teamHandler = new TeamHandler(eventDao, teamCache);
                 matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
