@@ -3,7 +3,6 @@ package org.thingai.app.scoringservice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
-import org.thingai.app.scoringservice.entity.ranking.RankingEntry;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.BroadcastHandler;
 import org.thingai.app.scoringservice.handler.LiveScoreHandler;
@@ -61,23 +60,39 @@ public class ScoringService extends Service {
         });
         // Initialize handler
         authHandler = new AuthHandler(dao);
-        eventHandler = new EventHandler(dao);
+        eventHandler = new EventHandler(dao, new EventHandler.EventCallback() {
 
-        if (eventHandler.isCurrentEventSet()) {
-            ILog.i(SERVICE_NAME, "Current event is set to: " + eventHandler.getCurrentEvent().getEventCode());
-            Dao eventDao = eventHandler.getEventDao();
-            DaoFile eventDaoFile = eventHandler.getEventDaoFile();
+            @Override
+            public void onSetEvent(Dao eventDao, DaoFile eventDaoFile) {
+                ILog.i(SERVICE_NAME, "Event is set to: " + eventHandler.getCurrentEvent().getEventCode());
 
-            teamHandler = new TeamHandler(eventDao, teamCache);
-            matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
-            scoreHandler = new ScoreHandler(eventDao, eventDaoFile);
-            rankingHandler = new RankingHandler(eventDao, matchHandler);
+                teamHandler = new TeamHandler(eventDao, teamCache);
+                matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
+                scoreHandler = new ScoreHandler(eventDao, eventDaoFile);
+                rankingHandler = new RankingHandler(eventDao, matchHandler);
 
-            liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
-            liveScoreHandler.setBroadcastHandler(broadcastHandler);
-        } else {
-            ILog.w(SERVICE_NAME, "No current event is set.");
-        }
+                liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
+                liveScoreHandler.setBroadcastHandler(broadcastHandler);
+            }
+
+            @Override
+            public void isCurrentEventSet(Event currentEvent, Dao eventDao, DaoFile eventDaoFile) {
+                ILog.i(SERVICE_NAME, "Current event is set to: " + eventHandler.getCurrentEvent().getEventCode());
+
+                teamHandler = new TeamHandler(eventDao, teamCache);
+                matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
+                scoreHandler = new ScoreHandler(eventDao, eventDaoFile);
+                rankingHandler = new RankingHandler(eventDao, matchHandler);
+
+                liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
+                liveScoreHandler.setBroadcastHandler(broadcastHandler);
+            }
+
+            @Override
+            public void isNotCurrentEventSet() {
+                ILog.w(SERVICE_NAME, "No current event is set.");
+            }
+        });
 
         String ipAddress;
         try {

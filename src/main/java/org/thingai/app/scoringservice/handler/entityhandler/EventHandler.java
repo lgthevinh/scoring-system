@@ -16,14 +16,36 @@ import org.thingai.base.dao.DaoSqlite;
 public class EventHandler {
     private static final String TAG = "EventHandler";
 
-    private static Dao systemDao;
+    private final Dao systemDao;
     private Dao eventDao;
     private DaoFile eventDaoFile;
 
     private Event currentEvent;
+    private EventCallback eventCallback;
 
-    public EventHandler(Dao dao) {
+    public EventHandler(Dao dao, EventCallback eventCallback) {
         this.systemDao = dao;
+        this.eventCallback = eventCallback;
+
+        // check if current event is set
+
+        if (isCurrentEventSet()) {
+            eventDao = new DaoSqlite(this.currentEvent.getEventCode() + ".db");
+            eventDao.initDao(new Class[]{
+                    Match.class,
+                    AllianceTeam.class,
+                    Team.class,
+                    Score.class,
+                    RankingEntry.class,
+            });
+
+            // init new folder for event files
+            eventDaoFile = new DaoFile("files/" + this.currentEvent.getEventCode());
+
+            eventCallback.isCurrentEventSet(this.currentEvent, eventDao, eventDaoFile);
+        } else {
+            eventCallback.isNotCurrentEventSet();
+        }
     }
 
     public void createEvent(Event event, RequestCallback<Event> callback) {
@@ -63,6 +85,8 @@ public class EventHandler {
             mapEntity.setValue(eventCode);
             systemDao.insertOrUpdate(mapEntity);
 
+            eventCallback.onSetEvent(eventDao, eventDaoFile);
+
             callback.onSuccess(this.currentEvent, "Current event set successfully.");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Error setting current event: " + e.getMessage());
@@ -97,5 +121,11 @@ public class EventHandler {
 
     public DaoFile getEventDaoFile() {
         return eventDaoFile;
+    }
+
+    public interface EventCallback {
+        void onSetEvent(Dao eventDao, DaoFile eventDaoFile);
+        void isCurrentEventSet(Event currentEvent, Dao eventDao, DaoFile eventDaoFile);
+        void isNotCurrentEventSet();
     }
 }
