@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.5.0'
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
@@ -158,4 +167,27 @@ distributions {
     }
 }
 
+
 tasks.named('distZip') { dependsOn 'bootJar' }
+
+import proguard.gradle.ProGuardTask
+
+tasks.register('proguard', ProGuardTask) {
+    group = 'build'
+    description = 'Obfuscate the application classes using ProGuard'
+
+    // Configuration file
+    configuration 'proguard-rules.pro'
+
+    // Input: Application classes (compiled output)
+    injars sourceSets.main.output
+
+    // Output: Obfuscated Jar
+    outjars layout.buildDirectory.file('libs/scoring-system-obfuscated.jar')
+
+    // Dependencies (not obfuscated, just for reference)
+    libraryjars sourceSets.main.compileClasspath
+    
+    // Java 9+ modules
+    libraryjars "${System.getProperty('java.home')}/jmods"
+}
