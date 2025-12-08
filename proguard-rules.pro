@@ -3,8 +3,9 @@
 
 # Start conservative. For final obfuscation, remove these two lines.
 # You can also override from Gradle with -PproguardShrinkOnly=false
--dontobfuscate
--dontoptimize
+# -dontobfuscate
+# -dontoptimize
+-repackageclasses 'org.thingai.app.internal'
 
 # We only process app classes; libraries are on libraryjars.
 # Silence library-only missing-classes warnings that are safe to ignore.
