@@ -1,3 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.5.0'
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
@@ -28,13 +37,14 @@ dependencies {
     implementation 'com.zaxxer:HikariCP:5.1.0'
     implementation "org.slf4j:slf4j-api:2.0.9"
     implementation 'com.google.code.gson:gson:2.13.2'
-
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     implementation files('libs/applicationbase.jar')
+
+    implementation 'com.formdev:flatlaf:3.2.5'
 }
 
 test {
@@ -44,9 +54,9 @@ test {
 sourceSets {
     desktop {
         java {
-            srcDir 'src/desktop/java'
+            srcDir 'src/app/java'
         }
-        resources.srcDir 'src/desktop/resources'
+        resources.srcDir 'src/app/resources'
 
         // Do NOT reference configurations.implementation (non-resolvable).
         // Option A: only main output (sufficient for Swing-only launcher):
@@ -93,7 +103,7 @@ tasks.register('packageAll') {
 def webUiDir = "${projectDir}/webui"
 def webUiDistDir = "${webUiDir}/dist"      // adjust if Angular outputs dist/<app>/browser
 def hasWebUi = file("${webUiDir}/package.json").exists()
-def skipWebuiBuild = project.findProperty('skipWebuiBuild') == 'true'
+def skipWebuiBuild = project.findProperty('skipWebuiBuild') == 'false'
 
 // Download/use local Node so we don't depend on PATH or NVM
 node {
@@ -157,4 +167,27 @@ distributions {
     }
 }
 
+
 tasks.named('distZip') { dependsOn 'bootJar' }
+
+import proguard.gradle.ProGuardTask
+
+tasks.register('proguard', ProGuardTask) {
+    group = 'build'
+    description = 'Obfuscate the application classes using ProGuard'
+
+    // Configuration file
+    configuration 'proguard-rules.pro'
+
+    // Input: Application classes (compiled output)
+    injars sourceSets.main.output
+
+    // Output: Obfuscated Jar
+    outjars layout.buildDirectory.file('libs/scoring-system-obfuscated.jar')
+
+    // Dependencies (not obfuscated, just for reference)
+    libraryjars sourceSets.main.compileClasspath
+    
+    // Java 9+ modules
+    libraryjars "${System.getProperty('java.home')}/jmods"
+}

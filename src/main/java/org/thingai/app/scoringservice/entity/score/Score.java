@@ -4,9 +4,11 @@ import org.thingai.app.scoringservice.define.ScoreStatus;
 import org.thingai.base.dao.annotations.DaoColumn;
 import org.thingai.base.dao.annotations.DaoTable;
 
+import java.util.HashMap;
+
 @DaoTable(name = "score")
-public class Score {
-    // As alliance ID
+public class Score implements IScoreConfig {
+    // As alliance ID, Q1_R
     @DaoColumn(name = "id", primaryKey = true)
     private String id;
 
@@ -30,15 +32,26 @@ public class Score {
     public void calculateTotalScore() {
 
     }
+
     public void calculatePenalties() {
 
     }
+
     public void fromJson(String json) {
 
     }
 
     public String getRawScoreData() {
         return rawScoreData;
+    }
+
+    @Override
+    public HashMap<String, ScoreDefine> getScoreDefinitions() {
+        return null;
+    }
+
+    public void setRawScoreData(String rawScoreData) {
+        this.rawScoreData = rawScoreData;
     }
 
     public String getAllianceId() {

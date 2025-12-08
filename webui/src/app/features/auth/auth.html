@@ -18,13 +18,13 @@
           <i class="bi" [ngClass]="passwordVisible ? 'bi-eye-slash' : 'bi-eye'"></i>
         </button>
       </div>
-      @if (errorMessage) {
+      @if (errorMessage() !== '') {
         <div class="alert alert-danger mt-3">
-          {{ errorMessage }}
+          {{ errorMessage() }}
         </div>
       }
-      <button type="submit" class="w-100 btn btn-lg btn-primary" [disabled]="authForm.invalid || loading">
-        @if (!loading) {
+      <button type="submit" class="w-100 btn btn-lg btn-primary" [disabled]="loading()">
+        @if (!loading()) {
           <span >Login</span>
         } @else {
           <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

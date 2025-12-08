@@ -23,6 +23,23 @@ export abstract class MatchService {
     timeBlocks: TimeBlock[];  // breaks
   }): Observable<{ message: string }>;
 
+  abstract generatePlayoffSchedule(scheduleConfig: {
+    playoffType: number;
+    startTime: string;
+    matchDuration: number;
+    fieldCount: number;
+    allianceTeams: { allianceId: string; teamId: string }[];
+    timeBlocks: TimeBlock[];
+  }): Observable<{ message: string }>;
+
+  abstract createMatch(matchConfig: {
+    matchType: number;
+    matchNumber: number;
+    matchStartTime: string;
+    redTeamIds: string[];
+    blueTeamIds: string[];
+  }): Observable<{ message: string; matchId?: string }>;
+
   abstract getScore(allianceId: string): Observable<Score>;
   abstract submitScore(allianceId: string, scoreData: any): Observable<Score>;
 }
@@ -67,6 +84,40 @@ export class ProdMatchService extends MatchService {
     );
   }
 
+  override generatePlayoffSchedule(payload: {
+    playoffType: number;
+    startTime: string;
+    matchDuration: number;
+    fieldCount: number;
+    allianceTeams: { allianceId: string; teamId: string }[];
+    timeBlocks: TimeBlock[];
+  }): Observable<{ message: string }> {
+    return this.http.post(`${this.apiUrl}/schedule/generate/playoff`, payload, { observe: 'response' }).pipe(
+      map(res => {
+        const body = res.body as any;
+        const message = body?.message ?? 'Playoff schedule generated successfully.';
+        return { message };
+      })
+    );
+  }
+
+  override createMatch(payload: {
+    matchType: number;
+    matchNumber: number;
+    matchStartTime: string;
+    redTeamIds: string[];
+    blueTeamIds: string[];
+  }): Observable<{ message: string; matchId?: string }> {
+    return this.http.post(`${this.apiUrl}/create`, payload, { observe: 'response' }).pipe(
+      map(res => {
+        const body = res.body as any;
+        const message = body?.message ?? 'Match created successfully.';
+        const matchId = body?.matchId;
+        return { message, matchId };
+      })
+    );
+  }
+
   override getScore(allianceId: string): Observable<Score> {
     return this.http.get<Score>(`${this.scoreApiUrl}/alliance/${allianceId}`);
   }
@@ -106,7 +157,33 @@ export class MockMatchService extends MatchService {
           blueTeams: [
             { teamId: `B${i}1`, teamName: `Blue Team ${i}1`, teamSchool: `School ${i}1`, teamRegion: `Region ${i}1` },
             { teamId: `B${i}2`, teamName: `Blue Team ${i}2`, teamSchool: `School ${i}2`, teamRegion: `Region ${i}2` },
-          ]
+          ],
+          redScore: {
+            id: `red-${i}`,
+            status: 1,
+            totalScore: 100,
+            penaltiesScore: 0,
+            rawScoreData: JSON.stringify({
+              robotParked: 2,
+              robotHanged: 1,
+              ballEntered: 10,
+              minorFault: 1,
+              majorFault: 0
+            })
+          },
+          blueScore: {
+            id: `blue-${i}`,
+            status: 1,
+            totalScore: 80,
+            penaltiesScore: 0,
+            rawScoreData: JSON.stringify({
+              robotParked: 1,
+              robotHanged: 0,
+              ballEntered: 5,
+              minorFault: 0,
+              majorFault: 0
+            })
+          }
         });
       }
       observer.next(mockMatches);
@@ -133,6 +210,20 @@ export class MockMatchService extends MatchService {
     });
   }
 
+  override generatePlayoffSchedule(_: any): Observable<{ message: string }> {
+    return new Observable(observer => {
+      observer.next({ message: 'Mock playoff schedule generated' });
+      observer.complete();
+    });
+  }
+
+  override createMatch(_: any): Observable<{ message: string; matchId?: string }> {
+    return new Observable(observer => {
+      observer.next({ message: 'Mock match created', matchId: 'mock-match-id' });
+      observer.complete();
+    });
+  }
+
   override getScore(allianceId: string): Observable<Score> {
     return new Observable<Score>(observer => {
       const mockScore: Score = {
@@ -140,7 +231,13 @@ export class MockMatchService extends MatchService {
         status: 1,
         penaltiesScore: RandomUtils.generateRandomNumber(0, 50),
         totalScore: RandomUtils.generateRandomNumber(100, 300),
-        rawScoreData: ""
+        rawScoreData: JSON.stringify({
+          robotParked: 2,
+          robotHanged: 1,
+          ballEntered: 10,
+          minorFault: 1,
+          majorFault: 0
+        })
       };
       observer.next(mockScore);
       observer.complete();

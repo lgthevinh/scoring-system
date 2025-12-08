@@ -2,71 +2,70 @@
 
   <!-- Sidebar (Bootstrap example; fixed + full-height via CSS) -->
   <div class="d-flex flex-column flex-shrink-0 p-3 bg-light border-end mc-sidebar">
-    <a href="/"
-       class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
       <span class="fs-4 fw-semibold">Home</span>
     </a>
     <hr class="my-3">
     <ul class="nav nav-pills flex-column mb-auto">
       <li class="nav-item">
         <a href="#" class="nav-link" [class.active]="selectedTab() === 'schedule'"
-           (click)="$event.preventDefault(); setTab('schedule')">
+          (click)="$event.preventDefault(); setTab('schedule')">
           <i class="bi bi-list-ul me-2"></i>
           Schedule
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'incomplete'"
-           (click)="$event.preventDefault(); setTab('incomplete')">
+          (click)="$event.preventDefault(); setTab('incomplete')">
           <i class="bi bi-exclamation-circle me-2"></i>
           Incomplete Matches
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'score-edit'"
-           (click)="$event.preventDefault(); setTab('score-edit')">
+          (click)="$event.preventDefault(); setTab('score-edit')">
           <i class="bi bi-pencil-square me-2"></i>
           Score Edit
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'active-match'"
-           (click)="$event.preventDefault(); setTab('active-match')">
+          (click)="$event.preventDefault(); setTab('active-match')">
           <i class="bi bi-lightning-charge me-2"></i>
           Active Match
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'settings'"
-           (click)="$event.preventDefault(); setTab('settings')">
+          (click)="$event.preventDefault(); setTab('settings')">
           <i class="bi bi-gear me-2"></i>
           Settings
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'alliance-selection'"
-           (click)="$event.preventDefault(); setTab('alliance-selection')">
+          (click)="$event.preventDefault(); setTab('alliance-selection')">
           <i class="bi bi-people me-2"></i>
           Alliance Selection
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'video-switch'"
-           (click)="$event.preventDefault(); setTab('video-switch')">
+          (click)="$event.preventDefault(); setTab('video-switch')">
           <i class="bi bi-camera-video me-2"></i>
           Video Switch
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'present-awards'"
-           (click)="$event.preventDefault(); setTab('present-awards')">
+          (click)="$event.preventDefault(); setTab('present-awards')">
           <i class="bi bi-award me-2"></i>
           Present Awards
         </a>
       </li>
       <li>
         <a href="#" class="nav-link link-dark" [class.active]="selectedTab() === 'help'"
-           (click)="$event.preventDefault(); setTab('help')">
+          (click)="$event.preventDefault(); setTab('help')">
           <i class="bi bi-question-circle me-2"></i>
           Help
         </a>
@@ -163,7 +162,8 @@
       <div class="card my-3">
         <div class="card-body py-2 d-flex justify-content-between align-items-center">
           <div class="fw-semibold">{{ selectedTabTitle() }}</div>
-          <button class="btn btn-outline-secondary btn-sm" (click)="commitAndPostLastMatch()">Commit & Post Last Match</button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="commitAndPostLastMatch()">Commit & Post Last
+            Match</button>
         </div>
       </div>
 
@@ -172,10 +172,23 @@
     <!-- Content -->
     <div>
       @if (selectedTab() === 'schedule') {
-        <div class="card">
-          <div class="table-responsive position-relative">
-            <table class="table table-sm table-hover align-middle mb-0 tableFixHead">
-              <thead class="table-primary">
+      <div class="card">
+        <div class="card-header bg-white py-2">
+          <div class="d-flex align-items-center">
+            <label class="me-2 fw-semibold">View Schedule:</label>
+            <select class="form-select form-select-sm w-auto" [(ngModel)]="viewMatchType"
+              (change)="onViewMatchTypeChange()">
+              <option [ngValue]="0">Practice</option>
+              <option [ngValue]="1">Qualification</option>
+              <option [ngValue]="2">Playoff</option>
+              <option [ngValue]="3">Semi-final</option>
+              <option [ngValue]="4">Final</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive position-relative">
+          <table class="table table-sm table-hover align-middle mb-0 tableFixHead">
+            <thead class="table-primary">
               <tr>
                 <th class="text-start">Match</th>
                 <th>Field</th>
@@ -189,63 +202,146 @@
                 <th class="text-center" style="width: 90px;">Load</th>
                 <th class="text-center" style="width: 120px;">Enter Scores</th>
               </tr>
-              </thead>
-              <tbody>
-                @for (m of schedule(); track m.match.id) {
-                  <tr>
-                    <td class="text-start">{{ m.match.matchCode }}</td>
-                    <td>{{ m.match.fieldNumber }}</td>
-                    <td>{{ m.match.matchEndTime != null ? "PLAYED" : "UNPLAYED" }}</td>
-                    <td>{{ m.redTeams[0]?.teamId }}</td>
-                    <td>{{ m.redTeams[1]?.teamId }}</td>
-                    <td>{{ m.redTeams[2]?.teamId }}</td>
-                    <td>{{ m.blueTeams[0]?.teamId }}</td>
-                    <td>{{ m.blueTeams[1]?.teamId }}</td>
-                    <td>{{ m.blueTeams[2]?.teamId }}</td>
-                    <td class="text-center">
-                      <button class="btn btn-outline-primary btn-sm px-2" (click)="playMatch(m)">Load</button>
-                    </td>
-                    <td class="text-center">
-                      <button class="btn btn-outline-primary btn-sm px-2" (click)="enterScores(m)">Enter Scores</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+            </thead>
+            <tbody>
+              @for (m of schedule(); track m.match.id) {
+              <tr>
+                <td class="text-start">{{ m.match.matchCode }}</td>
+                <td>{{ m.match.fieldNumber }}</td>
+                <td>{{ m.match.matchEndTime != null ? "PLAYED" : "UNPLAYED" }}</td>
+                <td>{{ m.redTeams[0]?.teamId }}</td>
+                <td>{{ m.redTeams[1]?.teamId }}</td>
+                <td>{{ m.redTeams[2]?.teamId }}</td>
+                <td>{{ m.blueTeams[0]?.teamId }}</td>
+                <td>{{ m.blueTeams[1]?.teamId }}</td>
+                <td>{{ m.blueTeams[2]?.teamId }}</td>
+                <td class="text-center">
+                  <button class="btn btn-outline-primary btn-sm px-2" (click)="playMatch(m)">Load</button>
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-outline-primary btn-sm px-2" (click)="enterScores(m)">Enter Scores</button>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
         </div>
+      </div>
       } @else if (selectedTab() === 'incomplete') {
-        <div class="card"><div class="card-body">
+      <div class="card">
+        <div class="card-body">
           <p class="mb-0 text-muted">Incomplete matches listing (placeholder)</p>
-        </div></div>
+        </div>
+      </div>
       } @else if (selectedTab() === 'score-edit') {
-        <div class="card"><div class="card-body">
-          <p class="mb-0 text-muted">Score edit tools (placeholder)</p>
-        </div></div>
+      <div class="card">
+        <div class="card-body">
+          @if (!editingMatch()) {
+          <div class="alert alert-info">
+            Select a match from the Schedule tab to edit scores.
+          </div>
+          <select class="form-select mb-3" (change)="enterScores($any($event.target).value)">
+            <option [ngValue]="null" selected>-- Select Match --</option>
+            @for (m of schedule(); track m.match.id) {
+            <option [value]="m">{{ m.match.matchCode }}</option>
+            }
+          </select>
+          <!-- Note: The select above binds the value as string if not careful,
+                 but for simplicity in this prototype we rely on the user going via Schedule tab
+                 or we'd need a proper lookup. Let's just list them. -->
+          } @else {
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0">Editing Score: {{ editingMatch()?.match?.matchCode }}</h5>
+            <div>
+              <button class="btn btn-secondary me-2" (click)="cancelEdit()">Cancel</button>
+              <button class="btn btn-primary" (click)="saveScores()">Save Scores</button>
+            </div>
+          </div>
+
+          <app-scoresheet [match]="editingMatch()" [editable]="true" (redScoreChange)="onRedScoreChange($event)"
+            (blueScoreChange)="onBlueScoreChange($event)">
+          </app-scoresheet>
+          }
+        </div>
+      </div>
       } @else if (selectedTab() === 'active-match') {
-        <div class="card"><div class="card-body">
+      <div class="card">
+        <div class="card-body">
           <p class="mb-0 text-muted">Active match details (placeholder)</p>
-        </div></div>
+        </div>
+      </div>
       } @else if (selectedTab() === 'settings') {
-        <div class="card"><div class="card-body">
+      <div class="card">
+        <div class="card-body">
           <p class="mb-0 text-muted">Settings (placeholder)</p>
-        </div></div>
+        </div>
+      </div>
       } @else if (selectedTab() === 'alliance-selection') {
-        <div class="card"><div class="card-body">
-          <p class="mb-0 text-muted">Alliance selection (placeholder)</p>
-        </div></div>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-4">Alliance Selection & Match Creation</h5>
+
+          <div class="row">
+
+            <!-- Manual Match Creation -->
+            <div class="col-12 col-lg-6 mb-4">
+              <div class="card h-100 border-secondary">
+                <div class="card-header bg-secondary text-white">Manual Match Creation</div>
+                <div class="card-body">
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <label class="form-label">Match Type</label>
+                      <select class="form-select" [(ngModel)]="manualMatchType">
+                        <option [ngValue]="0">Practice</option>
+                        <option [ngValue]="1">Qualification</option>
+                        <option [ngValue]="2">Playoff</option>
+                        <option [ngValue]="3">Semi-final</option>
+                        <option [ngValue]="4">Final</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label class="form-label">Match Number</label>
+                      <input type="number" class="form-control" [(ngModel)]="manualMatchNumber">
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Start Time</label>
+                    <input type="datetime-local" class="form-control" [(ngModel)]="manualStartTime">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Red Teams (comma sep)</label>
+                    <input type="text" class="form-control" [(ngModel)]="manualRedTeams" placeholder="R1, R2">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Blue Teams (comma sep)</label>
+                    <input type="text" class="form-control" [(ngModel)]="manualBlueTeams" placeholder="B1, B2">
+                  </div>
+                  <button class="btn btn-secondary w-100" (click)="createManualMatch()">Create Match</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
       } @else if (selectedTab() === 'video-switch') {
-        <div class="card"><div class="card-body">
+      <div class="card">
+        <div class="card-body">
           <p class="mb-0 text-muted">Video switch (placeholder)</p>
-        </div></div>
+        </div>
+      </div>
       } @else if (selectedTab() === 'present-awards') {
-        <div class="card"><div class="card-body">
+      <div class="card">
+        <div class="card-body">
           <p class="mb-0 text-muted">Present awards (placeholder)</p>
-        </div></div>
+        </div>
+      </div>
       } @else if (selectedTab() === 'help') {
-        <div class="card"><div class="card-body">
+      <div class="card">
+        <div class="card-body">
           <p class="mb-0 text-muted">Help and operator instructions (placeholder)</p>
-        </div></div>
+        </div>
+      </div>
       }
     </div>
   </div>

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
+import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.time.TimeBlock;
 import org.thingai.base.log.ILog;
@@ -31,8 +32,8 @@ public class MatchController {
             int matchType = Integer.parseInt(request.get("matchType").toString());
             int matchNumber = Integer.parseInt(request.get("matchNumber").toString());
             String matchStartTime = request.get("matchStartTime").toString();
-            String[] redTeamIds = request.get("redTeamIds").toString().split(",");
-            String[] blueTeamIds = request.get("blueTeamIds").toString().split(",");
+            String[] redTeamIds = ((List<String>) request.get("redTeamIds")).toArray(new String[0]);
+            String[] blueTeamIds = ((List<String>) request.get("blueTeamIds")).toArray(new String[0]);
 
             ScoringService.matchHandler().createMatch(matchType, matchNumber, matchStartTime, redTeamIds, blueTeamIds, createMatchCallback(future));
         } catch (Exception e) {
@@ -95,10 +96,6 @@ public class MatchController {
     @GetMapping("/list/details/{matchType}")
     public ResponseEntity<Object> listMatchDetails(@PathVariable int matchType, @RequestParam(required = false) boolean withScore) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        if (withScore) {
-            ILog.d("MatchController", "Listing match details for matchType %d with scores included.");
-        }
-
         ScoringService.matchHandler().listMatchDetails(matchType, withScore, new RequestCallback<MatchDetailDto[]>() {
             @Override
             public void onSuccess(MatchDetailDto[] matchDetails, String successMessage) {
@@ -193,8 +190,35 @@ public class MatchController {
         return getObjectResponse(future);
     }
 
-    // --- Helper Methods for DRY code ---
+    @PostMapping("/schedule/generate/playoff")
+    public ResponseEntity<Object> generatePlayoffSchedule(@RequestBody Map<String, Object> request) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        try {
+            int playoffType = Integer.parseInt(request.get("playoffType").toString());
+            String startTime = request.get("startTime").toString();
+            int matchDuration = Integer.parseInt(request.get("matchDuration").toString());
+            int fieldCount = Integer.parseInt(request.get("fieldCount").toString());
+            AllianceTeam[] allianceTeams = objectMapper.convertValue(request.get("allianceTeams"), AllianceTeam[].class);
+            TimeBlock[] timeBlocks = objectMapper.convertValue(request.get("timeBlocks"), TimeBlock[].class);
+            ScoringService.matchHandler().generatePlayoffSchedule(playoffType, fieldCount, allianceTeams, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
+                @Override
+                public void onSuccess(Void result, String successMessage) {
+                    future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
+                }
 
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    ILog.e("MatchController", "Failed to generate playoff schedule: " + errorMessage);
+                    future.complete(createErrorResponse(errorCode, errorMessage));
+                }
+            });
+        } catch (Exception e) {
+            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
+        }
+        return getObjectResponse(future);
+    }
+
+    // --- Helper Methods for DRY code ---
     private RequestCallback<Match> createMatchCallback(CompletableFuture<ResponseEntity<Object>> future) {
         return new RequestCallback<>() {
             @Override

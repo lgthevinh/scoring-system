@@ -6,10 +6,12 @@ import {environment} from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = environment .apiBaseUrl + '/api/auth';
+  private apiUrl = environment.apiBaseUrl + '/api/auth';
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    console.log(this.apiUrl);
+  }
 
   login(credentials: { username: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, credentials).pipe(

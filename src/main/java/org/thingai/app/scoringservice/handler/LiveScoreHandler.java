@@ -10,6 +10,7 @@ import org.thingai.app.scoringservice.dto.MatchTimeStatusDto;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.entityhandler.MatchHandler;
+import org.thingai.app.scoringservice.handler.entityhandler.RankingHandler;
 import org.thingai.app.scoringservice.handler.entityhandler.ScoreHandler;
 import org.thingai.base.log.ILog;
 
@@ -19,9 +20,11 @@ import java.time.format.DateTimeFormatter;
 public class LiveScoreHandler {
     private static final String TAG = "ScorekeeperHandler";
     private static final MatchTimerHandler matchTimerHandler = new MatchTimerHandler();
+    private static final int MATCH_DURATION_SECONDS = 150; // modify this based on season rules
 
-    private final MatchHandler matchHandler;
-    private final ScoreHandler scoreHandler;
+    private MatchHandler matchHandler;
+    private ScoreHandler scoreHandler;
+    private RankingHandler rankingHandler;
 
     private BroadcastHandler broadcastHandler;
 
@@ -34,9 +37,10 @@ public class LiveScoreHandler {
     private boolean isRedCommitable = false;
     private boolean isBlueCommitable = false;
 
-    public LiveScoreHandler(MatchHandler matchHandler, ScoreHandler scoreHandler) {
+    public LiveScoreHandler(MatchHandler matchHandler, ScoreHandler scoreHandler, RankingHandler rankingHandler) {
         this.matchHandler = matchHandler;
         this.scoreHandler = scoreHandler;
+        this.rankingHandler = rankingHandler;
 
         matchTimerHandler.setCallback(new MatchTimerHandler.TimerCallback() {
             @Override
@@ -94,19 +98,17 @@ public class LiveScoreHandler {
             currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
             currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, 150);
+            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS);
 
-            broadcastHandler.broadcast(rootTopic +  "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
-            broadcastHandler.broadcast(rootTopic +  "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
-            broadcastHandler.broadcast(rootTopic +  "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
+            broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
 
             callback.onSuccess(true, "Match started");
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to start match: " + e.getMessage());
         }
-
-
     }
 
     public void handleLiveScoreUpdate(LiveScoreUpdateDto liveScoreUpdate, boolean isRedAlliance) {
@@ -196,6 +198,8 @@ public class LiveScoreHandler {
         isRedCommitable = false;
         isBlueCommitable = false;
 
+        rankingHandler.updateRankingEntry(currentMatch, currentBlueScoreHolder, currentRedScoreHolder);
+
         callback.onSuccess(result, "Scores committed successfully");
     }
 
@@ -207,6 +211,7 @@ public class LiveScoreHandler {
      * @param callback
      */
     public void overrideScore(String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {
+        ILog.d(TAG, "Override score request received for alliance " + allianceId + ": " + jsonScoreData);
         Score targetScore = ScoreHandler.factoryScore();
         try {
             targetScore.setAllianceId(allianceId);
@@ -250,6 +255,8 @@ public class LiveScoreHandler {
 
     public void getCurrentMatchField(int fieldNumber, RequestCallback<MatchDetailDto> callback) {
         try {
+            currentMatch.setBlueScore(currentBlueScoreHolder);
+            currentMatch.setRedScore(currentRedScoreHolder);
             if (fieldNumber == 0) {
                 callback.onSuccess(currentMatch, "Current match field retrieved successfully");
                 return;

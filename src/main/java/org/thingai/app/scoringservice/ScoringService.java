@@ -3,6 +3,7 @@ package org.thingai.app.scoringservice;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
+import org.thingai.app.scoringservice.entity.ranking.RankingEntry;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.BroadcastHandler;
 import org.thingai.app.scoringservice.handler.LiveScoreHandler;
@@ -30,16 +31,13 @@ public class ScoringService extends Service {
     private final LRUCache<String, AllianceTeam[]> allianceTeamCache = new LRUCache<>(100, new HashMap<>());
     private final LRUCache<String, Team> teamCache = new LRUCache<>(30, new HashMap<>());
 
-    private Dao sysdao;
-    private Dao eventDao;
-
-    private DaoFile eventDaoFile;
-
     private static AuthHandler authHandler;
     private static TeamHandler teamHandler;
     private static ScoreHandler scoreHandler;
     private static MatchHandler matchHandler;
+    private static RankingHandler rankingHandler;
     private static BroadcastHandler broadcastHandler;
+
     private static LiveScoreHandler liveScoreHandler;
 
     public ScoringService() {
@@ -48,41 +46,32 @@ public class ScoringService extends Service {
 
     @Override
     protected void onServiceInit() {
-        sysdao = new DaoSqlite(appDir + "/scoring_system.db");
-        eventDao = new DaoSqlite(appDir + "/event.db");
-
-        eventDaoFile = new DaoFile(appDir + "/event_files");
+        Dao dao = new DaoSqlite(appDir + "/scoring_system.db");
+        DaoFile daoFile = new DaoFile(appDir + "/files");
 
         System.out.println("Service initialized with app directory: " + appDir);
 
-        sysdao.initDao(new Class[]{
+        dao.initDao(new Class[]{
                 Event.class,
                 Match.class,
                 AllianceTeam.class,
                 Team.class,
                 Score.class,
+                RankingEntry.class,
 
                 // System entities
                 AuthData.class,
                 AccountRole.class,
                 DbMapEntity.class
         });
-
-        eventDao.initDao(new Class[]{
-                Match.class,
-                AllianceTeam.class,
-                Team.class,
-                Score.class,
-
-                DbMapEntity.class,
-        });
         // Initialize handler
-        authHandler = new AuthHandler(sysdao);
-        teamHandler = new TeamHandler(eventDao, teamCache);
-        matchHandler = new MatchHandler(eventDao, matchCache, allianceTeamCache, teamCache);
-        scoreHandler = new ScoreHandler(eventDao, eventDaoFile);
+        authHandler = new AuthHandler(dao);
+        teamHandler = new TeamHandler(dao, teamCache);
+        matchHandler = new MatchHandler(dao, matchCache, allianceTeamCache, teamCache);
+        scoreHandler = new ScoreHandler(dao, daoFile);
+        rankingHandler = new RankingHandler(dao, matchHandler);
 
-        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
+        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler, rankingHandler);
         liveScoreHandler.setBroadcastHandler(broadcastHandler);
 
         String ipAddress;
@@ -96,30 +85,6 @@ public class ScoringService extends Service {
         ILog.i(SERVICE_NAME, "Running on URL: http://" + ipAddress);
         ILog.i(SERVICE_NAME, "Database initialized at: " + appDir + "/scoring_system.db");
         ILog.i(SERVICE_NAME, "File storage initialized at: " + appDir + "/files");
-    }
-
-    public void switchEvent() {
-        // TODO: Implement event switching logic
-    }
-
-    public void createNewEvent(Event event) {
-        sysdao.insert(Event.class, event);
-        eventDao = new DaoSqlite(this.appDir + "/" + event.getEventCode() + ".db");
-        eventDao.initDao(new Class[]{
-                Match.class,
-                AllianceTeam.class,
-                Team.class,
-                Score.class,
-
-                DbMapEntity.class,
-        });
-        eventDaoFile = new DaoFile(this.appDir + "/" + event.getEventCode() + "_files");
-        // Reinitialize handlers with new event DAO and file storage
-        teamHandler.setDao(eventDao);
-        matchHandler.setDao(eventDao);
-        scoreHandler.setDao(eventDao, eventDaoFile);
-
-        liveScoreHandler = new LiveScoreHandler(matchHandler, scoreHandler);
     }
 
     public static AuthHandler authHandler() {
@@ -144,6 +109,10 @@ public class ScoringService extends Service {
 
     public static LiveScoreHandler liveScoreHandler() {
         return liveScoreHandler;
+    }
+
+    public static RankingHandler rankingHandler() {
+        return rankingHandler;
     }
 
     public void setSimpMessagingTemplate(SimpMessagingTemplate simpMessagingTemplate) {

@@ -1,8 +1,8 @@
-import {environment} from '../../../environments/environment';
-import {HttpClient} from '@angular/common/http';
-import {Injectable} from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class RefereeService {
   private apiUrl = environment.apiBaseUrl + '/api/ref';
 
@@ -14,4 +14,9 @@ export class RefereeService {
     console.log('Submitting final score:', color, allianceId, scoreData);
     return this.http.post(`${this.apiUrl}/submit/${color}/${allianceId}/final-score`, scoreData);
   }
+
+  getScoreUiDefinitions() {
+    return this.http.get<any[]>(`${environment.apiBaseUrl}/api/score/ui-definitions`);
+  }
+
 }

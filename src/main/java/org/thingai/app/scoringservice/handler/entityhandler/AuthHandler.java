@@ -3,6 +3,7 @@ package org.thingai.app.scoringservice.handler.entityhandler;
 import org.thingai.app.scoringservice.entity.config.AccountRole;
 import org.thingai.base.dao.Dao;
 import org.thingai.app.scoringservice.entity.config.AuthData;
+import org.thingai.base.log.ILog;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -92,8 +93,8 @@ public class AuthHandler {
         accountRole.setRole(role);
 
         try {
-            dao.insert(AuthData.class, authData);
-            dao.insert(AccountRole.class, accountRole);
+            dao.insertOrUpdate(authData);
+            dao.insertOrUpdate(accountRole);
             String token = generateToken(username);
             callback.onSuccess(token, "Authentication created successfully.");
         } catch (Exception e) {

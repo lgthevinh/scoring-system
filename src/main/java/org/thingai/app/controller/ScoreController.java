@@ -7,7 +7,9 @@ import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.controller.utils.ResponseEntityUtil;
+import org.thingai.app.scoringservice.entity.score.ScoreDefine;
 
+import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorResponse;
 
@@ -16,16 +18,17 @@ import static org.thingai.app.controller.utils.ResponseEntityUtil.createErrorRes
 public class ScoreController {
     /**
      * Retrieves the current score for a specific alliance.
+     * 
      * @param allianceId The unique ID of the alliance (e.g., "Q1_R").
      * @return A ResponseEntity containing the Score object or an error.
      */
     @GetMapping("/alliance/{allianceId}")
     public ResponseEntity<Object> getScore(@PathVariable String allianceId) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        ScoringService.scoreHandler().getScoreByAllianceId(allianceId, new RequestCallback<String>() {
+        ScoringService.scoreHandler().getScoreByAllianceId(allianceId, new RequestCallback<Score>() {
             @Override
-            public void onSuccess(String responseObject, String message) {
-                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseObject));
+            public void onSuccess(Score score, String message) {
+                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(score));
             }
 
             @Override
@@ -54,10 +57,13 @@ public class ScoreController {
     }
 
     /**
-     * Submits raw scoring data for an alliance, triggers calculation, and saves the result.
-     * @param allianceId The unique ID of the alliance to score.
+     * Submits raw scoring data for an alliance, triggers calculation, and saves the
+     * result.
+     * 
+     * @param allianceId      The unique ID of the alliance to score.
      * @param scoreDetailsDto The JSON body representing the raw score details.
-     * @return A ResponseEntity containing the final calculated Score object or an error.
+     * @return A ResponseEntity containing the final calculated Score object or an
+     *         error.
      */
     @PostMapping("/submit/{allianceId}")
     public ResponseEntity<Object> submitScore(@PathVariable String allianceId, @RequestBody Object scoreDetailsDto) {
@@ -66,6 +72,23 @@ public class ScoreController {
             @Override
             public void onSuccess(Score score, String message) {
                 future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(score));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @GetMapping("/ui-definitions")
+    public ResponseEntity<Object> getScoreUIDefinitions() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.scoreHandler().getScoreUi(new RequestCallback<HashMap<String, ScoreDefine>>() {
+            @Override
+            public void onSuccess(HashMap<String, ScoreDefine> responseObject, String message) {
+                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(responseObject));
             }
 
             @Override

@@ -11,7 +11,9 @@
       <i class="bi bi-printer"></i>
     </button>
   </div>
-  <h2 class="event-title">{{ eventName }}</h2>
+  <div class="d-flex justify-content-between align-items-center">
+    <h2 class="event-title mb-0">{{ eventName }}</h2>
+  </div>
   <div class="info-row">
     <div>Teams: {{ teamsCount() }}</div>
     <div>Matches Per Team: {{ matchesPerTeam() }}</div>
@@ -19,31 +21,31 @@
   </div>
   <table class="table table-striped schedule-table">
     <thead>
-    <tr>
-      <th>Start</th>
-      <th>Match</th>
-      <th>Field</th>
-      <th>Red 1</th>
-      <th>Red 2</th>
-      <th>Red 3</th>
-      <th>Blue 1</th>
-      <th>Blue 2</th>
-      <th>Blue 3</th>
-    </tr>
+      <tr>
+        <th>Start</th>
+        <th>Match</th>
+        <th>Field</th>
+        <th>Red 1</th>
+        <th>Red 2</th>
+        <th>Red 3</th>
+        <th>Blue 1</th>
+        <th>Blue 2</th>
+        <th>Blue 3</th>
+      </tr>
     </thead>
     <tbody>
       @for (matchDetail of schedule(); track matchDetail.match.id) {
-        <tr>
-          <td>{{ TimeUtils.formatIsoTime(matchDetail.match.matchStartTime, "HH:mm") }}</td>
-          <td>{{ matchDetail.match.matchCode }}</td>
-          <td>{{ matchDetail.match.fieldNumber }}</td>
-          <td>{{ matchDetail.redTeams.at(0)?.teamId }}</td>
-          <td>{{ matchDetail.redTeams.at(1)?.teamId }}</td>
-          <td>{{ matchDetail.redTeams.at(2)?.teamId }}</td>
-          <td>{{ matchDetail.blueTeams.at(0)?.teamId }}</td>
-          <td>{{ matchDetail.blueTeams.at(1)?.teamId }}</td>
-          <td>{{ matchDetail.blueTeams.at(2)?.teamId }}</td>
-        </tr>
+      <tr>
+        <td>{{ TimeUtils.formatIsoTime(matchDetail.match.matchStartTime, "HH:mm") }}</td>
+        <td>{{ matchDetail.match.matchCode }}</td>
+        <td>{{ matchDetail.match.fieldNumber }}</td>
+        <td>{{ matchDetail.redTeams.at(0)?.teamId }}</td>
+        <td>{{ matchDetail.redTeams.at(1)?.teamId }}</td>
+        <td>{{ matchDetail.redTeams.at(2)?.teamId }}</td>
+        <td>{{ matchDetail.blueTeams.at(0)?.teamId }}</td>
+        <td>{{ matchDetail.blueTeams.at(1)?.teamId }}</td>
+        <td>{{ matchDetail.blueTeams.at(2)?.teamId }}</td>
+      </tr>
       }
     </tbody>
   </table>

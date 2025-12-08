@@ -4,6 +4,7 @@ import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.define.ErrorCode;
 import org.thingai.app.scoringservice.define.MatchType;
 import org.thingai.app.scoringservice.dto.MatchDetailDto;
+import org.thingai.app.scoringservice.entity.config.DbMapEntity;
 import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.team.Team;
@@ -37,20 +38,33 @@ public class MatchHandler {
     // Flag to indicate if the cache is stale and needs to be refreshed from the database.
     private boolean matchUpdateFlag = true; // Start as true to force initial loads.
 
+    private int currentEventMatchType;
+
     public MatchHandler(Dao dao, LRUCache<String, Match> matchCache, LRUCache<String, AllianceTeam[]> allianceTeamCache, LRUCache<String, Team> teamCache) {
         this.dao = dao;
         this.matchCache = matchCache;
         this.allianceTeamCache = allianceTeamCache;
         this.teamCache = teamCache;
 
-        this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath().toString() + "/MatchMaker.exe");
+        String osName = System.getProperty("os.name").toLowerCase();
+        if (osName.contains("win")) {
+            ILog.d("MatchHandler", "Detected Windows OS for MatchMakerHandler.");
+            this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath() + "/MatchMaker.exe");
+        } else if (osName.contains("mac")) {
+            ILog.d("MatchHandler", "Detected macOS for MatchMakerHandler.");
+            this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath() + "/MatchMaker_mac");
+        } else {
+            ILog.d("MatchHandler", "Assuming Linux OS for MatchMakerHandler.");
+            this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath() + "/MatchMaker");
+        }
+
+
 
         Path outPath = Paths.get("data");
         if (!Files.exists(outPath)) {
             try {
                 Files.createDirectories(outPath.getParent());
                 Files.createFile(outPath);
-                ILog.d("MatchHandler", "Created match schedule output file at: " + outPath.toAbsolutePath());
             } catch (Exception e) {
                 ILog.e("MatchHandler", "Error creating match schedule output file: " + e.getMessage());
             }
@@ -59,11 +73,40 @@ public class MatchHandler {
         String outDir = outPath.toAbsolutePath() + "/match_schedule.txt";
         ILog.d("MatchHandler", "Match schedule output path set to: " + outDir);
         this.matchMakerHandler.setOutPath(outDir);
+
+        // Get event match type from dao
+        try {
+            DbMapEntity eventMatchType = dao.query(DbMapEntity.class, new String[]{"key"}, new String[]{"event_match_type_key"})[0];
+            if (eventMatchType != null) {
+                currentEventMatchType = Integer.parseInt(eventMatchType.getValue());
+            } else {
+                currentEventMatchType = MatchType.QUALIFICATION;
+                dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+            }
+        } catch (Exception e) {
+            currentEventMatchType = MatchType.QUALIFICATION;
+        }
+    }
+
+    public void updateEventMatchType(int matchType) {
+        currentEventMatchType = matchType;
+        try {
+            dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+        } catch (Exception e) {
+            ILog.e("MatchHandler", "Failed to update event match type in DB: " + e.getMessage());
+        }
     }
 
     // Methods use outside system implementation
     public void createMatch(int matchType, int matchNumber, String matchStartTime, String[] redTeamIds, String[] blueTeamIds, RequestCallback<Match> callback) {
         try {
+            // Handle duplicate team IDs
+            Set<String> uniqueReds = new HashSet<>(Arrays.asList(redTeamIds));
+            Set<String> uniqueBlues = new HashSet<>(Arrays.asList(blueTeamIds));
+            if (uniqueReds.size() < redTeamIds.length || uniqueBlues.size() < blueTeamIds.length) {
+                throw new Exception("Duplicate team IDs detected in match creation.");
+            }
+
             Match match = new Match();
             match.setMatchType(matchType);
             match.setMatchNumber(matchNumber);
@@ -71,6 +114,7 @@ public class MatchHandler {
 
             String matchCode = switch (matchType) {
                 case MatchType.QUALIFICATION -> "Q" + matchNumber;
+                case MatchType.PLAYOFF -> "P" + matchNumber;
                 case MatchType.SEMIFINAL -> "SF" + matchNumber;
                 case MatchType.FINAL -> "F" + matchNumber;
                 default -> "";
@@ -81,18 +125,22 @@ public class MatchHandler {
             String blueAllianceId = matchCode + "_B";
             String redAllianceId = matchCode + "_R";
 
-            for (String teamId : redTeamIds) {
+            // Clear existing alliance teams if any
+            dao.deleteByColumn(AllianceTeam.class, "allianceId", redAllianceId);
+            dao.deleteByColumn(AllianceTeam.class, "allianceId", blueAllianceId);
+
+            for (String teamId : uniqueReds) {
                 AllianceTeam team = new AllianceTeam();
                 team.setTeamId(teamId);
                 team.setAllianceId(redAllianceId);
-                dao.insert(AllianceTeam.class, team);
+                dao.insertOrUpdate(team);
             }
 
-            for (String teamId : blueTeamIds) {
+            for (String teamId : uniqueBlues) {
                 AllianceTeam team = new AllianceTeam();
                 team.setTeamId(teamId);
                 team.setAllianceId(blueAllianceId);
-                dao.insert(AllianceTeam.class, team);
+                dao.insertOrUpdate(team);
             }
 
             // Create scores (as per original code)
@@ -102,9 +150,9 @@ public class MatchHandler {
             Score blueScore = ScoreHandler.factoryScore();
             blueScore.setAllianceId(blueAllianceId);
 
-            dao.insert(Match.class, match);
-            dao.insert(Score.class, redScore);
-            dao.insert(Score.class, blueScore);
+            dao.insertOrUpdate(match);
+            dao.insertOrUpdate(redScore);
+            dao.insertOrUpdate(blueScore);
 
             setMatchUpdateFlag(true); // Invalidate cache
             callback.onSuccess(match, "Match created successfully.");
@@ -123,7 +171,7 @@ public class MatchHandler {
         }
 
         try {
-            Match match = dao.read(Match.class, matchId);
+            Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
             if (match != null) {
                 matchCache.put(matchId, match); // Add to cache
                 callback.onSuccess(match, "Match retrieved successfully.");
@@ -137,7 +185,7 @@ public class MatchHandler {
 
     public void getMatchDetail(String matchId, RequestCallback<MatchDetailDto> callback) {
         try {
-            Match match = dao.read(Match.class, matchId);
+            Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
             if (match == null) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Match not found.");
                 return;
@@ -151,7 +199,7 @@ public class MatchHandler {
             Team[] redTeams = Arrays.stream(redAllianceTeams)
                     .map(at -> {
                         try {
-                            return dao.read(Team.class, at.getTeamId());
+                            return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                         } catch (Exception e) {
                             return null;
                         }
@@ -161,7 +209,7 @@ public class MatchHandler {
             Team[] blueTeams = Arrays.stream(blueAllianceTeams)
                     .map(at -> {
                         try {
-                            return dao.read(Team.class, at.getTeamId());
+                            return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                         } catch (Exception e) {
                             return null;
                         }
@@ -177,7 +225,7 @@ public class MatchHandler {
 
     public void updateMatch(Match match, RequestCallback<Match> callback) {
         try {
-            dao.update(Match.class, match.getId(), match);
+            dao.insertOrUpdate(match);
             matchCache.put(match.getId(), match);
             setMatchUpdateFlag(true);
             callback.onSuccess(match, "Match updated successfully.");
@@ -213,7 +261,13 @@ public class MatchHandler {
 
     public void listMatchesByType(int matchType, RequestCallback<Match[]> callback) {
         try {
-            Match[] matches = dao.query(Match.class, new String[]{"matchType"}, new String[]{String.valueOf(matchType)});
+            Match[] matches;
+            if (matchType == MatchType.PLAYOFF) {
+                matches = dao.query(Match.class, "SELECT * FROM match WHERE NOT matchType = 1");
+            } else {
+                matches = dao.query(Match.class, new String[]{"matchType"}, new String[]{String.valueOf(matchType)});
+            }
+
             for (Match match : matches) {
                 matchCache.put(match.getId(), match);
             }
@@ -225,7 +279,12 @@ public class MatchHandler {
 
     public void listMatchDetails(int matchType, boolean withScore, RequestCallback<MatchDetailDto[]> callback) {
         try {
-            Match[] matches = dao.query(Match.class, new String[]{"matchType"}, new String[]{String.valueOf(matchType)});
+            Match[] matches;
+            if (matchType == MatchType.PLAYOFF) {
+                matches = dao.query(Match.class, "SELECT * FROM match WHERE NOT matchType = 1");
+            } else {
+                matches = dao.query(Match.class, new String[]{"matchType"}, new String[]{String.valueOf(matchType)});
+            }
             List<MatchDetailDto> detailsList = new ArrayList<>();
 
             for (Match match : matches) {
@@ -252,7 +311,7 @@ public class MatchHandler {
                         .map(at -> {
                             Team team = teamCache.get(at.getTeamId());
                             if (team == null) {
-                                team = dao.read(Team.class, at.getTeamId());
+                                team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
                             return team;
@@ -264,7 +323,7 @@ public class MatchHandler {
                         .map(at -> {
                             Team team = teamCache.get(at.getTeamId());
                             if (team == null) {
-                                team = dao.read(Team.class, at.getTeamId());
+                                team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
                             return team;
@@ -412,6 +471,10 @@ public class MatchHandler {
         }
     }
 
+    public void generatePlayoffSchedule(int playoffType, int fieldCount, AllianceTeam[] allianceTeams, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
+
+    }
+
     /**
      * Parse the "Match Schedule" section from the MatchMaker .txt output.
      * Expected lines like: "  1:    4     7     5     8 "
@@ -535,31 +598,49 @@ public class MatchHandler {
     }
 
     private void createMatchInternal(int matchType, int matchNumber, int field, String matchStartTime, String[] redTeamIds, String[] blueTeamIds) throws Exception {
+        // Handle duplicate team IDs
+        Set<String> uniqueReds = new HashSet<>(Arrays.asList(redTeamIds));
+        Set<String> uniqueBlues = new HashSet<>(Arrays.asList(blueTeamIds));
+        if (uniqueReds.size() < redTeamIds.length || uniqueBlues.size() < blueTeamIds.length) {
+            throw new Exception("Duplicate team IDs detected in match creation.");
+        }
+
         Match match = new Match();
         match.setMatchType(matchType);
         match.setMatchNumber(matchNumber);
         match.setMatchStartTime(matchStartTime);
         match.setFieldNumber(field);
 
-        String matchCode = "Q" + matchNumber;
+        String matchPrefix = switch (matchType) {
+            case MatchType.QUALIFICATION -> "Q";
+            case MatchType.PLAYOFF -> "P";
+            case MatchType.SEMIFINAL -> "SF";
+            case MatchType.FINAL -> "F";
+            default -> "";
+        };
+
+        String matchCode = matchPrefix + matchNumber;
         match.setMatchCode(matchCode);
         match.setId(matchCode);
 
         String blueAllianceId = matchCode + "_B";
         String redAllianceId = matchCode + "_R";
 
-        for (String teamId : redTeamIds) {
+        dao.deleteByColumn(AllianceTeam.class, "allianceId", redAllianceId);
+        dao.deleteByColumn(AllianceTeam.class, "allianceId", blueAllianceId);
+
+        for (String teamId : uniqueReds) {
             AllianceTeam team = new AllianceTeam();
             team.setTeamId(teamId);
             team.setAllianceId(redAllianceId);
-            dao.insert(AllianceTeam.class, team);
+            dao.insertOrUpdate(team);
         }
 
-        for (String teamId : blueTeamIds) {
+        for (String teamId : uniqueBlues) {
             AllianceTeam team = new AllianceTeam();
             team.setTeamId(teamId);
             team.setAllianceId(blueAllianceId);
-            dao.insert(AllianceTeam.class, team);
+            dao.insertOrUpdate(team);
         }
 
         Score redScore = ScoreHandler.factoryScore();
@@ -568,9 +649,9 @@ public class MatchHandler {
         Score blueScore = ScoreHandler.factoryScore();
         blueScore.setAllianceId(blueAllianceId);
 
-        dao.insert(Match.class, match);
-        dao.insert(Score.class, redScore);
-        dao.insert(Score.class, blueScore);
+        dao.insertOrUpdate(match);
+        dao.insertOrUpdate(Score.class, redScore);
+        dao.insertOrUpdate(Score.class, blueScore);
     }
 
     // Methods use inside system implementation
@@ -582,7 +663,7 @@ public class MatchHandler {
             }
         }
 
-        Match match = dao.read(Match.class, matchId);
+        Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
         if (match != null) {
             matchCache.put(matchId, match); // Add to cache
             return match;
@@ -592,7 +673,7 @@ public class MatchHandler {
     }
 
     public MatchDetailDto getMatchDetailSync(String matchId) throws Exception {
-        Match match = dao.read(Match.class, matchId);
+        Match match = dao.query(Match.class, new String[]{"id"}, new String[]{matchId})[0];
         if (match == null) {
             throw new Exception("Match not found.");
         }
@@ -605,7 +686,7 @@ public class MatchHandler {
         Team[] redTeams = Arrays.stream(redAllianceTeams)
                 .map(at -> {
                     try {
-                        return dao.read(Team.class, at.getTeamId());
+                        return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                     } catch (Exception e) {
                         return null;
                     }
@@ -615,7 +696,7 @@ public class MatchHandler {
         Team[] blueTeams = Arrays.stream(blueAllianceTeams)
                 .map(at -> {
                     try {
-                        return dao.read(Team.class, at.getTeamId());
+                        return dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                     } catch (Exception e) {
                         return null;
                     }

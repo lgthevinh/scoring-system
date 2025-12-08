@@ -5,6 +5,7 @@ import org.thingai.base.dao.annotations.DaoTable;
 
 @DaoTable(name = "match")
 public class Match {
+    // Match ID format: matchCode + matchNumber (e.g., Q1, P2)
     @DaoColumn(name = "id", primaryKey = true)
     private String id;
 
