@@ -6,7 +6,9 @@ import org.thingai.app.controller.utils.ResponseEntityUtil;
 import org.thingai.app.scoringservice.ScoringService;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.event.Event;
+import org.thingai.app.scoringservice.define.ErrorCode;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -63,9 +65,54 @@ public class EventController {
         return ResponseEntityUtil.getObjectResponse(future);
     }
 
-    @PostMapping("/set")
-    public ResponseEntity<Object> setupEvent(@RequestBody String eventCode) {
+    @PostMapping("/update")
+    public ResponseEntity<Object> updateEvent(@RequestBody Event event) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.eventHandler().updateEvent(event, new RequestCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean responseObject, String message) {
+                future.complete(ResponseEntity.ok().body(responseObject));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(ResponseEntity.status(500).body("Error updating event: " + errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<Object> deleteEvent(@RequestBody Map<String, Object> body) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+
+        String eventCode = body.get("eventCode").toString();
+        boolean cleanDelete = body.get("cleanDelete") != null && (boolean) body.get("cleanDelete");
+        ScoringService.eventHandler().deleteEventByCode(eventCode, cleanDelete, new RequestCallback<Void>() {
+            @Override
+            public void onSuccess(Void responseObject, String message) {
+                future.complete(ResponseEntity.ok().body("Event deleted successfully."));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                switch (errorCode) {
+                    case ErrorCode.DELETE_FAILED:
+                        future.complete(ResponseEntity.status(400).body("Failed to delete event: " + errorMessage));
+                        break;
+                    default:
+                        future.complete(ResponseEntity.status(500).body("Error deleting event: " + errorMessage));
+                }
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @PostMapping("/set")
+    public ResponseEntity<Object> setupEvent(@RequestBody Map<String, Object> body) {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+
+        String eventCode = body.get("eventCode").toString();
         ScoringService.eventHandler().setSystemEvent(eventCode, new RequestCallback<Event>() {
             @Override
             public void onSuccess(Event responseObject, String message) {

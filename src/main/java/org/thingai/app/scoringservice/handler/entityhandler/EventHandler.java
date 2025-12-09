@@ -20,11 +20,12 @@ public class EventHandler {
     private static final String TAG = "EventHandler";
 
     private final Dao systemDao;
+    private final EventCallback eventCallback;
+
     private Dao eventDao;
     private DaoFile eventDaoFile;
 
     private Event currentEvent;
-    private EventCallback eventCallback;
 
     public EventHandler(Dao dao, EventCallback eventCallback) {
         this.systemDao = dao;
@@ -86,6 +87,11 @@ public class EventHandler {
 
     public void deleteEventByCode(String eventCode, boolean cleanDelete, RequestCallback<Void> callback) {
         try {
+            if (currentEvent.getEventCode().equals(eventCode)) {
+                callback.onFailure(ErrorCode.DELETE_FAILED, "Cannot delete the current active event.");
+                return;
+            }
+
             Event[] events = systemDao.query(Event.class, "eventCode", eventCode);
             if (events.length == 0) {
                 callback.onFailure(ErrorCode.NOT_FOUND, "Event with code " + eventCode + " not found.");
@@ -98,6 +104,7 @@ public class EventHandler {
                 File dbFile = new File(eventCode + ".db");
                 if (dbFile.exists()) {
                     if (!dbFile.delete()) {
+                        // TODO: This might failed due to Hikari connection still open, need to close it first
                         callback.onFailure(ErrorCode.DELETE_FAILED, "Failed to delete event database file.");
                         return;
                     }
@@ -121,6 +128,24 @@ public class EventHandler {
             callback.onSuccess(null, "Event deleted successfully.");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.DELETE_FAILED, "Error deleting event: " + e.getMessage());
+        }
+    }
+
+    public void updateEvent(Event event, RequestCallback<Boolean> callback) {
+        try {
+            if (event.getEventCode() == null || event.getEventCode().isEmpty()) {
+                callback.onFailure(ErrorCode.UPDATE_FAILED, "Event code is required for update.");
+                return;
+            }
+
+            if (event.getUuid().equals(this.currentEvent.getUuid())) {
+                currentEvent = event;
+            }
+
+            systemDao.insertOrUpdate(event);
+            callback.onSuccess(true, "Event updated successfully.");
+        } catch (Exception e) {
+            callback.onFailure(ErrorCode.UPDATE_FAILED, "Error updating event: " + e.getMessage());
         }
     }
 
