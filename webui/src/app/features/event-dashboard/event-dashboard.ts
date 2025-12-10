@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, signal, WritableSignal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { EventService } from '../../core/services/event.service';
 import { Event as GameEvent } from '../../core/models/event.model';
@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-event-dashboard',
+  standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './event-dashboard.html',
   styleUrl: './event-dashboard.css'
@@ -15,10 +16,10 @@ export class EventDashboard implements OnInit {
   tabs: string[] = ['All Events', 'Event Tools'];
   activeTab: string = 'All Events';
 
-  events: GameEvent[] = [];
-  isEditing: boolean = false;
-  currentEditEvent: GameEvent | null = null;
-  showForm: boolean = false;
+  events: WritableSignal<GameEvent[]> = signal([]);
+  isEditing: WritableSignal<boolean> = signal(false);
+  currentEditEvent: WritableSignal<GameEvent | null> = signal(null);
+  showForm: WritableSignal<boolean> = signal(false);
 
   // Form model
   formEvent: GameEvent = {
@@ -41,7 +42,7 @@ export class EventDashboard implements OnInit {
 
   loadEvents() {
     this.eventService.listEvents().subscribe(events => {
-      this.events = events;
+      this.events.set(events);
     });
   }
 
@@ -50,21 +51,21 @@ export class EventDashboard implements OnInit {
   }
 
   openCreateForm() {
-    this.isEditing = false;
-    this.currentEditEvent = null;
+    this.isEditing.set(false);
+    this.currentEditEvent.set(null);
     this.resetForm();
-    this.showForm = true;
+    this.showForm.set(true)
   }
 
   openEditForm(event: GameEvent) {
-    this.isEditing = true;
-    this.currentEditEvent = event;
+    this.isEditing.set(true)
+    this.currentEditEvent.set(event);
     this.formEvent = { ...event };
-    this.showForm = true;
+    this.showForm.set(true)
   }
 
   cancelForm() {
-    this.showForm = false;
+    this.showForm.set(false);
     this.resetForm();
   }
 
@@ -83,23 +84,18 @@ export class EventDashboard implements OnInit {
   }
 
   saveEvent() {
-    if (this.isEditing) {
+    if (this.isEditing()) {
       this.eventService.updateEvent(this.formEvent).subscribe(() => {
         this.loadEvents();
-        this.showForm = false;
+        this.showForm.set(false)
         alert('Event updated successfully');
       }, err => alert('Failed to update event: ' + err.message));
     } else {
-      // Generate UUID if needed or backend handles it? Backend seems to expect it or generate it.
-      // Assuming backend generates or we generate. The model has it.
-      // For now let's leave uuid empty, backend might handle it or we might need a util.
-      // Given existing code, let's assume backend handles if empty or we need to generate.
-      // Looking at backend `createEvent` -> `systemDao.insertOrUpdate(event)`. if UUID is key, it needs it.
       this.formEvent.uuid = crypto.randomUUID();
 
       this.eventService.createEvent(this.formEvent).subscribe(() => {
         this.loadEvents();
-        this.showForm = false;
+        this.showForm.set(false)
         alert('Event created successfully');
       }, err => alert('Failed to create event: ' + err.message));
     }

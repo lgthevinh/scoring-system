@@ -17,8 +17,8 @@
         <button class="btn btn-primary btn-sm" (click)="openCreateForm()">+ New Event</button>
       </div>
 
-      <div *ngIf="showForm" class="card mb-3 p-3 bg-light">
-        <h5>{{isEditing ? 'Edit Event' : 'Create Event'}}</h5>
+      <div *ngIf="showForm()" class="card mb-3 p-3 bg-light">
+        <h5>{{isEditing() ? 'Edit Event' : 'Create Event'}}</h5>
         <form (ngSubmit)="saveEvent()">
           <div class="mb-2">
             <label class="form-label">Event Name</label>
@@ -54,7 +54,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let event of events">
+          <tr *ngFor="let event of events()">
             <td>{{event.eventCode}}</td>
             <td>{{event.name}}</td>
             <td>{{event.location}}</td>
@@ -65,7 +65,7 @@
               <button class="btn btn-sm btn-outline-danger" (click)="deleteEvent(event)">Delete</button>
             </td>
           </tr>
-          <tr *ngIf="events.length === 0">
+          <tr *ngIf="events().length === 0">
             <td colspan="5" class="text-center">No events found.</td>
           </tr>
         </tbody>
