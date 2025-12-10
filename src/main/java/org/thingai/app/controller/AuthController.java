@@ -100,16 +100,6 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/current-event")
-    public ResponseEntity<Object> getCurrentEvent() {
-        try {
-            Event event = ScoringService.eventHandler().getCurrentEvent();
-            return ResponseEntity.ok(Map.of("currentEvent", event));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unable to retrieve current event."));
-        }
-    }
-
     @PostMapping("/create-account")
     public ResponseEntity<Object> createAccount(@RequestBody Map<String, String> request) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();

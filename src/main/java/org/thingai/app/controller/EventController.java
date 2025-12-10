@@ -1,5 +1,6 @@
 package org.thingai.app.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.thingai.app.controller.utils.ResponseEntityUtil;
@@ -40,12 +41,23 @@ public class EventController {
             public void onSuccess(Event responseObject, String message) {
                 future.complete(ResponseEntity.ok().body(responseObject));
             }
+
             @Override
             public void onFailure(int errorCode, String errorMessage) {
                 future.complete(ResponseEntity.status(500).body("Error retrieving event: " + errorMessage));
             }
         });
         return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @GetMapping("/current")
+    public ResponseEntity<Object> getCurrentEvent() {
+        try {
+            Event event = ScoringService.eventHandler().getCurrentEvent();
+            return ResponseEntity.ok(Map.of("currentEvent", event));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "Unable to retrieve current event."));
+        }
     }
 
     @PostMapping("/create")
