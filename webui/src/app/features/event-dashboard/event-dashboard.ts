@@ -85,13 +85,15 @@ export class EventDashboard implements OnInit {
 
   saveEvent() {
     if (this.isEditing()) {
+      console.log('Updating event:', this.formEvent);
       this.eventService.updateEvent(this.formEvent).subscribe(() => {
         this.loadEvents();
         this.showForm.set(false)
         alert('Event updated successfully');
       }, err => alert('Failed to update event: ' + err.message));
     } else {
-      this.formEvent.uuid = crypto.randomUUID();
+      console.log('Creating event:', this.formEvent);
+      this.formEvent.uuid = this.formEvent.eventCode;
 
       this.eventService.createEvent(this.formEvent).subscribe(() => {
         this.loadEvents();
