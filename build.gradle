@@ -151,6 +151,12 @@ tasks.named('bootJar') {
     }
 }
 
+tasks.named('bootRun') {
+    // Simplified bootRun configuration
+    workingDir = projectDir
+    systemProperty 'file.encoding', 'UTF-8'
+}
+
 /* ==== Distribution ZIP (jar + bin + data + scripts) ==== */
 distributions {
     main {
