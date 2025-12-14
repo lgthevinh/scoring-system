@@ -122,6 +122,10 @@ tasks.register('copyWebUi', Copy) {
     into("${buildDir}/resources/main/static")
 }
 
+tasks.register('cleanStatic', Delete) {
+    delete "${projectDir}/src/main/resources/static"
+}
+
 tasks.register('copyWebUiIfPresent', Copy) {
     // Fallback: if we skip build but dist exists, still package UI
     enabled = hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()
@@ -207,9 +211,13 @@ tasks.register('buildAndDeploy') {
             println("✅ Backup created: static.backup.${timestamp}")
         }
 
-        // Deploy static files to Spring Boot resources
-        println("📦 Step 3: Deploying frontend files...")
+        // Clean and deploy static files to Spring Boot resources
+        println("🧹 Step 3a: Cleaning static directory...")
+        delete {
+            delete staticDir
+        }
 
+        println("📦 Step 3b: Deploying frontend files...")
         copy {
             from "${projectDir}/webui/dist/webui/browser"
             into staticDir
