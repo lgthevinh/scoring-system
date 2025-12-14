@@ -60,10 +60,19 @@ public class MatchHandler {
 
 
 
-        Path outPath = Paths.get("data");
+        Path dataDir = Paths.get("data");
+        if (!Files.exists(dataDir)) {
+            try {
+                Files.createDirectories(dataDir);
+                ILog.d("MatchHandler", "Created data directory at: " + dataDir.toAbsolutePath());
+            } catch (Exception e) {
+                ILog.e("MatchHandler", "Error creating data directory: " + e.getMessage());
+            }
+        }
+
+        Path outPath = dataDir.resolve("match_schedule.txt");
         if (!Files.exists(outPath)) {
             try {
-                Files.createDirectories(outPath.getParent());
                 Files.createFile(outPath);
                 ILog.d("MatchHandler", "Created match schedule output file at: " + outPath.toAbsolutePath());
             } catch (Exception e) {
@@ -71,7 +80,7 @@ public class MatchHandler {
             }
         }
 
-        String outDir = outPath.toAbsolutePath() + "/match_schedule.txt";
+        String outDir = outPath.toAbsolutePath().toString();
         ILog.d("MatchHandler", "Match schedule output path set to: " + outDir);
         this.matchMakerHandler.setOutPath(outDir);
 
@@ -736,4 +745,3 @@ public class MatchHandler {
         this.matchCache = matchCache;
     }
 }
-
