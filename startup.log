@@ -1,0 +1,76 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by net.rubygrapefruit.platform.internal.NativeLibraryLoader in an unnamed module (file:/Users/admin/.gradle/wrapper/dists/gradle-8.5-bin/5t9huq95ubn472n8rpzujfbqh/gradle-8.5/lib/native-platform-0.22-milestone-25.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.5/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Task :compileJava
+Note: /Users/admin/Documents/Fanroc/scoring-system/src/main/java/org/thingai/app/controller/MatchController.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+> Task :nodeSetup UP-TO-DATE
+> Task :npmSetup SKIPPED
+> Task :npmInstall NO-SOURCE
+
+> Task :npmBuild
+
+> webui@0.0.0 build
+> ng build
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-KU2ROE7V.js    | main          | 449.85 kB |               105.11 kB
+styles-XAPTEZOC.css | styles        | 231.09 kB |                22.67 kB
+scripts-TTWY4XDY.js | scripts       |  80.45 kB |                21.60 kB
+chunk-GMJ6I2VE.js   | -             |  48.83 kB |                13.94 kB
+
+                    | Initial total | 810.21 kB |               163.32 kB
+
+Lazy chunk files    | Names         |  Raw size | Estimated transfer size
+chunk-OGM2BJL7.js   | index         |   4.28 kB |                 1.38 kB
+
+Application bundle generation complete. [2.850 seconds] - 2025-12-14T15:39:41.576Z
+
+Output location: /Users/admin/Documents/Fanroc/scoring-system/webui/dist/webui
+
+
+> Task :copyWebUi UP-TO-DATE
+> Task :processResources UP-TO-DATE
+> Task :classes
+> Task :resolveMainClassName
+
+> Task :bootRun FAILED
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.4)
+
+2025-12-14T22:39:42.295+07:00  INFO 6206 --- ['vrc-scoring-system'] [           main] org.thingai.app.Main                     : Starting Main using Java 25.0.1 with PID 6206 (/Users/admin/Documents/Fanroc/scoring-system/build/classes/java/main started by admin in /Users/admin/Documents/Fanroc/scoring-system)
+2025-12-14T22:39:42.296+07:00  INFO 6206 --- ['vrc-scoring-system'] [           main] org.thingai.app.Main                     : No active profile set, falling back to 1 default profile: "default"
+2025-12-14T22:39:42.896+07:00  INFO 6206 --- ['vrc-scoring-system'] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-14T22:39:42.896+07:00  INFO 6206 --- ['vrc-scoring-system'] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.43]
+2025-12-14T22:39:42.920+07:00  INFO 6206 --- ['vrc-scoring-system'] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+DEBUG: WebSocket: Registering WebSocket endpoints
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':bootRun'.
+> Process 'command '/opt/homebrew/Cellar/openjdk/25.0.1/libexec/openjdk.jdk/Contents/Home/bin/java'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 10s
+7 actionable tasks: 4 executed, 3 up-to-date

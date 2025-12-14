@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Score } from '../../../../../core/models/score.model';
 import { Team } from '../../../../../core/models/team.model';
 import { ScoresheetConfig } from '../scoresheet.config';
+import { RefereeService } from '../../../../../core/services/referee.service';
 
 @Component({
   selector: 'app-alliance-scoresheet',
@@ -11,6 +12,11 @@ import { ScoresheetConfig } from '../scoresheet.config';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="alliance-container st-container my-3">
+      <!-- Submit message -->
+      <div *ngIf="submitMessage" class="alert alert-info text-center py-2">
+        {{ submitMessage }}
+      </div>
+
       <!-- Title Header -->
       <div [class.bg-danger]="alliance === 'red'" [class.bg-primary]="alliance === 'blue'"
         class="d-flex justify-content-center align-items-center my-3 p-3 rounded-3">
@@ -57,7 +63,8 @@ import { ScoresheetConfig } from '../scoresheet.config';
                     {{ field.label }}
                   </span>
                 </div>
-                <div class="counter-controls" *ngIf="editable">
+                <!-- Counter controls for number fields -->
+                <div class="counter-controls" *ngIf="editable && field.type !== 'boolean'">
                   <button class="btn-counter btn-counter-minus"
                           (click)="decrementValue(field.key)"
                           type="button">
@@ -81,7 +88,14 @@ import { ScoresheetConfig } from '../scoresheet.config';
                     <i class="bi bi-plus-lg"></i>
                   </button>
                 </div>
-                <div class="text-center" *ngIf="!editable">
+                <!-- Checkbox for boolean fields -->
+                <div class="form-check d-flex justify-content-center" *ngIf="editable && field.type === 'boolean'">
+                  <input class="form-check-input" type="checkbox"
+                         [checked]="getValue(scoreData, field.key) || false"
+                         (change)="setValue(field.key, $any($event.target).checked)">
+                </div>
+                <!-- Readonly display for number fields -->
+                <div class="text-center" *ngIf="!editable && field.type !== 'boolean'">
                   <div class="counter-display">
                     <span class="counter-value">{{ getValue(scoreData, field.key) || 0 }}</span>
                     <span class="counter-total" *ngIf="field.key.includes('Ball') && (getValue(scoreData, field.key) || 0) > 0">
@@ -92,6 +106,14 @@ import { ScoresheetConfig } from '../scoresheet.config';
                     </span>
                     <span class="counter-total" *ngIf="field.key === 'barriersPushed' && (getValue(scoreData, field.key) || 0) > 0">
                       {{ (getValue(scoreData, field.key) || 0) * 10 }}
+                    </span>
+                  </div>
+                </div>
+                <!-- Readonly display for boolean fields -->
+                <div class="text-center" *ngIf="!editable && field.type === 'boolean'">
+                  <div class="counter-display">
+                    <span class="counter-value">
+                      <i class="bi" [class]="getValue(scoreData, field.key) ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger'"></i>
                     </span>
                   </div>
                 </div>
@@ -155,6 +177,15 @@ import { ScoresheetConfig } from '../scoresheet.config';
 
         </div>
       </div>
+
+      <!-- Action bar -->
+      <div class="action-bar d-flex flex-wrap gap-3 justify-content-center mt-4" *ngIf="editable">
+        <button (click)="submitScore()" [class.btn-danger]="alliance === 'red'" [class.btn-primary]="alliance === 'blue'"
+          [disabled]="submitting" class="btn">
+          <span *ngIf="!submitting">Submit Score</span>
+          <span *ngIf="submitting">Submitting...</span>
+        </button>
+      </div>
     </div>
   `,
   styles: [`
@@ -199,6 +230,10 @@ export class AllianceScoresheetComponent implements OnChanges {
   @Output() scoreChange = new EventEmitter<any>();
 
   scoreData: any = {};
+  submitting: boolean = false;
+  submitMessage: string = '';
+
+  private refereeService = inject(RefereeService);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['score'] && this.score) {
@@ -274,5 +309,31 @@ export class AllianceScoresheetComponent implements OnChanges {
   incrementTeamValue(teamId: string, key: string) {
     const current = this.getTeamValue(this.scoreData, teamId, key) || 0;
     this.setTeamValue(teamId, key, current + 1);
+  }
+
+  submitScore() {
+    if (!this.matchInfo) {
+      this.submitMessage = 'No match information available';
+      setTimeout(() => this.submitMessage = '', 3000);
+      return;
+    }
+
+    this.submitting = true;
+    this.submitMessage = '';
+
+    const allianceId = this.matchInfo.matchCode + (this.alliance === 'red' ? '_R' : '_B');
+
+    this.refereeService.submitFinalScore(this.alliance, allianceId, JSON.stringify(this.scoreData)).subscribe({
+      next: (res) => {
+        this.submitting = false;
+        this.submitMessage = 'Score submitted successfully';
+        setTimeout(() => this.submitMessage = '', 4000);
+      },
+      error: (err) => {
+        this.submitting = false;
+        this.submitMessage = 'Failed to submit score: ' + (err?.error?.message || 'Unknown error');
+        setTimeout(() => this.submitMessage = '', 6000);
+      }
+    });
   }
 }

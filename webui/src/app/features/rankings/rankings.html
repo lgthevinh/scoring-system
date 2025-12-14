@@ -1,0 +1,48 @@
+<div class="my-4">
+    <a class="text-decoration-none" href="/">« Back to Main Dashboard</a>
+</div>
+
+<div class="container my-3">
+    <h2 class="fw-bold text-center my-3">Qualification Rankings</h2>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Rank</th>
+                            <th>Team</th>
+                            <th class="text-center">Ranking Points</th>
+                            <th class="text-center">Wins</th>
+                            <th class="text-center">Total Score</th>
+                            <th class="text-center">High Score</th>
+                            <th class="text-center">Matches</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (rank of rankings(); track rank.teamId) {
+                            @let i = rankings().indexOf(rank);
+                            <tr>
+                              <td class="ps-4 fw-bold">{{ i + 1 }}</td>
+                              <td >{{ rank.teamId }}</td>
+                              <td class="text-center fw-bold text-primary">{{ rank.rankingPoints }}</td>
+                              <td class="text-center">{{ rank.wins }}</td>
+                              <td class="text-center">{{ rank.totalScore }}</td>
+                              <td class="text-center">{{ rank.highestScore }}</td>
+                              <td class="text-center">{{ rank.matchesPlayed }}</td>
+                            </tr>
+                        }
+                        @if (rankings().length === 0 && isLoading()) {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    No rankings available yet.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

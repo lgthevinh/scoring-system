@@ -12,12 +12,14 @@ import { BlueAlliance } from './features/referee/match-selection/blue-alliance/b
 import { RedAlliance } from './features/referee/match-selection/red-alliance/red-alliance';
 import { ScoreTracking } from './features/referee/score-tracking/score-tracking';
 import { MatchResults } from './features/match-results/match-results';
+import { Rankings } from './features/rankings/rankings';
 
 export const routes: Routes = [
   { path: '', component: Home },
   { path: 'auth', component: Auth },
   { path: 'schedule', component: Schedule, data: { title: 'Qualification Schedule', matchType: 1 } },
   { path: 'playoffs', component: Schedule, data: { title: 'Playoff Schedule', matchType: 2 } },
+  { path: 'rankings', component: Rankings },
   { path: 'results', component: MatchResults },
   { path: 'event-dashboard', component: EventDashboard },
   { path: 'event-dashboard/create-account', component: CreateAccount },
