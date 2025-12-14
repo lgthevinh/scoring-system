@@ -1,13 +1,35 @@
 package org.thingai.app.scoringservice.entity.ranking;
 
+import org.thingai.base.dao.annotations.DaoColumn;
+import org.thingai.base.dao.annotations.DaoTable;
+
+@DaoTable(name = "ranking_entry")
 public class RankingEntry {
+    @DaoColumn(name = "id", primaryKey = true, autoIncrement = true)
+    private int id;
+
+    @DaoColumn(name = "team_id", nullable = false)
     private String teamId;
+
+    @DaoColumn(name = "rank", nullable = false)
     private int rank;
+
+    @DaoColumn(name = "matches_played", nullable = false)
     private int matchesPlayed;
+
+    @DaoColumn(name = "wins", nullable = false)
     private int wins;
+
+    @DaoColumn(name = "total_score", nullable = false)
     private int totalScore;
+
+    @DaoColumn(name = "total_penalties", nullable = false)
     private int totalPenalties;
+
+    @DaoColumn(name = "highest_score", nullable = false)
     private int highestScore;
+
+    @DaoColumn(name = "ranking_points", nullable = false)
     private int rankingPoints;
 
     public RankingEntry() {
