@@ -21,28 +21,204 @@
         <div class="timer-text">{{ mmss() }}</div>
       </div>
 
-      <!-- Bottom dock (overlaps under timer) -->
-      <div class="dock">
-        <div class="dock-cell dock-red-list">
-          @for (team of redTeams(); track team.teamId) {
-            <div class="team" >{{ team.teamId }}</div>
-          }
-        </div>
-        <div class="dock-cell dock-red-score">
-          <div class="score">{{ redScore() }}</div>
-        </div>
-        <div class="dock-cell dock-blue-score">
-          <div class="score">{{ blueScore() }}</div>
-        </div>
-        <div class="dock-cell dock-blue-list">
-          @for (team of blueTeams(); track team.teamId) {
-            <div class="team" >{{ team.teamId }}</div>
-          }
-        </div>
+<!-- Bottom dock (overlaps under timer) -->
+<div class="dock">
+  <div class="dock-cell dock-red-list">
+    <div class="d-flex flex-column h-100">
+      @for (team of redTeams(); track team.teamId) {
+        <div class="team">{{ team.teamId }}</div>
+      }
+      @if (redScoreBreakdown()?.isFanroc) {
+        <button class="btn btn-sm btn-outline-light mt-auto" data-bs-toggle="modal" data-bs-target="#redBreakdownModal">
+          <small>Breakdown</small>
+        </button>
+      }
+    </div>
+  </div>
+  <div class="dock-cell dock-red-score">
+    <div class="score">{{ redScore() }}</div>
+  </div>
+  <div class="dock-cell dock-blue-score">
+    <div class="score">{{ blueScore() }}</div>
+  </div>
+  <div class="dock-cell dock-blue-list">
+    <div class="d-flex flex-column h-100">
+      @for (team of blueTeams(); track team.teamId) {
+        <div class="team">{{ team.teamId }}</div>
+      }
+      @if (blueScoreBreakdown()?.isFanroc) {
+        <button class="btn btn-sm btn-outline-light mt-auto" data-bs-toggle="modal" data-bs-target="#blueBreakdownModal">
+          <small>Breakdown</small>
+        </button>
+      }
+    </div>
+  </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Red Alliance Score Breakdown Modal -->
+<div class="modal fade" id="redBreakdownModal" tabindex="-1" aria-labelledby="redBreakdownLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-danger text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="redBreakdownLabel">
+          <i class="bi bi-graph-up me-2"></i>Red Alliance - Fanroc Score Breakdown
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (redScoreBreakdown()) {
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h6 class="border-bottom pb-2">Biological Points ({{ redScoreBreakdown()!.biologicalPoints }})</h6>
+              <div class="small">
+                <div class="d-flex justify-content-between">
+                  <span>White Balls (1pt each):</span>
+                  <span>{{ redScoreBreakdown()!.whiteBalls }} × 1 = {{ redScoreBreakdown()!.whiteBalls }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Golden Balls (3pt each):</span>
+                  <span>{{ redScoreBreakdown()!.goldenBalls }} × 3 = {{ redScoreBreakdown()!.goldenBalls * 3 }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="border-bottom pb-2">Barrier Points ({{ redScoreBreakdown()!.barrierPoints }})</h6>
+              <div class="small">
+                <div class="d-flex justify-content-between">
+                  <span>Barriers Pushed:</span>
+                  <span>{{ redScoreBreakdown()!.barriersPushed }} × 10 = {{ redScoreBreakdown()!.barrierPoints }}</span>
+                </div>
+              </div>
+              <h6 class="border-bottom pb-2 mt-3">End Game ({{ redScoreBreakdown()!.endGamePoints }})</h6>
+              <div class="small">
+                <div class="d-flex justify-content-between">
+                  <span>Partial Parking:</span>
+                  <span>{{ redScoreBreakdown()!.partialParking }} × 5 = {{ redScoreBreakdown()!.partialParking * 5 }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Full Parking:</span>
+                  <span>{{ redScoreBreakdown()!.fullParking }} × 10 = {{ redScoreBreakdown()!.fullParking * 10 }}</span>
+                </div>
+                @if (redScoreBreakdown()!.fullParking >= 2) {
+                  <div class="d-flex justify-content-between fw-bold">
+                    <span>Fleet Bonus:</span>
+                    <span>+10</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="border rounded p-2 text-center">
+                    <div class="h5 mb-0">{{ redScoreBreakdown()!.balancingCoeff.toFixed(2) }}</div>
+                    <small>Balancing Coefficient</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-2 text-center">
+                    <div class="h5 mb-0 text-warning">-{{ redScoreBreakdown()!.penalties }}</div>
+                    <small>Penalties</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-2 text-center bg-white text-dark">
+                    <div class="h4 mb-0 fw-bold">{{ redScore() }}</div>
+                    <small>Final Score</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </div>
   </div>
 </div>
+
+<!-- Blue Alliance Score Breakdown Modal -->
+<div class="modal fade" id="blueBreakdownModal" tabindex="-1" aria-labelledby="blueBreakdownLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-primary text-white">
+      <div class="modal-header">
+        <h5 class="modal-title" id="blueBreakdownLabel">
+          <i class="bi bi-graph-up me-2"></i>Blue Alliance - Fanroc Score Breakdown
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        @if (blueScoreBreakdown()) {
+          <div class="row g-3">
+            <div class="col-md-6">
+              <h6 class="border-bottom pb-2">Biological Points ({{ blueScoreBreakdown()!.biologicalPoints }})</h6>
+              <div class="small">
+                <div class="d-flex justify-content-between">
+                  <span>White Balls (1pt each):</span>
+                  <span>{{ blueScoreBreakdown()!.whiteBalls }} × 1 = {{ blueScoreBreakdown()!.whiteBalls }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Golden Balls (3pt each):</span>
+                  <span>{{ blueScoreBreakdown()!.goldenBalls }} × 3 = {{ blueScoreBreakdown()!.goldenBalls * 3 }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h6 class="border-bottom pb-2">Barrier Points ({{ blueScoreBreakdown()!.barrierPoints }})</h6>
+              <div class="small">
+                <div class="d-flex justify-content-between">
+                  <span>Barriers Pushed:</span>
+                  <span>{{ blueScoreBreakdown()!.barriersPushed }} × 10 = {{ blueScoreBreakdown()!.barrierPoints }}</span>
+                </div>
+              </div>
+              <h6 class="border-bottom pb-2 mt-3">End Game ({{ blueScoreBreakdown()!.endGamePoints }})</h6>
+              <div class="small">
+                <div class="d-flex justify-content-between">
+                  <span>Partial Parking:</span>
+                  <span>{{ blueScoreBreakdown()!.partialParking }} × 5 = {{ blueScoreBreakdown()!.partialParking * 5 }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <span>Full Parking:</span>
+                  <span>{{ blueScoreBreakdown()!.fullParking }} × 10 = {{ blueScoreBreakdown()!.fullParking * 10 }}</span>
+                </div>
+                @if (blueScoreBreakdown()!.fullParking >= 2) {
+                  <div class="d-flex justify-content-between fw-bold">
+                    <span>Fleet Bonus:</span>
+                    <span>+10</span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="border rounded p-2 text-center">
+                    <div class="h5 mb-0">{{ blueScoreBreakdown()!.balancingCoeff.toFixed(2) }}</div>
+                    <small>Balancing Coefficient</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-2 text-center">
+                    <div class="h5 mb-0 text-warning">-{{ blueScoreBreakdown()!.penalties }}</div>
+                    <small>Penalties</small>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="border rounded p-2 text-center bg-white text-dark">
+                    <div class="h4 mb-0 fw-bold">{{ blueScore() }}</div>
+                    <small>Final Score</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
 
 <!-- Config Modal -->
 <div class="modal fade" id="fdConfigModal" tabindex="-1" aria-labelledby="fdConfigLabel" aria-hidden="true">

@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.ScoringService;
-import org.thingai.app.seasondemo.ScoreSeasonDemo;
 import org.thingai.base.log.ILog;
+import org.thingai.app.fanroc.*;
 
 @SpringBootApplication
 public class Main {
@@ -30,7 +30,7 @@ public class Main {
         scoringService.setSimpMessagingTemplate(simpMessagingTemplate);
         scoringService.init();
 
-        scoringService.registerScoreClass(ScoreSeasonDemo.class); // Register the scoring class for the season specific logic
+        scoringService.registerScoreClass(FanrocScore.class); // Register the scoring class for the season specific logic
 
     }
 

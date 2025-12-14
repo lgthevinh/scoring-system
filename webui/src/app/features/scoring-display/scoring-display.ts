@@ -5,6 +5,7 @@ import {BroadcastService} from "../../core/services/broadcast.service";
 import {FieldDisplayCommand} from '../../core/define/FieldDisplayCommand';
 import {SyncService} from '../../core/services/sync.service';
 import {Team} from '../../core/models/team.model';
+import { FanrocScoringCalculator } from '../../core/models/score.model';
 
 @Component({
   selector: 'app-field-display',
@@ -24,6 +25,37 @@ export class ScoringDisplay implements OnInit, OnDestroy {
   blueTeams: WritableSignal<Team[]> = signal([]);
   redScore: WritableSignal<number> = signal(0);
   blueScore: WritableSignal<number> = signal(0);
+
+  // Fanroc score breakdown (shown in modal)
+  redScoreBreakdown: WritableSignal<{
+    isFanroc: boolean;
+    biologicalPoints: number;
+    barrierPoints: number;
+    balancingCoeff: number;
+    endGamePoints: number;
+    penalties: number;
+    whiteBalls: number;
+    goldenBalls: number;
+    barriersPushed: number;
+    imbalanceCategory: number;
+    partialParking: number;
+    fullParking: number;
+  } | null> = signal(null);
+
+  blueScoreBreakdown: WritableSignal<{
+    isFanroc: boolean;
+    biologicalPoints: number;
+    barrierPoints: number;
+    balancingCoeff: number;
+    endGamePoints: number;
+    penalties: number;
+    whiteBalls: number;
+    goldenBalls: number;
+    barriersPushed: number;
+    imbalanceCategory: number;
+    partialParking: number;
+    fullParking: number;
+  } | null> = signal(null);
 
   // Fullscreen state
   isFullscreen: WritableSignal<boolean> = signal(false);
@@ -287,6 +319,7 @@ export class ScoringDisplay implements OnInit, OnDestroy {
         console.debug("FieldDisplay received score message:", msg);
         if (msg.payload) {
           this.redScore.set(msg.payload.totalScore);
+          this.updateScoreBreakdown('red', msg.payload);
         }
       },
       error: (err) => {
@@ -299,6 +332,7 @@ export class ScoringDisplay implements OnInit, OnDestroy {
         console.debug("FieldDisplay received score message:", msg);
         if (msg.payload) {
           this.blueScore.set(msg.payload.totalScore);
+          this.updateScoreBreakdown('blue', msg.payload);
         }
       },
       error: (err) => {
@@ -323,5 +357,56 @@ export class ScoringDisplay implements OnInit, OnDestroy {
     this.broadcastService.unsubscribeFromTopic(`/topic/display/field/${fieldId}/timer`);
     this.broadcastService.unsubscribeFromTopic(`/topic/live/field/${fieldId}/score/red`);
     this.broadcastService.unsubscribeFromTopic(`/topic/live/field/${fieldId}/score/blue`);
+  }
+
+  private updateScoreBreakdown(alliance: 'red' | 'blue', scorePayload: any) {
+    const isFanroc = FanrocScoringCalculator.isFanrocScore(scorePayload);
+
+    if (isFanroc) {
+      const biologicalPoints = FanrocScoringCalculator.calculateBiologicalPoints(
+        scorePayload.goldenBallsScored || 0,
+        scorePayload.whiteBallsScored || 0
+      );
+
+      const barrierPoints = (scorePayload.barriersPushed || 0) * 10;
+
+      let endGamePoints = (scorePayload.partialParking || 0) * 5 + (scorePayload.fullParking || 0) * 10;
+      if ((scorePayload.fullParking || 0) >= 2) {
+        endGamePoints += 10; // Fleet bonus
+      }
+
+      const penalties = ((scorePayload.minorPenalties || 0) * 5) + ((scorePayload.majorPenalties || 0) * 15);
+
+      const breakdown = {
+        isFanroc: true,
+        biologicalPoints: biologicalPoints,
+        barrierPoints: barrierPoints,
+        balancingCoeff: FanrocScoringCalculator.getBalancingCoefficient(
+          scorePayload.imbalanceCategory || 2,
+          scorePayload.barriersPushed || 0
+        ),
+        endGamePoints: endGamePoints,
+        penalties: penalties,
+        whiteBalls: scorePayload.whiteBallsScored || 0,
+        goldenBalls: scorePayload.goldenBallsScored || 0,
+        barriersPushed: scorePayload.barriersPushed || 0,
+        imbalanceCategory: scorePayload.imbalanceCategory || 2,
+        partialParking: scorePayload.partialParking || 0,
+        fullParking: scorePayload.fullParking || 0
+      };
+
+      if (alliance === 'red') {
+        this.redScoreBreakdown.set(breakdown);
+      } else {
+        this.blueScoreBreakdown.set(breakdown);
+      }
+    } else {
+      // Not Fanroc score, clear breakdown
+      if (alliance === 'red') {
+        this.redScoreBreakdown.set(null);
+      } else {
+        this.blueScoreBreakdown.set(null);
+      }
+    }
   }
 }

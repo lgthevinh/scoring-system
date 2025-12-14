@@ -1,3 +1,5 @@
+import org.gradle.api.GradleException
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
@@ -116,21 +118,21 @@ tasks.register('copyWebUi', Copy) {
     // Copy after an npm build
     enabled = hasWebUi && !skipWebuiBuild
     dependsOn 'npmBuild'
-    from(webUiDistDir) { include '**/*' }
+    from("${webUiDistDir}/webui/browser") { include '**/*' }
     into("${buildDir}/resources/main/static")
 }
 
 tasks.register('copyWebUiIfPresent', Copy) {
     // Fallback: if we skip build but dist exists, still package UI
-    enabled = hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()
-    from(webUiDistDir) { include '**/*' }
+    enabled = hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()
+    from("${webUiDistDir}/webui/browser") { include '**/*' }
     into("${buildDir}/resources/main/static")
 }
 
 tasks.named('processResources') {
     if (hasWebUi && !skipWebuiBuild) {
         dependsOn 'copyWebUi'
-    } else if (hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()) {
+    } else if (hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()) {
         dependsOn 'copyWebUiIfPresent'
     }
 }
@@ -140,7 +142,7 @@ tasks.named('bootJar') {
     archiveFileName = 'scoring-system.jar'
     if (hasWebUi && !skipWebuiBuild) {
         dependsOn 'copyWebUi'
-    } else if (hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()) {
+    } else if (hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()) {
         dependsOn 'copyWebUiIfPresent'
     }
 }
@@ -158,4 +160,84 @@ distributions {
     }
 }
 
-tasks.named('distZip') { dependsOn 'bootJar' }
+/* === INTEGRATED BUILD & DEPLOY TASK ===
+   Builds Angular UI, deploys to Spring Boot, and provides full automation
+*/
+tasks.register('buildAndDeploy') {
+    group = 'deployment'
+    description = 'Complete build and deployment workflow: Angular build → Static files → Spring Boot restart'
+
+    doLast {
+        // Validate we're in correct directory
+        def webuiPackage = file("${projectDir}/webui/package.json")
+        if (!webuiPackage.exists()) {
+            throw new GradleException("Error: Run from scoring-system root directory (missing webui/package.json)")
+        }
+
+        // Get timestamp for backup
+        def timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
+        def staticDir = "${projectDir}/src/main/resources/static"
+        def backupDir = "${projectDir}/src/main/resources/static.backup.${timestamp}"
+
+        // Display header
+        println("🎯 Fanroc Scoring System Update")
+        println("===============================")
+        println("📅 Timestamp: ${timestamp}")
+
+        try {
+            println("🔨 Step 1: Building Angular frontend...")
+            exec {
+                workingDir "${projectDir}/webui"
+                commandLine 'npm', 'run', 'build'
+            }
+        } catch (Exception e) {
+            throw new GradleException("❌ Angular build failed! Check the output above.")
+        }
+
+        println("✅ Angular build completed successfully")
+
+        // Create backup of current static files
+        println("🔄 Step 2: Creating backup...")
+        if (file(staticDir).exists()) {
+            copy {
+                from staticDir
+                into backupDir
+                includeEmptyDirs true
+            }
+            println("✅ Backup created: static.backup.${timestamp}")
+        }
+
+        // Deploy static files to Spring Boot resources
+        println("📦 Step 3: Deploying frontend files...")
+
+        copy {
+            from "${projectDir}/webui/dist/webui/browser"
+            into staticDir
+        }
+
+        // Count deployed files
+        def fileCount = project.fileTree(dir: staticDir, include: '**/*').size()
+        println("📊 Deployed ${fileCount} files to static resources")
+
+        // Kill existing processes
+        println("🏁 Step 4: Restarting application services...")
+        try {
+            exec {
+                commandLine 'pkill', '-f', 'scoring-system.jar'
+                ignoreExitValue true
+            }
+        } catch (Exception ignored) {
+        }
+        try {
+            exec {
+                commandLine 'pkill', '-f', 'ng serve'
+                ignoreExitValue true
+            }
+        } catch (Exception ignored) {
+        }
+
+        println("✅ All processes stopped. Application ready for start.")
+
+    }
+
+}

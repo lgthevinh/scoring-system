@@ -41,3 +41,6 @@ bin/
 ### Mac OS ###
 .DS_Store
 /src/test/resources/test.db
+
+### For me only =)) ###
+.clinerules/

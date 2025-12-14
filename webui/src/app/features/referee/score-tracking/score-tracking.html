@@ -1,103 +1,349 @@
 <div class="container st-container my-3">
   <!-- Title -->
-  <div class="d-flex justify-content-center align-items-center my-3 p-3 rounded-3" [class.bg-danger]="color === 'red'"
-    [class.bg-primary]="color === 'blue'">
+  <div [class.bg-danger]="color === 'red'" [class.bg-primary]="color === 'blue'"
+    class="d-flex justify-content-center align-items-center my-3 p-3 rounded-3">
     <span class="text-center fw-semibold fs-3 text-white">{{ titleText() }}</span>
   </div>
 
-  @if (submitMessage()) {
-  <div class="alert alert-info text-center py-2">{{ submitMessage() }}</div>
-  }
-
-  @if (loading()) {
-  <div class="d-flex justify-content-center my-4">
-    <div class="spinner-border text-primary" role="status" aria-label="Loading"></div>
-  </div>
-  } @else if (error()) {
-  <div class="alert alert-warning text-center">{{ error() }}</div>
-  } @else if (match()) {
-  <!-- Match summary -->
-  <div class="summary card mb-3">
-    <div class="card-body d-flex flex-wrap gap-3 justify-content-center">
-      <div><span class="text-muted me-2">Match:</span><span class="fw-semibold">{{ match()?.match?.matchCode }}</span>
-      </div>
-      @if (color === 'red') {
-      <div><span class="badge bg-danger me-2">Red</span><span class="fw-semibold">{{ redTeamLine() }}</span></div>
-      } @else {
-      <div><span class="badge bg-primary me-2">Blue</span><span class="fw-semibold">{{ blueTeamLine() }}</span></div>
-      }
-    </div>
+  <div *ngIf="submitMessage()" class="alert alert-info text-center py-2">
+    {{ submitMessage() }}
   </div>
 
-  <!-- Single-phase counters -->
-  <div class="row g-4">
-    <div class="col-12 col-md-6">
-      <div class="section-card">
-        <div class="section-title">Robot</div>
+  <div *ngIf="loading()" class="d-flex justify-content-center my-4">
+    <div aria-label="Loading" class="spinner-border text-primary" role="status"></div>
+  </div>
 
-        <div class="counter-row">
-          <div class="label">Parked</div>
-          <div class="counter">
-            <button class="btn-minus" (click)="dec('robotParked')" [disabled]="submitting()">−</button>
-            <div class="value">{{ counters.robotParked() }}</div>
-            <button class="btn-plus" (click)="inc('robotParked')" [disabled]="submitting()">+</button>
-          </div>
-        </div>
+  <div *ngIf="error()" class="alert alert-warning text-center">
+    {{ error() }}
+  </div>
 
-        <div class="counter-row">
-          <div class="label">Hanged</div>
-          <div class="counter">
-            <button class="btn-minus" (click)="dec('robotHanged')" [disabled]="submitting()">−</button>
-            <div class="value">{{ counters.robotHanged() }}</div>
-            <button class="btn-plus" (click)="inc('robotHanged')" [disabled]="submitting()">+</button>
-          </div>
+  <div *ngIf="match()">
+    <!-- Match summary -->
+    <div class="summary card mb-3">
+      <div class="card-body d-flex flex-wrap gap-3 justify-content-center">
+        <div><span class="text-muted me-2">Match:</span><span class="fw-semibold">{{ match()?.match?.matchCode }}</span></div>
+        <div [class]="'badge me-2 ' + (color === 'red' ? 'bg-danger' : 'bg-primary')">
+          {{ color === 'red' ? 'Red' : 'Blue' }}
         </div>
+        <span class="fw-semibold">{{ color === 'red' ? redTeamLine() : blueTeamLine() }}</span>
       </div>
     </div>
 
-    <div class="col-12 col-md-6">
-      <div class="section-card">
-        <div class="section-title">Game Actions</div>
+    <!-- Fanroc Scoring Counters - Enhanced UI -->
+    <div class="row g-4">
+      <div class="col-12 col-lg-6">
+        <!-- Ball Scoring Section -->
+        <div class="section-card">
+          <div class="section-title">
+            <i class="bi bi-circle-half me-2"></i>Ball Scoring
+          </div>
 
-        <div class="counter-row">
-          <div class="label">Items Scored</div>
-          <div class="counter">
-            <button class="btn-minus" (click)="dec('ballEntered')" [disabled]="submitting()">−</button>
-            <div class="value">{{ counters.ballEntered() }}</div>
-            <button class="btn-plus" (click)="inc('ballEntered')" [disabled]="submitting()">+</button>
+          <!-- White Balls -->
+          <div class="interactive-counter">
+            <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">⚪</div>
+                White Balls (1 pt each)
+              </span>
+            </div>
+            <div class="counter-controls">
+              <button (click)="dec('whiteBallsScored')"
+                      [disabled]="submitting()"
+                      class="btn-counter btn-counter-minus"
+                      title="Decrease">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <div class="counter-display">
+                <span class="counter-value">{{ counters.whiteBallsScored() }}</span>
+                <span class="counter-total">{{ counters.whiteBallsScored() }}</span>
+              </div>
+              <button (click)="inc('whiteBallsScored')"
+                      [disabled]="!canIncrement('whiteBallsScored') || submitting()"
+                      class="btn-counter btn-counter-plus"
+                      title="Increase">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Golden Balls -->
+          <div class="interactive-counter">
+            <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">🟡</div>
+                Golden Balls (3 pts each)
+              </span>
+            </div>
+            <div class="counter-controls">
+              <button (click)="dec('goldenBallsScored')"
+                      [disabled]="submitting()"
+                      class="btn-counter btn-counter-minus"
+                      title="Decrease">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <div class="counter-display">
+                <span class="counter-value">{{ counters.goldenBallsScored() }}</span>
+                <span class="counter-total">{{ counters.goldenBallsScored() * 3 }}</span>
+              </div>
+              <button (click)="inc('goldenBallsScored')"
+                      [disabled]="!canIncrement('goldenBallsScored') || submitting()"
+                      class="btn-counter btn-counter-plus"
+                      title="Increase">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="counter-row">
-          <div class="label">Minor Fault</div>
-          <div class="counter">
-            <button class="btn-minus" (click)="dec('minorFault')" [disabled]="submitting()">−</button>
-            <div class="value">{{ counters.minorFault() }}</div>
-            <button class="btn-plus" (click)="inc('minorFault')" [disabled]="submitting()">+</button>
+        <!-- Barriers Section -->
+        <div class="section-card mt-3">
+          <div class="section-title">
+            <i class="bi bi-barrier me-2"></i>Barriers & Movement
+          </div>
+
+          <div class="interactive-counter">
+            <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">🚧</div>
+                Barriers Pushed (10 pts each)
+              </span>
+            </div>
+            <div class="counter-controls">
+              <button (click)="dec('barriersPushed')"
+                      [disabled]="submitting()"
+                      class="btn-counter btn-counter-minus"
+                      title="Decrease">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <div class="counter-display">
+                <span class="counter-value">{{ counters.barriersPushed() }}</span>
+                <span class="counter-total">{{ counters.barriersPushed() * 10 }}</span>
+              </div>
+              <button (click)="inc('barriersPushed')"
+                      [disabled]="!canIncrement('barriersPushed') || submitting()"
+                      class="btn-counter btn-counter-plus"
+                      title="Increase">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <!-- End Game Section -->
+        <div class="section-card">
+          <div class="section-title">
+            <i class="bi bi-gear-fill me-2"></i>End Game
+          </div>
+
+          <!-- Partial Parking -->
+          <div class="interactive-counter">
+            <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">📍</div>
+                Partial Parking (5 pts each)
+              </span>
+            </div>
+            <div class="counter-controls">
+              <button (click)="dec('partialParking')"
+                      [disabled]="submitting()"
+                      class="btn-counter btn-counter-minus"
+                      title="Decrease">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <div class="counter-display">
+                <span class="counter-value">{{ counters.partialParking() }}</span>
+                <span class="counter-total">{{ counters.partialParking() * 5 }}</span>
+              </div>
+              <button (click)="inc('partialParking')"
+                      [disabled]="!canIncrement('partialParking') || submitting()"
+                      class="btn-counter btn-counter-plus"
+                      title="Increase">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Full Parking -->
+          <div class="interactive-counter">
+            <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">🏁</div>
+                Full Parking (10 pts each)
+              </span>
+            </div>
+            <div class="counter-controls">
+              <button (click)="dec('fullParking')"
+                      [disabled]="submitting()"
+                      class="btn-counter btn-counter-minus"
+                      title="Decrease">
+                <i class="bi bi-dash-lg"></i>
+              </button>
+              <div class="counter-display">
+                <span class="counter-value">{{ counters.fullParking() }}</span>
+                <span class="counter-total">{{ counters.fullParking() * 10 }}</span>
+              </div>
+              <button (click)="inc('fullParking')"
+                      [disabled]="!canIncrement('fullParking') || submitting()"
+                      class="btn-counter btn-counter-plus"
+                      title="Increase">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+            @if (counters.fullParking() >= 2) {
+              <div class="fleet-bonus">
+                <i class="bi bi-trophy-fill text-warning me-2"></i>
+                <span class="text-warning fw-bold">Fleet Bonus: +10 points!</span>
+              </div>
+            }
           </div>
         </div>
 
-        <div class="counter-row">
-          <div class="label">Major Fault</div>
-          <div class="counter">
-            <button class="btn-minus" (click)="dec('majorFault')" [disabled]="submitting()">−</button>
-            <div class="value">{{ counters.majorFault() }}</div>
-            <button class="btn-plus" (click)="inc('majorFault')" [disabled]="submitting()">+</button>
+        <!-- Imbalance Section -->
+        <div class="section-card mt-3">
+          <div class="section-title">
+            <i class="bi bi-dial-near-me me-2"></i>Imbalance Category
+          </div>
+
+          <!-- Imbalance Dropdown -->
+          <div class="imbalance-selector">
+            <div class="imbalance-header">
+              <span class="imbalance-label">
+                <div class="imbalance-icon">⚖️</div>
+                Ball Imbalance Category
+              </span>
+            </div>
+            <select (ngModelChange)="setImbalance($event)"
+                    [(ngModel)]="selectedImbalance"
+                    [disabled]="submitting()"
+                    class="form-select imbalance-dropdown">
+              @for (option of imbalanceOptions; track option.value) {
+              <option [selected]="selectedImbalance() === option.value" [value]="option.value">
+                {{ option.icon }} {{ option.label }} - {{ option.description }}
+              </option>
+              }
+            </select>
+            <div class="imbalance-info">
+              <small class="text-muted">
+                Provides additional bonus multiplier
+              </small>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Full-Width Penalties Section -->
+    <div class="full-width-penalties my-4">
+      <div class="container"> <!-- Wrap penalties content in container for proper spacing -->
+        <div class="section-card penalties-section">
+          <div class="section-title">
+            <i class="bi bi-exclamation-triangle me-2"></i>Penalties
+          </div>
+
+          <div class="penalties-full-width-grid">
+            <div class="penalty-item-full">
+              <div class="interactive-counter">
+                <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">⚠️</div>
+                Minor Penalty Violations (-5 pts each)
+              </span>
+                </div>
+                <div class="counter-controls">
+                  <button (click)="dec('penaltyCount')"
+                          [disabled]="counters['penaltyCount']() <= 0 || submitting()"
+                          class="btn-counter btn-counter-minus"
+                          title="Decrease">
+                    <i class="bi bi-dash-lg"></i>
+                  </button>
+                  <div class="counter-display">
+                    <span class="counter-value">{{ counters.penaltyCount() }}</span>
+                    <span class="counter-total">-{{ counters.penaltyCount() * 5 }}</span>
+                  </div>
+                  <button (click)="inc('penaltyCount')"
+                          [disabled]="submitting()"
+                          class="btn-counter btn-counter-plus"
+                          title="Increase">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="penalty-item-full">
+              <div class="interactive-counter">
+                <div class="counter-header">
+              <span class="counter-label">
+                <div class="counter-icon">🟨</div>
+                Yellow Card Violations (-10 pts each)
+              </span>
+                </div>
+                <div class="counter-controls">
+                  <button (click)="dec('yellowCardCount')"
+                          [disabled]="counters['yellowCardCount']() <= 0 || submitting()"
+                          class="btn-counter btn-counter-minus"
+                          title="Decrease">
+                    <i class="bi bi-dash-lg"></i>
+                  </button>
+                  <div class="counter-display">
+                    <span class="counter-value">{{ counters.yellowCardCount() }}</span>
+                    <span class="counter-total">-{{ counters.yellowCardCount() * 10 }}</span>
+                  </div>
+                  <button (click)="inc('yellowCardCount')"
+                          [disabled]="submitting()"
+                          class="btn-counter btn-counter-plus"
+                          title="Increase">
+                    <i class="bi bi-plus-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="penalty-item-full">
+              <!-- Red Card Button - Full Width -->
+              <div class="red-card-section">
+                <div class="d-flex justify-content-center mt-3">
+                  <button (click)="toggleRedCard()"
+                          [class.active]="redCard()"
+                          [disabled]="submitting()"
+                          class="btn btn-danger btn-lg red-card-button-full">
+                    <div class="red-card-content">
+                      <div class="red-card-icon-large">🟥</div>
+                      <div class="red-card-text">
+                        <div class="red-card-title">{{ redCard() ? 'Red Card Active' : 'Issue Red Card' }}</div>
+                        <div class="red-card-subtitle">Zeroes entire score</div>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+                @if (redCard()) {
+                <div class="alert alert-danger mt-3 text-center small">
+                  ⚠️ Red card issued - score will be zero!
+                </div>
+                }
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="action-bar d-flex flex-wrap gap-3 justify-content-center mt-4">
+      <button (click)="resetCounters()" [disabled]="submitting()" class="btn btn-outline-secondary">Reset</button>
+      <button (click)="submitScore()" [class.btn-danger]="color === 'red'" [class.btn-primary]="color === 'blue'"
+        [disabled]="submitting() || !match()" class="btn">
+        <span *ngIf="!submitting()">Submit Score</span>
+        <span *ngIf="submitting()">Submitting...</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Action bar -->
-  <div class="action-bar d-flex flex-wrap gap-3 justify-content-center mt-4">
-    <button class="btn btn-outline-secondary" (click)="resetCounters()" [disabled]="submitting()">Reset</button>
-    <button class="btn" [class.btn-danger]="color === 'red'" [class.btn-primary]="color === 'blue'"
-      (click)="submitScore()" [disabled]="submitting() || !match()">
-      @if (!submitting()) { Submit Score } @else { Submitting... }
-    </button>
-  </div>
-  } @else {
-  <p class="text-center text-muted">Match not found: {{ matchId }}</p>
-  }
+  <p *ngIf="!loading() && !error() && !match()" class="text-center text-muted">
+    Match not found: {{ matchId }}
+  </p>
+</div>
 </div>
