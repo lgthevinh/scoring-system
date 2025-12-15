@@ -72,6 +72,8 @@ export class Schedule implements OnInit {
           this.matchesPerTeam.set(Math.round(this.matchesCount() * 4 / this.teamsCount()));
         }
       }
-    )
+    );
+    // console.log(`Loaded schedule for match type ${typeToLoad}`);
+    // console.log(this.schedule());
   }
 }
