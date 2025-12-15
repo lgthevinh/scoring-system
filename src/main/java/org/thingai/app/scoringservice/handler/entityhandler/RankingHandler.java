@@ -12,6 +12,7 @@ import org.thingai.base.dao.Dao;
 import org.thingai.base.log.ILog;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class RankingHandler {
     private static final String TAG = "RankingHandler";
@@ -27,7 +28,13 @@ public class RankingHandler {
 
     public void updateRankingEntry(MatchDetailDto matchDetailDto, Score blueScore, Score redScore) {
         RankingStat[] stats = rankingStrategy.setRankingStat(matchDetailDto, blueScore, redScore);
+        HashMap<String, Boolean> surrogateTeam = matchDetailDto.getSurrogateMap();
         for (RankingStat stat : stats) {
+            // Skip surrogate teams
+            if (surrogateTeam.containsKey(stat.getTeamId()) && surrogateTeam.get(stat.getTeamId())) {
+                continue;
+            }
+
             // Fetch existing ranking entry
             RankingEntry entry = null;
             try{

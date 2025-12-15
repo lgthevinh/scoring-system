@@ -139,4 +139,11 @@ export class MatchResults implements OnInit {
   printPage() {
     window.print();
   }
+
+  isSurrogate(match: MatchDetailDto, teamId: string | undefined): boolean {
+    if (!match || !match.surrogateMap || !teamId) {
+      return false;
+    }
+    return !!match.surrogateMap[teamId];
+  }
 }

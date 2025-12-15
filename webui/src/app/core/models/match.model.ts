@@ -1,5 +1,5 @@
 import { Team } from "./team.model";
-import {Score} from './score.model';
+import { Score } from './score.model';
 
 export interface Match {
   id: string;
@@ -40,7 +40,8 @@ export function SampleMatchDetailDto(size: number): MatchDetailDto[] {
       blueTeams: [
         { teamId: `B${i}1`, teamName: `Blue Team ${i}1`, teamSchool: `School ${i}1`, teamRegion: `Region ${i}1` },
         { teamId: `B${i}2`, teamName: `Blue Team ${i}2`, teamSchool: `School ${i}2`, teamRegion: `Region ${i}2` },
-      ]
+      ],
+      surrogateMap: i === 1 ? { [`B${i}2`]: true } : {}
     });
   }
   return sampleMatchDetails;

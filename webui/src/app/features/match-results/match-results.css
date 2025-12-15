@@ -1,104 +1,104 @@
 /* Header controls */
 .header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 .print-btn {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
 }
 
 /* Title */
 .event-title {
-  margin: 12px 0 8px;
+    margin: 12px 0 8px;
 }
 
 /* Table */
 .results-table {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: 1rem;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 1rem;
 }
 .results-table thead th {
-  background: #f3f4f6;
-  font-weight: 700;
-  padding: 3px 4px;
-  border-bottom: 1px solid #e5e7eb;
+    background: #f3f4f6;
+    font-weight: 700;
+    padding: 3px 4px;
+    border-bottom: 1px solid #e5e7eb;
 }
 .results-table td {
-  padding: 3px 4px;
-  border-bottom: 1px solid #e5e7eb;
-  vertical-align: middle;
+    padding: 3px 4px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: middle;
 }
 .results-table .group-alt td {
-  background: #e9ecef; /* stripe for match groups */
+    background: #e9ecef; /* stripe for match groups */
 }
 
 /* Result tile for winner highlight */
 .result-tile {
-  width: 100%;
-  height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 /* Condensed mode reduces paddings */
 .condensed .results-table thead th {
-  padding: 1px;
+    padding: 1px;
 }
 .condensed .results-table td {
-  padding: 1px;
+    padding: 1px;
 }
 /* Hide certain columns when printing */
 @media print {
-  .print-hide {
-    display: none !important;
-  }
+    .print-hide {
+        display: none !important;
+    }
 
-  /* Optional: shrink table to remaining columns */
-  .results-table {
-    width: 100%;
-  }
+    /* Optional: shrink table to remaining columns */
+    .results-table {
+        width: 100%;
+    }
 
-  /* Keep each match group on one page */
-  tr, td, th {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
+    /* Keep each match group on one page */
+    tr, td, th {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
 
-  .print-keep-bg .bg-danger,
-  .print-keep-bg .bg-primary,
-  .print-keep-bg .results-table thead th,
-  .print-keep-bg .results-table .group-alt td {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+    .print-keep-bg .bg-danger,
+    .print-keep-bg .bg-primary,
+    .print-keep-bg .results-table thead th,
+    .print-keep-bg .results-table .group-alt td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 
-  body * {
-    visibility: hidden !important;
-  }
+    body * {
+        visibility: hidden !important;
+    }
 
-  .print-area, .print-area * {
-    visibility: visible !important;
-  }
+    .print-area, .print-area * {
+        visibility: visible !important;
+    }
 
-  .print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    background: white;
-    z-index: 9999;
-    /* Optional: remove box-shadow or other screen-only styles */
-    box-shadow: none;
-  }
+    .print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        background: white;
+        z-index: 9999;
+        /* Optional: remove box-shadow or other screen-only styles */
+        box-shadow: none;
+    }
 
-  .print-result-text {
-    color: black !important;
-  }
+    .print-result-text {
+        color: black !important;
+    }
 
-  .print-keep-bg .print-result-text {
-    color: white !important;
-  }
+    .print-keep-bg .print-result-text {
+        color: white !important;
+    }
 }

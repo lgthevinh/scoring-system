@@ -35,14 +35,3 @@
   border-radius: .5rem;
   padding: .75rem;
 }
-
-/* Compact table header */
-.table thead th { white-space: nowrap; }
-
-.tableFixHead          { overflow: auto; height: 100px; }
-.tableFixHead thead th { position: sticky; top: 0; z-index: 1; }
-
-/* Optional: narrower sidebar on small screens */
-@media (max-width: 576px) {
-  :host { --mc-sidebar-w: 240px; }
-}
