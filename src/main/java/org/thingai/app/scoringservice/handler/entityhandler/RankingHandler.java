@@ -28,14 +28,6 @@ import java.util.Arrays;
 public class RankingHandler {
     private static final String TAG = "RankingHandler";
 
-    // FRC Official Ranking Points System:
-    // - Win: 3 points (beat opponent)
-    // - Tie: 2 points (tied with opponent)
-    // - Loss: 1 point (lost to opponent)
-    private static final int WIN_POINTS = 3;
-    private static final int TIE_POINTS = 2;
-    private static final int LOSS_POINTS = 1;
-
     private Dao dao;
     private MatchHandler matchHandler;
     private IRankingStrategy rankingStrategy;
@@ -322,6 +314,14 @@ public class RankingHandler {
      * - Accumulates statistics across all qualification matches
      */
     static class IndividualTeamRankingStrategy implements IRankingStrategy {
+        // FRC Official Ranking Points System:
+        // - Win: 3 points (beat opponent)
+        // - Tie: 2 points (tied with opponent)
+        // - Loss: 1 point (lost to opponent)
+        private static final int WIN_POINTS = 3;
+        private static final int TIE_POINTS = 2;
+        private static final int LOSS_POINTS = 1;
+
 
         @Override
         public RankingEntry[] sortRankingEntries(RankingEntry[] entries) {
