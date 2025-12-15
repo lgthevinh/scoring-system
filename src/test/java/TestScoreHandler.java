@@ -1,9 +1,9 @@
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.thingai.app.fanroc.FanrocScore;
 import org.thingai.app.scoringservice.callback.RequestCallback;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.handler.entityhandler.ScoreHandler;
+import org.thingai.app.seasondemo.ScoreSeasonDemo;
 import org.thingai.base.dao.Dao;
 import org.thingai.base.dao.DaoFile;
 import org.thingai.base.dao.DaoSqlite;
@@ -22,7 +22,7 @@ public class TestScoreHandler {
 
         DaoFile daoFile = new DaoFile("src/test/resources/files");
         scoreHandler = new ScoreHandler(dao, daoFile);
-        scoreHandler.setScoreClass(FanrocScore.class); // Configure for Fanroc scoring
+        scoreHandler.setScoreClass(ScoreSeasonDemo.class);
     }
 
     @Test
@@ -46,13 +46,11 @@ public class TestScoreHandler {
     private static Score getScore() {
         String jsonRawScoreData = """
                 {
-                    "whiteBallsScored": 10,
-                    "goldenBallsScored": 10,
-                    "barriersPushed": 1,
-                    "imbalanceCategory": 0,
-                    "partialParking": 1,
-                    "fullParking": 2,
-                    "penaltyCount": 3
+                    "robotHanged": 1,
+                    "robotParked": 2,
+                    "ballEntered": 20,
+                    "minorFault": 2,
+                    "majorFault": 1
                 }
                 """;
 

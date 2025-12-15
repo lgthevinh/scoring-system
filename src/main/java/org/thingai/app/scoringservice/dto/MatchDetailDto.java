@@ -1,8 +1,11 @@
 package org.thingai.app.scoringservice.dto;
 
+import org.thingai.app.scoringservice.entity.match.AllianceTeam;
 import org.thingai.app.scoringservice.entity.match.Match;
 import org.thingai.app.scoringservice.entity.score.Score;
 import org.thingai.app.scoringservice.entity.team.Team;
+
+import java.util.HashMap;
 
 public class MatchDetailDto {
     private Match match;
@@ -11,21 +14,33 @@ public class MatchDetailDto {
     private Score redScore;
     private Score blueScore;
 
+    private HashMap<String, Boolean> surrogateMap;
+
     public MatchDetailDto() {
     }
 
-    public MatchDetailDto(Match match, Team[] redTeams, Team[] blueTeams) {
+    public MatchDetailDto(Match match, Team[] redTeams, Team[] blueTeams, HashMap<String, Boolean> surrogateMap) {
         this.match = match;
         this.redTeams = redTeams;
         this.blueTeams = blueTeams;
+        this.surrogateMap = surrogateMap;
     }
 
-    public MatchDetailDto(Match match, Team[] redTeams, Team[] blueTeams, Score redScore, Score blueScore) {
+    public MatchDetailDto(Match match, Team[] redTeams, Team[] blueTeams, Score redScore, Score blueScore, HashMap<String, Boolean> surrogateMap) {
         this.match = match;
         this.redTeams = redTeams;
         this.blueTeams = blueTeams;
         this.redScore = redScore;
         this.blueScore = blueScore;
+        this.surrogateMap = surrogateMap;
+    }
+
+    public HashMap<String, Boolean> getSurrogateMap() {
+        return surrogateMap;
+    }
+
+    public void setSurrogateMap(HashMap<String, Boolean> surrogateMap) {
+        this.surrogateMap = surrogateMap;
     }
 
     public Match getMatch() {

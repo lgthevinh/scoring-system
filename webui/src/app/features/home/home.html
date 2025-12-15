@@ -1,42 +1,47 @@
 <div class="container mt-4">
-  <h3 class="fw-semibold">Event info</h3>
-  <ul>
-    <li class="mt-3"><p class="p-0 m-0">Event information</p></li>
-    <li class="mt-3">
-      <p class="p-0 m-0">Qualification</p>
-      <ul>
-        <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/schedule">Schedule</a></li>
-        <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/rankings">Rankings</a></li>
-      </ul>
-    </li>
-    <li class="mt-3">
-      <p class="p-0 m-0">Playoffs</p>
-      <ul>
-        <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/playoffs">Schedule</a></li>
-        <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/rankings">Rankings</a></li>
-      </ul>
-    </li>
-    <li class="mt-3">
-      <a class="p-0 m-0 text-decoration-none" href="/results">Match results</a>
-    </li>
-  </ul>
+  <ng-container *ngIf="currentEvent$ | async as event">
+    <h3 class="fw-semibold">Event info: {{ event.name }}</h3>
+    <ul>
+      <li class="mt-3">
+        <p class="p-0 m-0">Qualification</p>
+        <ul>
+          <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/schedule">Schedule</a></li>
+          <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/rankings">Rankings</a></li>
+        </ul>
+      </li>
+      <li class="mt-3">
+        <p class="p-0 m-0">Playoffs</p>
+        <ul>
+          <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/playoffs">Schedule</a></li>
+          <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/playoff-results">Playoff results</a></li>
+        </ul>
+      </li>
+      <li class="mt-3">
+        <a class="p-0 m-0 text-decoration-none" href="/results">Match results</a>
+      </li>
+    </ul>
+  </ng-container>
 
-  <h3 class="fw-semibold">Referee Score Tracking</h3>
-  <ul>
-    <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/ref/red"><span class="text-danger">Red</span> Alliance Score Tracking</a></li>
-    <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/ref/blue"><span class="text-primary">Blue</span> Alliance Score Tracking</a></li>
-  </ul>
+  <ng-container *ngIf="currentEvent$ | async">
+    <h3 class="fw-semibold">Referee Score Tracking</h3>
+    <ul>
+      <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/ref/red"><span class="text-danger">Red</span>
+          Alliance Score Tracking</a></li>
+      <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/ref/blue"><span class="text-primary">Blue</span>
+          Alliance Score Tracking</a></li>
+    </ul>
 
-  <h3 class="fw-semibold">Display</h3>
-  <ul>
-    <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/display">Scoring/Timing display</a></li>
-    <li class="mt-3"><a class="p-0 m-0 text-decoration-none">Ranking display</a></li>
-  </ul>
+    <h3 class="fw-semibold">Display</h3>
+    <ul>
+      <li class="mt-3"><a class="p-0 m-0 text-decoration-none" href="/display">Scoring/Timing display</a></li>
+      <li class="mt-3"><a class="p-0 m-0 text-decoration-none">Ranking display</a></li>
+    </ul>
 
-  <h3 class="fw-semibold">GA/Emcee</h3>
-  <ul>
-    <li class="mt-3"><a class="p-0 m-0 text-decoration-none">Announcer Report</a></li>
-  </ul>
+    <h3 class="fw-semibold">GA/Emcee</h3>
+    <ul>
+      <li class="mt-3"><a class="p-0 m-0 text-decoration-none">Announcer Report</a></li>
+    </ul>
+  </ng-container>
 
   <h3 class="fw-semibold">Event Administration</h3>
   <ul>

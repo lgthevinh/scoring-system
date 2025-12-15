@@ -1,11 +1,121 @@
-import { Component } from '@angular/core';
+import {Component, OnInit, signal, WritableSignal} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { EventService } from '../../core/services/event.service';
+import { Event as GameEvent } from '../../core/models/event.model';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-event-dashboard',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './event-dashboard.html',
   styleUrl: './event-dashboard.css'
 })
-export class EventDashboard {
+export class EventDashboard implements OnInit {
+  tabs: string[] = ['All Events', 'Event Tools'];
+  activeTab: string = 'All Events';
 
+  events: WritableSignal<GameEvent[]> = signal([]);
+  isEditing: WritableSignal<boolean> = signal(false);
+  currentEditEvent: WritableSignal<GameEvent | null> = signal(null);
+  showForm: WritableSignal<boolean> = signal(false);
+
+  // Form model
+  formEvent: GameEvent = {
+    uuid: '',
+    name: '',
+    eventCode: '',
+    fieldCount: 3,
+    date: '',
+    location: '',
+    description: '',
+    website: '',
+    organizer: ''
+  };
+
+  constructor(private eventService: EventService) { }
+
+  ngOnInit() {
+    this.loadEvents();
+  }
+
+  loadEvents() {
+    this.eventService.listEvents().subscribe(events => {
+      this.events.set(events);
+    });
+  }
+
+  setActiveTab(tab: string) {
+    this.activeTab = tab;
+  }
+
+  openCreateForm() {
+    this.isEditing.set(false);
+    this.currentEditEvent.set(null);
+    this.resetForm();
+    this.showForm.set(true)
+  }
+
+  openEditForm(event: GameEvent) {
+    this.isEditing.set(true)
+    this.currentEditEvent.set(event);
+    this.formEvent = { ...event };
+    this.showForm.set(true)
+  }
+
+  cancelForm() {
+    this.showForm.set(false);
+    this.resetForm();
+  }
+
+  resetForm() {
+    this.formEvent = {
+      uuid: '',
+      name: '',
+      eventCode: '',
+      fieldCount: 3,
+      date: '',
+      location: '',
+      description: '',
+      website: '',
+      organizer: ''
+    };
+  }
+
+  saveEvent() {
+    if (this.isEditing()) {
+      console.log('Updating event:', this.formEvent);
+      this.eventService.updateEvent(this.formEvent).subscribe(() => {
+        this.loadEvents();
+        this.showForm.set(false)
+        alert('Event updated successfully');
+      }, err => alert('Failed to update event: ' + err.message));
+    } else {
+      console.log('Creating event:', this.formEvent);
+      this.formEvent.uuid = this.formEvent.eventCode;
+
+      this.eventService.createEvent(this.formEvent).subscribe(() => {
+        this.loadEvents();
+        this.showForm.set(false)
+        alert('Event created successfully');
+      }, err => alert('Failed to create event: ' + err.message));
+    }
+  }
+
+  deleteEvent(event: GameEvent) {
+    if (confirm(`Are you sure you want to delete event "${event.name}"?`)) {
+      this.eventService.deleteEvent(event.eventCode).subscribe(() => {
+        this.loadEvents();
+      }, err => alert('Failed to delete event: ' + err.message));
+    }
+  }
+
+  setSystemEvent(event: GameEvent) {
+    if (confirm(`Set "${event.name}" as the current system event?`)) {
+      this.eventService.setSystemEvent(event.eventCode).subscribe(() => {
+        alert(`Current event set to ${event.name}`);
+      }, err => alert('Failed to set system event: ' + err.message));
+    }
+  }
 }

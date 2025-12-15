@@ -1,4 +1,11 @@
-import org.gradle.api.GradleException
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.5.0'
+    }
+}
 
 plugins {
     id 'java'
@@ -118,25 +125,21 @@ tasks.register('copyWebUi', Copy) {
     // Copy after an npm build
     enabled = hasWebUi && !skipWebuiBuild
     dependsOn 'npmBuild'
-    from("${webUiDistDir}/webui/browser") { include '**/*' }
+    from(webUiDistDir) { include '**/*' }
     into("${buildDir}/resources/main/static")
-}
-
-tasks.register('cleanStatic', Delete) {
-    delete "${projectDir}/src/main/resources/static"
 }
 
 tasks.register('copyWebUiIfPresent', Copy) {
     // Fallback: if we skip build but dist exists, still package UI
-    enabled = hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()
-    from("${webUiDistDir}/webui/browser") { include '**/*' }
+    enabled = hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()
+    from(webUiDistDir) { include '**/*' }
     into("${buildDir}/resources/main/static")
 }
 
 tasks.named('processResources') {
     if (hasWebUi && !skipWebuiBuild) {
         dependsOn 'copyWebUi'
-    } else if (hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()) {
+    } else if (hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()) {
         dependsOn 'copyWebUiIfPresent'
     }
 }
@@ -146,15 +149,9 @@ tasks.named('bootJar') {
     archiveFileName = 'scoring-system.jar'
     if (hasWebUi && !skipWebuiBuild) {
         dependsOn 'copyWebUi'
-    } else if (hasWebUi && skipWebuiBuild && file("${webUiDistDir}/webui/browser").exists()) {
+    } else if (hasWebUi && skipWebuiBuild && file(webUiDistDir).exists()) {
         dependsOn 'copyWebUiIfPresent'
     }
-}
-
-tasks.named('bootRun') {
-    // Simplified bootRun configuration
-    workingDir = projectDir
-    systemProperty 'file.encoding', 'UTF-8'
 }
 
 /* ==== Distribution ZIP (jar + bin + data + scripts) ==== */
@@ -170,88 +167,27 @@ distributions {
     }
 }
 
-/* === INTEGRATED BUILD & DEPLOY TASK ===
-   Builds Angular UI, deploys to Spring Boot, and provides full automation
-*/
-tasks.register('buildAndDeploy') {
-    group = 'deployment'
-    description = 'Complete build and deployment workflow: Angular build → Static files → Spring Boot restart'
 
-    doLast {
-        // Validate we're in correct directory
-        def webuiPackage = file("${projectDir}/webui/package.json")
-        if (!webuiPackage.exists()) {
-            throw new GradleException("Error: Run from scoring-system root directory (missing webui/package.json)")
-        }
+tasks.named('distZip') { dependsOn 'bootJar' }
 
-        // Get timestamp for backup
-        def timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
-        def staticDir = "${projectDir}/src/main/resources/static"
-        def backupDir = "${projectDir}/src/main/resources/static.backup.${timestamp}"
+import proguard.gradle.ProGuardTask
 
-        // Display header
-        println("🎯 Fanroc Scoring System Update")
-        println("===============================")
-        println("📅 Timestamp: ${timestamp}")
+tasks.register('proguard', ProGuardTask) {
+    group = 'build'
+    description = 'Obfuscate the application classes using ProGuard'
 
-        try {
-            println("🔨 Step 1: Building Angular frontend...")
-            exec {
-                workingDir "${projectDir}/webui"
-                commandLine 'npm', 'run', 'build'
-            }
-        } catch (Exception e) {
-            throw new GradleException("❌ Angular build failed! Check the output above.")
-        }
+    // Configuration file
+    configuration 'proguard-rules.pro'
 
-        println("✅ Angular build completed successfully")
+    // Input: Application classes (compiled output)
+    injars sourceSets.main.output
 
-        // Create backup of current static files
-        println("🔄 Step 2: Creating backup...")
-        if (file(staticDir).exists()) {
-            copy {
-                from staticDir
-                into backupDir
-                includeEmptyDirs true
-            }
-            println("✅ Backup created: static.backup.${timestamp}")
-        }
+    // Output: Obfuscated Jar
+    outjars layout.buildDirectory.file('libs/scoring-system-obfuscated.jar')
 
-        // Clean and deploy static files to Spring Boot resources
-        println("🧹 Step 3a: Cleaning static directory...")
-        delete {
-            delete staticDir
-        }
-
-        println("📦 Step 3b: Deploying frontend files...")
-        copy {
-            from "${projectDir}/webui/dist/webui/browser"
-            into staticDir
-        }
-
-        // Count deployed files
-        def fileCount = project.fileTree(dir: staticDir, include: '**/*').size()
-        println("📊 Deployed ${fileCount} files to static resources")
-
-        // Kill existing processes
-        println("🏁 Step 4: Restarting application services...")
-        try {
-            exec {
-                commandLine 'pkill', '-f', 'scoring-system.jar'
-                ignoreExitValue true
-            }
-        } catch (Exception ignored) {
-        }
-        try {
-            exec {
-                commandLine 'pkill', '-f', 'ng serve'
-                ignoreExitValue true
-            }
-        } catch (Exception ignored) {
-        }
-
-        println("✅ All processes stopped. Application ready for start.")
-
-    }
-
+    // Dependencies (not obfuscated, just for reference)
+    libraryjars sourceSets.main.compileClasspath
+    
+    // Java 9+ modules
+    libraryjars "${System.getProperty('java.home')}/jmods"
 }

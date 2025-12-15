@@ -11,7 +11,7 @@ public class Event {
     @DaoColumn(name = "name")
     private String name;
 
-    @DaoColumn(name = "eventCode")
+    @DaoColumn(name = "eventCode", unique = true)
     private String eventCode;
 
     @DaoColumn(name = "fieldCount")
