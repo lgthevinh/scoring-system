@@ -477,10 +477,20 @@ public class MatchHandler {
                         mapTeamIndexToId(shuffledTeams, pm.blue[1])
                 };
 
+                HashMap<String, Boolean> surrogateMap = new HashMap<>();
+                for (int tIdx : pm.red) {
+                    String teamId = mapTeamIndexToId(shuffledTeams, tIdx);
+                    surrogateMap.put(teamId, pm.surrogateMap.getOrDefault(tIdx, false));
+                }
+                for (int tIdx : pm.blue) {
+                    String teamId = mapTeamIndexToId(shuffledTeams, tIdx);
+                    surrogateMap.put(teamId, pm.surrogateMap.getOrDefault(tIdx, false));
+                }
+
                 ILog.d("MatchHandler", Arrays.toString(redTeamIds) + " vs " + Arrays.toString(blueTeamIds) + " at " + currentTime.format(timeFormatter));
 
                 // Create the match and scores
-                createMatchInternal(MatchType.QUALIFICATION, matchNumber, fieldNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
+                createMatchInternal(MatchType.QUALIFICATION, matchNumber, fieldNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds, surrogateMap);
 
                 // Advance time for next match
                 currentTime = currentTime.plusMinutes(matchDuration);
@@ -527,14 +537,26 @@ public class MatchHandler {
 
             Matcher m = linePattern.matcher(raw);
             if (m.matches()) {
+                HashMap<Integer, Boolean> surrogateMap = new HashMap<>();
                 int t1 = parseTeamIndex(m.group(2));
                 int t2 = parseTeamIndex(m.group(3));
                 int t3 = parseTeamIndex(m.group(4));
                 int t4 = parseTeamIndex(m.group(5));
 
+                if (t1 == -1 || t2 == -1 || t3 == -1 || t4 == -1) {
+                    ILog.w("MatchHandler", "Failed to parse team indices from line: " + raw);
+                    continue;
+                }
+
+                if (m.group(2).endsWith("*")) surrogateMap.put(t1, true);
+                if (m.group(3).endsWith("*")) surrogateMap.put(t2, true);
+                if (m.group(4).endsWith("*")) surrogateMap.put(t3, true);
+                if (m.group(5).endsWith("*")) surrogateMap.put(t4, true);
+
                 ParsedMatch pm = new ParsedMatch();
                 pm.red = new int[]{t1, t2};
                 pm.blue = new int[]{t3, t4};
+                pm.surrogateMap = surrogateMap;
                 matches.add(pm);
             }
         }
@@ -542,6 +564,7 @@ public class MatchHandler {
     }
 
     private int parseTeamIndex(String token) {
+        ILog.d("MatchHandler", "Parsing team index from token: " + token);
         String digits = token.replace("*", "").trim(); // remove surrogate marker
         try {
             return Integer.parseInt(digits);
@@ -561,66 +584,10 @@ public class MatchHandler {
     private static class ParsedMatch {
         int[] red;
         int[] blue;
+        HashMap<Integer, Boolean> surrogateMap;
     }
 
-    public void generateMatchSchedule(int numberOfMatches, String startTime, int matchDuration, TimeBlock[] timeBlocks, RequestCallback<Void> callback) {
-        try {
-            Team[] allTeams = dao.readAll(Team.class);
-
-            dao.deleteAll(Match.class);
-            dao.deleteAll(AllianceTeam.class);
-            dao.deleteAll(Score.class);
-            matchCache.clear();
-            allianceTeamCache.clear();
-            teamCache.clear();
-
-            if (allTeams.length < 4) {
-                callback.onFailure(ErrorCode.CREATE_FAILED, "Cannot generate schedule with fewer than 4 teams.");
-                return;
-            }
-
-            shuffleArray(allTeams);
-            int teamPoolIndex = 0;
-
-            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            LocalDateTime currentTime = LocalDateTime.parse(startTime, timeFormatter);
-
-            for (int i = 1; i <= numberOfMatches; i++) {
-                int fieldNumber = ((i - 1) % 4) + 1;
-
-                for (TimeBlock block : timeBlocks) {
-                    LocalDateTime breakStart = LocalDateTime.parse(block.getStartTime(), timeFormatter);
-                    long breakDuration = Long.parseLong(block.getDuration());
-                    LocalDateTime breakEnd = breakStart.plusMinutes(breakDuration);
-                    if (!currentTime.isBefore(breakStart) && currentTime.isBefore(breakEnd)) {
-                        currentTime = breakEnd;
-                    }
-                }
-
-                if (teamPoolIndex > allTeams.length - 4) {
-                    shuffleArray(allTeams);
-                    teamPoolIndex = 0;
-                }
-
-                String[] redTeamIds = {allTeams[teamPoolIndex++].getTeamId(), allTeams[teamPoolIndex++].getTeamId()};
-                String[] blueTeamIds = {allTeams[teamPoolIndex++].getTeamId(), allTeams[teamPoolIndex++].getTeamId()};
-
-                ILog.d("MatchHandler", Arrays.toString(redTeamIds) + " vs " + Arrays.toString(blueTeamIds) + " at " + currentTime.format(timeFormatter));
-
-                createMatchInternal(MatchType.QUALIFICATION, i, fieldNumber, currentTime.format(timeFormatter), redTeamIds, blueTeamIds);
-
-                currentTime = currentTime.plusMinutes(matchDuration);
-            }
-
-            setMatchUpdateFlag(true);
-            callback.onSuccess(null, "Match schedule generated successfully.");
-
-        } catch (Exception e) {
-            callback.onFailure(ErrorCode.CREATE_FAILED, "Failed to generate match schedule: " + e.getMessage());
-        }
-    }
-
-    private void createMatchInternal(int matchType, int matchNumber, int field, String matchStartTime, String[] redTeamIds, String[] blueTeamIds) throws Exception {
+    private void createMatchInternal(int matchType, int matchNumber, int field, String matchStartTime, String[] redTeamIds, String[] blueTeamIds, HashMap<String, Boolean> surrogateMap) throws Exception {
         // Handle duplicate team IDs
         Set<String> uniqueReds = new HashSet<>(Arrays.asList(redTeamIds));
         Set<String> uniqueBlues = new HashSet<>(Arrays.asList(blueTeamIds));
@@ -656,6 +623,8 @@ public class MatchHandler {
             AllianceTeam team = new AllianceTeam();
             team.setTeamId(teamId);
             team.setAllianceId(redAllianceId);
+            team.setSurrogate(surrogateMap.get(teamId));
+            ILog.d("MatchHandler", "Inserting red alliance team: " + teamId + " surrogate=" + surrogateMap.get(teamId));
             dao.insertOrUpdate(team);
         }
 
@@ -663,6 +632,8 @@ public class MatchHandler {
             AllianceTeam team = new AllianceTeam();
             team.setTeamId(teamId);
             team.setAllianceId(blueAllianceId);
+            team.setSurrogate(surrogateMap.get(teamId));
+            ILog.d("MatchHandler", "Inserting blue alliance team: " + teamId + " surrogate=" + surrogateMap.get(teamId));
             dao.insertOrUpdate(team);
         }
 

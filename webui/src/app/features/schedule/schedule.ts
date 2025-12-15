@@ -40,6 +40,13 @@ export class Schedule implements OnInit {
     window.print();
   }
 
+  isSurrogate(match: MatchDetailDto, teamId: string | undefined): boolean {
+    if (!match || !match.surrogateMap || !teamId) {
+      return false;
+    }
+    return match.surrogateMap[teamId];
+  }
+
   protected readonly TimeUtils = TimeUtils;
 
   ngOnInit() {

@@ -11,8 +11,9 @@
       <i class="bi bi-printer"></i>
     </button>
   </div>
-  <div class="d-flex justify-content-between align-items-center">
+  <div class="d-flex flex-column justify-content-between align-items-center">
     <h2 class="event-title mb-0">{{ eventName }}</h2>
+    <p class="surrogate-team">Teams with dotted underline are marked to identify surrogate</p>
   </div>
   <div class="info-row">
     <div>Teams: {{ teamsCount() }}</div>
@@ -39,14 +40,21 @@
         <td>{{ TimeUtils.formatIsoTime(matchDetail.match.matchStartTime, "HH:mm") }}</td>
         <td>{{ matchDetail.match.matchCode }}</td>
         <td>{{ matchDetail.match.fieldNumber }}</td>
-        <td>{{ matchDetail.redTeams.at(0)?.teamId }}</td>
-        <td>{{ matchDetail.redTeams.at(1)?.teamId }}</td>
-        <td>{{ matchDetail.redTeams.at(2)?.teamId }}</td>
-        <td>{{ matchDetail.blueTeams.at(0)?.teamId }}</td>
-        <td>{{ matchDetail.blueTeams.at(1)?.teamId }}</td>
-        <td>{{ matchDetail.blueTeams.at(2)?.teamId }}</td>
+        <td [class.surrogate-team]="isSurrogate(matchDetail, matchDetail.redTeams.at(0)?.teamId)">{{
+          matchDetail.redTeams.at(0)?.teamId }}</td>
+        <td [class.surrogate-team]="isSurrogate(matchDetail, matchDetail.redTeams.at(1)?.teamId)">{{
+          matchDetail.redTeams.at(1)?.teamId }}</td>
+        <td [class.surrogate-team]="isSurrogate(matchDetail, matchDetail.redTeams.at(2)?.teamId)">{{
+          matchDetail.redTeams.at(2)?.teamId }}</td>
+        <td [class.surrogate-team]="isSurrogate(matchDetail, matchDetail.blueTeams.at(0)?.teamId)">{{
+          matchDetail.blueTeams.at(0)?.teamId }}</td>
+        <td [class.surrogate-team]="isSurrogate(matchDetail, matchDetail.blueTeams.at(1)?.teamId)">{{
+          matchDetail.blueTeams.at(1)?.teamId }}</td>
+        <td [class.surrogate-team]="isSurrogate(matchDetail, matchDetail.blueTeams.at(2)?.teamId)">{{
+          matchDetail.blueTeams.at(2)?.teamId }}</td>
       </tr>
       }
     </tbody>
   </table>
+
 </div>

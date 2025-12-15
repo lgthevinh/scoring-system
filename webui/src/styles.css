@@ -8,3 +8,8 @@
 body {
   font-family: 'Inter', Arial, sans-serif;
 }
+
+.surrogate-team {
+    text-decoration: underline dotted;
+    text-underline-offset: 2px;
+}

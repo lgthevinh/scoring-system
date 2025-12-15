@@ -12,19 +12,8 @@ import org.thingai.base.dao.Dao;
 import org.thingai.base.log.ILog;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
-/**
- * Manages team ranking calculations for FIRST Robotics Competition (FRC) events.
- *
- * This handler implements the official FRC qualification ranking system where:
- * - Teams earn ranking points based on match performance (win/loss/tie)
- * - Ranking points determine qualification seeding for playoffs
- * - Higher ranking points = better seeding position
- * - Ties broken by total score, then fewest penalty points
- *
- * @author FRC Scoring System Team
- * @since 1.0.0
- */
 public class RankingHandler {
     private static final String TAG = "RankingHandler";
 
@@ -55,106 +44,59 @@ public class RankingHandler {
      * @param redScore Final score for red alliance
      */
     public void updateRankingEntry(MatchDetailDto matchDetailDto, Score blueScore, Score redScore) {
-        // Calculate ranking statistics for each team based on match performance
-        RankingStat[] teamStats = rankingStrategy.setRankingStat(matchDetailDto, blueScore, redScore);
-
-        ILog.d(TAG, "Updating rankings for " + teamStats.length + " teams in match " + matchDetailDto.getMatch().getId());
-
-        for (RankingStat teamMatchStats : teamStats) {
-            String teamId = teamMatchStats.getTeamId();
-
-            try {
-                // Check if this team already has ranking data
-                RankingEntry[] existingEntries = dao.query(RankingEntry.class,
-                    new String[]{"teamId"}, new String[]{teamId});
-
-                RankingEntry teamRankingEntry;
-
-                if (existingEntries == null || existingEntries.length == 0) {
-                    // First match for this team - create new ranking entry
-                    teamRankingEntry = createInitialRankingEntry(teamMatchStats);
-                    ILog.d(TAG, "Created new ranking entry for team " + teamId);
-                } else {
-                    // Team has played before - update existing entry
-                    teamRankingEntry = existingEntries[0];
-                    updateExistingRankingEntry(teamRankingEntry, teamMatchStats);
-                    ILog.d(TAG, "Updated existing ranking entry for team " + teamId);
-                }
-
-                // Update highest score if this match score is better
-                if (teamMatchStats.getScore() > teamRankingEntry.getHighestScore()) {
-                    teamRankingEntry.setHighestScore(teamMatchStats.getScore());
-                }
-
-                // Save the updated ranking entry
-                dao.insertOrUpdate(teamRankingEntry);
-
-            } catch (Exception databaseError) {
-                ILog.e(TAG, "Failed to update ranking for team " + teamId +
-                    ": " + databaseError.getMessage());
-                databaseError.printStackTrace();
+        RankingStat[] stats = rankingStrategy.setRankingStat(matchDetailDto, blueScore, redScore);
+        HashMap<String, Boolean> surrogateTeam = matchDetailDto.getSurrogateMap();
+        for (RankingStat stat : stats) {
+            // Skip surrogate teams
+            if (surrogateTeam.containsKey(stat.getTeamId()) && surrogateTeam.get(stat.getTeamId())) {
+                continue;
             }
+
+            // Fetch existing ranking entry
+            RankingEntry entry = null;
+            try{
+                RankingEntry[] entries = dao.query(RankingEntry.class, new String[]{"teamId"}, new String[]{stat.getTeamId()});
+                if (entries != null && entries.length > 0) {
+                    entry = entries[0];
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+                ILog.e(TAG, "Error fetching ranking entry: " + e.getMessage());
+            }
+
+            if (entry == null) {
+                entry = new RankingEntry();
+                entry.setTeamId(stat.getTeamId());
+                entry.setRankingPoints(stat.getRankingPoints());
+                entry.setTotalScore(stat.getScore());
+                entry.setTotalPenalties(stat.getPenalties());
+                entry.setMatchesPlayed(1);
+                entry.setWins(stat.isWin() ? 1 : 0);
+            } else {
+                entry.setMatchesPlayed(entry.getMatchesPlayed() + 1);
+                entry.setTotalScore(entry.getTotalScore() + stat.getScore());
+                entry.setTotalPenalties(entry.getTotalPenalties() + stat.getPenalties());
+                entry.setRankingPoints(entry.getRankingPoints() + stat.getRankingPoints());
+                if (stat.isWin()) {
+                    entry.setWins(entry.getWins() + 1);
+                }
+            }
+
+            if (stat.getScore() > entry.getHighestScore()) {
+                entry.setHighestScore(stat.getScore());
+            }
+
+            dao.insertOrUpdate(entry);
         }
     }
 
-    /**
-     * Creates initial ranking entry for a team playing their first match.
-     */
-    private RankingEntry createInitialRankingEntry(RankingStat firstMatchStats) {
-        RankingEntry entry = new RankingEntry();
-        entry.setTeamId(firstMatchStats.getTeamId());
-        entry.setRankingPoints(firstMatchStats.getRankingPoints());
-        entry.setTotalScore(firstMatchStats.getScore());
-        entry.setTotalPenalties(firstMatchStats.getPenalties());
-        entry.setMatchesPlayed(1);
-        entry.setWins(firstMatchStats.isWin() ? 1 : 0);
-        entry.setHighestScore(firstMatchStats.getScore()); // First match is highest so far
-        return entry;
-    }
-
-    /**
-     * Updates existing ranking entry with results from another match.
-     */
-    private void updateExistingRankingEntry(RankingEntry existingEntry, RankingStat newMatchStats) {
-        existingEntry.setMatchesPlayed(existingEntry.getMatchesPlayed() + 1);
-        existingEntry.setTotalScore(existingEntry.getTotalScore() + newMatchStats.getScore());
-        existingEntry.setTotalPenalties(existingEntry.getTotalPenalties() + newMatchStats.getPenalties());
-        existingEntry.setRankingPoints(existingEntry.getRankingPoints() + newMatchStats.getRankingPoints());
-
-        if (newMatchStats.isWin()) {
-            existingEntry.setWins(existingEntry.getWins() + 1);
-        }
-    }
-
-    /**
-     * Retrieves the current qualification rankings for all teams.
-     *
-     * @param callback Optional callback for async processing
-     * @return Array of ranking entries sorted by official FRC ranking rules
-     */
     public RankingEntry[] getRankingStatus(RequestCallback<RankingEntry[]> callback) {
-        try {
-            RankingEntry[] allEntries = dao.readAll(RankingEntry.class);
-            RankingEntry[] sortedEntries = rankingStrategy.sortRankingEntries(allEntries);
-
-            ILog.d(TAG, "Fetched " + sortedEntries.length + " ranking entries");
-
-            if (callback != null) {
-                callback.onSuccess(sortedEntries, "Successfully retrieved and sorted team rankings");
-            }
-
-            return sortedEntries;
-
-        } catch (Exception databaseError) {
-            ILog.e(TAG, "Failed to retrieve ranking status: " + databaseError.getMessage());
-            databaseError.printStackTrace();
-
-            if (callback != null) {
-                callback.onFailure(-1, "Database error while fetching rankings: " + databaseError.getMessage());
-            }
-
-            return new RankingEntry[0]; // Return empty array on error
+        RankingEntry[] entries = dao.readAll(RankingEntry.class);
+        RankingEntry[] sortedEntries = rankingStrategy.sortRankingEntries(entries);
+        if (callback != null) {
+            callback.onSuccess(sortedEntries, "All ranking entries fetched and sorted.");
         }
+        return sortedEntries;
     }
     /**
      * Recalculates rankings from scratch using all qualification match data.
@@ -169,82 +111,41 @@ public class RankingHandler {
      * @param callback Optional callback for completion notification
      */
     public void recalculateRankings(RequestCallback<Boolean> callback) {
-        // Clear all existing ranking data
-        try {
-            dao.deleteAll(RankingEntry.class);
-            ILog.i(TAG, "Cleared all existing ranking entries for recalculation");
-        } catch (Exception clearError) {
-            ILog.e(TAG, "Failed to clear ranking entries: " + clearError.getMessage());
-            if (callback != null) {
-                callback.onFailure(-1, "Failed to clear existing rankings: " + clearError.getMessage());
-            }
-            return;
-        }
-
-        // Run recalculation in background thread to avoid blocking
+        dao.deleteAll(RankingEntry.class);
         new Thread(() -> {
             try {
-                ILog.d(TAG, "Starting ranking recalculation for qualification matches");
+                matchHandler.listMatchDetails(MatchType.QUALIFICATION, true, new RequestCallback<MatchDetailDto[]>() {
+                    @Override
+                    public void onSuccess(MatchDetailDto[] result, String message) {
+                        for (MatchDetailDto matchDetail : result) {
+                            Score blueScore = matchDetail.getBlueScore();
+                            Score redScore = matchDetail.getRedScore();
 
-                // Fetch all qualification matches with their details
-                matchHandler.listMatchDetails(MatchType.QUALIFICATION, true,
-                    new RequestCallback<MatchDetailDto[]>() {
-                        @Override
-                        public void onSuccess(MatchDetailDto[] allMatches, String message) {
-                            int processedMatches = 0;
-                            int skippedMatches = 0;
-
-                            for (MatchDetailDto matchDetail : allMatches) {
-                                try {
-                                    Score blueScore = matchDetail.getBlueScore();
-                                    Score redScore = matchDetail.getRedScore();
-
-                                    // Only process completed matches with final scores
-                                    if (matchDetail.getMatch().getActualStartTime() == null) {
-                                        skippedMatches++;
-                                        continue;
-                                    }
-
-                                    // Recalculate rankings for this match
-                                    updateRankingEntry(matchDetail, blueScore, redScore);
-                                    processedMatches++;
-
-                                    ILog.d(TAG, "Recalculated rankings for match " +
-                                        matchDetail.getMatch().getId() + " (" + processedMatches + " processed)");
-
-                                } catch (Exception matchError) {
-                                    ILog.w(TAG, "Failed to recalculate rankings for match " +
-                                        matchDetail.getMatch().getId() + ": " + matchError.getMessage());
-                                }
+                            if (matchDetail.getMatch().getActualStartTime() == null) {
+                                continue; // Skip matches that haven't started or have no scores
                             }
 
-                            ILog.i(TAG, "Ranking recalculation completed: " + processedMatches +
-                                " matches processed, " + skippedMatches + " matches skipped");
-
-                            if (callback != null) {
-                                callback.onSuccess(true, "Successfully recalculated rankings from " +
-                                    processedMatches + " qualification matches");
-                            }
+                            updateRankingEntry(matchDetail, blueScore, redScore);
                         }
+                        ILog.i(TAG, "Recalculated rankings for all qualification matches.");
+                    }
 
-                        @Override
-                        public void onFailure(int errorCode, String errorMessage) {
-                            ILog.e(TAG, "Failed to fetch match details for recalculation: " + errorMessage);
-                            if (callback != null) {
-                                callback.onFailure(errorCode, "Failed to fetch match data: " + errorMessage);
-                            }
-                        }
-                    });
-
-            } catch (Exception threadError) {
-                ILog.e(TAG, "Unexpected error during ranking recalculation: " + threadError.getMessage());
-                threadError.printStackTrace();
-
+                    @Override
+                    public void onFailure(int errorCode, String errorMessage) {
+                        ILog.e(TAG, "Failed to fetch match details for recalculating rankings: " + errorMessage);
+                    }
+                });
                 if (callback != null) {
-                    callback.onFailure(-1, "Unexpected error during recalculation: " + threadError.getMessage());
+                    callback.onSuccess(true, "Recalculated rankings successfully.");
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (callback != null) {
+                    callback.onFailure(-1, "Error during recalculating rankings: " + e.getMessage());
+                }
+                ILog.e(TAG, "Error during recalculating rankings: " + e.getMessage());
             }
-        }, "RankingRecalculationThread").start();
+        }).start();
     }
 
     public void setRankingStrategy(IRankingStrategy strategy) {

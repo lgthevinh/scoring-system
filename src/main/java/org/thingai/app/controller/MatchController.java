@@ -134,33 +134,6 @@ public class MatchController {
         return getObjectResponse(future);
     }
 
-    @PostMapping("/schedule/generate")
-    public ResponseEntity<Object> generateSchedule(@RequestBody Map<String, Object> request) {
-        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
-        try {
-            int numberOfMatches = Integer.parseInt(request.get("numberOfMatches").toString());
-            String startTime = request.get("startTime").toString();
-            int matchDuration = Integer.parseInt(request.get("matchDuration").toString());
-            List<Map<String, String>> timeBlockMaps = (List<Map<String, String>>) request.get("timeBlocks");
-            TimeBlock[] timeBlocks = objectMapper.convertValue(timeBlockMaps, TimeBlock[].class);
-
-            ScoringService.matchHandler().generateMatchSchedule(numberOfMatches, startTime, matchDuration, timeBlocks, new RequestCallback<Void>() {
-                @Override
-                public void onSuccess(Void result, String successMessage) {
-                    future.complete(ResponseEntity.ok(Map.of("message", successMessage)));
-                }
-
-                @Override
-                public void onFailure(int errorCode, String errorMessage) {
-                    future.complete(createErrorResponse(errorCode, errorMessage));
-                }
-            });
-        } catch (Exception e) {
-            future.complete(ResponseEntity.badRequest().body(Map.of("error", "Invalid request format: " + e.getMessage())));
-        }
-        return getObjectResponse(future);
-    }
-
     @PostMapping("/schedule/generate/v2")
     public ResponseEntity<Object> generateScheduleV2(@RequestBody Map<String, Object> request) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();

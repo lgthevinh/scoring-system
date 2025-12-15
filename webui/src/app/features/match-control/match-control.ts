@@ -459,4 +459,11 @@ export class MatchControl implements OnInit {
       }
     });
   }
+
+  isSurrogate(match: MatchDetailDto, teamId: string | undefined): boolean {
+    if (!match || !match.surrogateMap || !teamId) {
+      return false;
+    }
+    return !!match.surrogateMap[teamId];
+  }
 }

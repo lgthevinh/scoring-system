@@ -73,8 +73,10 @@
         </td>
         }
 
-        <td class="text-center">{{ teamIdAt(match.redTeams, r) }}</td>
-        <td class="text-center">{{ teamIdAt(match.blueTeams, r) }}</td>
+        <td class="text-center" [class.surrogate-team]="isSurrogate(match, teamIdAt(match.redTeams, r))">{{
+          teamIdAt(match.redTeams, r) }}</td>
+        <td class="text-center" [class.surrogate-team]="isSurrogate(match, teamIdAt(match.blueTeams, r))">{{
+          teamIdAt(match.blueTeams, r) }}</td>
 
         @if (r === 0) {
         <td class="text-center print-hide" [attr.rowspan]="teamRowCount(match)">
