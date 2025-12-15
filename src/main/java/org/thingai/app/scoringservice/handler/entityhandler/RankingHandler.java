@@ -66,7 +66,7 @@ public class RankingHandler {
             try {
                 // Check if this team already has ranking data
                 RankingEntry[] existingEntries = dao.query(RankingEntry.class,
-                    new String[]{"team_id"}, new String[]{teamId});
+                    new String[]{"teamId"}, new String[]{teamId});
 
                 RankingEntry teamRankingEntry;
 
