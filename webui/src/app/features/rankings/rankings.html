@@ -1,10 +1,55 @@
+<!-- Navigation -->
 <div class="my-4">
     <a class="text-decoration-none" href="/">« Back to Main Dashboard</a>
 </div>
 
+<!-- Main Content -->
 <div class="container my-3">
-    <h2 class="fw-bold text-center my-3">Qualification Rankings</h2>
+    <div class="row">
+        <div class="col">
+            <h2 class="fw-bold text-center my-3">Qualification Rankings</h2>
+        </div>
+    </div>
 
+    <!-- Action Buttons -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <button
+                class="btn btn-outline-primary me-2"
+                (click)="refreshRankings()"
+                [disabled]="isLoading()"
+                type="button">
+                <i class="bi bi-arrow-clockwise" [class.spin]="isLoading()"></i>
+                Refresh Rankings
+            </button>
+
+            <button
+                class="btn btn-warning"
+                (click)="recalculateAllRankings()"
+                [disabled]="isRecalculating()"
+                type="button">
+                <i class="bi bi-calculator" [class.spin]="isRecalculating()"></i>
+                {{ isRecalculating() ? 'Recalculating...' : 'Recalculate Rankings' }}
+            </button>
+        </div>
+
+        <div class="col-md-6 text-end text-muted">
+            @if (lastUpdated()) {
+                <small>Last updated: {{ lastUpdated() | date:'short' }}</small>
+            }
+        </div>
+    </div>
+
+    <!-- Error Alert -->
+    @if (errorMessage()) {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {{ errorMessage() }}
+            <button type="button" class="btn-close" (click)="clearError()" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Rankings Table -->
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -12,31 +57,51 @@
                     <thead class="bg-light">
                         <tr>
                             <th class="ps-4">Rank</th>
-                            <th>Team</th>
+                            <th>Team #</th>
                             <th class="text-center">Ranking Points</th>
                             <th class="text-center">Wins</th>
                             <th class="text-center">Total Score</th>
                             <th class="text-center">High Score</th>
-                            <th class="text-center">Matches</th>
+                            <th class="text-center">Matches Played</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @for (rank of rankings(); track rank.teamId) {
-                            @let i = rankings().indexOf(rank);
+                        <!-- Loading State -->
+                        @if (isLoading() && !hasRankings()) {
                             <tr>
-                              <td class="ps-4 fw-bold">{{ i + 1 }}</td>
-                              <td >{{ rank.teamId }}</td>
-                              <td class="text-center fw-bold text-primary">{{ rank.rankingPoints }}</td>
-                              <td class="text-center">{{ rank.wins }}</td>
-                              <td class="text-center">{{ rank.totalScore }}</td>
-                              <td class="text-center">{{ rank.highestScore }}</td>
-                              <td class="text-center">{{ rank.matchesPlayed }}</td>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading rankings...</span>
+                                    </div>
+                                    <div class="mt-2 text-muted">Loading team rankings...</div>
+                                </td>
                             </tr>
                         }
-                        @if (rankings().length === 0 && isLoading()) {
+
+                        <!-- Rankings Data -->
+                        @for (team of rankings(); track team.teamId) {
+                            @let rank = rankings().indexOf(team) + 1;
                             <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    No rankings available yet.
+                                <td class="ps-4 fw-bold">{{ rank }}</td>
+                                <td class="fw-semibold">{{ team.teamId }}</td>
+                                <td class="text-center fw-bold text-primary">{{ team.rankingPoints }}</td>
+                                <td class="text-center">{{ team.wins }}</td>
+                                <td class="text-center">{{ team.totalScore }}</td>
+                                <td class="text-center">{{ team.highestScore }}</td>
+                                <td class="text-center">{{ team.matchesPlayed }}</td>
+                            </tr>
+                        }
+
+                        <!-- Empty State -->
+                        @if (!isLoading() && !hasRankings()) {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-trophy display-4 mb-3 text-secondary"></i>
+                                    <h5>No Rankings Available</h5>
+                                    <p class="mb-0">Qualification matches haven't been scored yet, or rankings need to be calculated.</p>
+                                    <button class="btn btn-primary mt-3" (click)="recalculateAllRankings()">
+                                        Calculate Rankings
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -45,4 +110,16 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer Info -->
+    @if (hasRankings()) {
+        <div class="row mt-3">
+            <div class="col text-muted text-center">
+                <small>
+                    Rankings are calculated from all completed qualification matches.
+                    Teams are sorted by ranking points, then total score, then fewest penalties.
+                </small>
+            </div>
+        </div>
+    }
 </div>
