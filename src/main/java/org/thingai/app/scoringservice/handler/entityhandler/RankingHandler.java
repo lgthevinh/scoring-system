@@ -361,13 +361,11 @@ public class RankingHandler {
             boolean redAllianceWins = redAllianceScore > blueAllianceScore;
             boolean matchIsTied = blueAllianceScore == redAllianceScore;
 
-            // Distribute alliance score equally among team members
-            int blueScorePerTeam = blueAllianceTeams.length > 0 ? blueAllianceScore / blueAllianceTeams.length : 0;
-            int redScorePerTeam = redAllianceTeams.length > 0 ? redAllianceScore / redAllianceTeams.length : 0;
+            int blueScorePerTeam = blueAllianceScore;
+            int redScorePerTeam = redAllianceScore;
 
-            // Distribute penalties equally among alliance members
-            int bluePenaltiesPerTeam = blueAllianceTeams.length > 0 ? blueScore.getPenaltiesScore() / blueAllianceTeams.length : 0;
-            int redPenaltiesPerTeam = redAllianceTeams.length > 0 ? redScore.getPenaltiesScore() / redAllianceTeams.length : 0;
+            int bluePenaltiesPerTeam = blueScore.getPenaltiesScore();
+            int redPenaltiesPerTeam = redScore.getPenaltiesScore();
 
             int resultIndex = 0;
 
