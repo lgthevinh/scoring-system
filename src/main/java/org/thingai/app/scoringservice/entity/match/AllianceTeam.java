@@ -16,6 +16,9 @@ public class AllianceTeam {
     @DaoColumn(name = "teamId")
     private String teamId;
 
+    @DaoColumn(name = "isSurrogate")
+    private boolean isSurrogate;
+
     public String getAllianceId() {
         return allianceId;
     }
@@ -30,5 +33,13 @@ public class AllianceTeam {
 
     public void setTeamId(String teamId) {
         this.teamId = teamId;
+    }
+
+    public boolean isSurrogate() {
+        return isSurrogate;
+    }
+
+    public void setSurrogate(boolean surrogate) {
+        isSurrogate = surrogate;
     }
 }

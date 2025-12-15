@@ -216,7 +216,15 @@ public class MatchHandler {
                     })
                     .filter(Objects::nonNull)
                     .toArray(Team[]::new);
-            MatchDetailDto detailDto = new MatchDetailDto(match, redTeams, blueTeams);
+
+            HashMap<String, Boolean> surrogateMap = new HashMap<>();
+            for (AllianceTeam at : redAllianceTeams) {
+                surrogateMap.put(at.getTeamId(), at.isSurrogate());
+            }
+            for (AllianceTeam at : blueAllianceTeams) {
+                surrogateMap.put(at.getTeamId(), at.isSurrogate());
+            }
+            MatchDetailDto detailDto = new MatchDetailDto(match, redTeams, blueTeams, surrogateMap);
             callback.onSuccess(detailDto, "Match detail retrieved successfully.");
         } catch (Exception e) {
             callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to retrieve match detail: " + e.getMessage());
@@ -306,6 +314,8 @@ public class MatchHandler {
                     allianceTeamCache.put(blueAllianceId, blueAllianceTeams);
                 }
 
+                HashMap<String, Boolean> surrogateMap = new HashMap<>();
+
                 // Use cache for individual teams
                 Team[] redTeams = Arrays.stream(redAllianceTeams)
                         .map(at -> {
@@ -314,6 +324,8 @@ public class MatchHandler {
                                 team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
+
+                            surrogateMap.put(at.getTeamId(), at.isSurrogate());
                             return team;
                         })
                         .filter(Objects::nonNull)
@@ -326,6 +338,8 @@ public class MatchHandler {
                                 team = dao.query(Team.class, new String[]{"id"}, new String[]{at.getTeamId()})[0];
                                 if (team != null) teamCache.put(at.getTeamId(), team);
                             }
+
+                            surrogateMap.put(at.getTeamId(), at.isSurrogate());
                             return team;
                         })
                         .filter(Objects::nonNull)
@@ -336,11 +350,11 @@ public class MatchHandler {
                     String blueAllianceScoreId = match.getMatchCode() + "_B";
                     Score redScore = dao.query(Score.class, new String[]{"id"}, new String[]{redAllianceScoreId})[0];
                     Score blueScore = dao.query(Score.class, new String[]{"id"}, new String[]{blueAllianceScoreId})[0];
-                    detailsList.add(new MatchDetailDto(match, redTeams, blueTeams, redScore, blueScore));
+                    detailsList.add(new MatchDetailDto(match, redTeams, blueTeams, redScore, blueScore, surrogateMap));
                     continue;
                 }
 
-                detailsList.add(new MatchDetailDto(match, redTeams, blueTeams));
+                detailsList.add(new MatchDetailDto(match, redTeams, blueTeams, surrogateMap));
             }
 
             callback.onSuccess(detailsList.toArray(new MatchDetailDto[0]), "Match details retrieved successfully.");
@@ -703,7 +717,19 @@ public class MatchHandler {
                 })
                 .filter(Objects::nonNull)
                 .toArray(Team[]::new);
-        return new MatchDetailDto(match, redTeams, blueTeams);
+
+        HashMap<String, Boolean> surrogateMap = new HashMap<>();
+        for (AllianceTeam at : redAllianceTeams) {
+            if (at.isSurrogate()) {
+                surrogateMap.put(at.getTeamId(), true);
+            }
+        }
+        for (AllianceTeam at : blueAllianceTeams) {
+            if (at.isSurrogate()) {
+                surrogateMap.put(at.getTeamId(), true);
+            }
+        }
+        return new MatchDetailDto(match, redTeams, blueTeams, surrogateMap);
     }
 
     // Utility methods

@@ -17,6 +17,7 @@ export interface MatchDetailDto {
   blueTeams: Team[];
   redScore?: Score;
   blueScore?: Score;
+  surrogateMap?: { [teamId: string]: boolean };
 }
 
 export function SampleMatchDetailDto(size: number): MatchDetailDto[] {
