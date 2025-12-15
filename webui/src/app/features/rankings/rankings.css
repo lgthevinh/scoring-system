@@ -1,34 +1,20 @@
-/* Rankings page styles */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 .table th {
-    font-weight: 600;
-    font-size: 0.875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  color: #6c757d;
 }
 
-.table td {
-    vertical-align: middle;
-    font-size: 0.9rem;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-.card {
-    border-radius: 0.5rem;
-}
-
-.fw-bold {
-    font-weight: 700;
-}
-
-.text-primary {
-    color: #0d6efd !important;
-}
-
-.text-muted {
-    color: #6c757d !important;
+.badge {
+  min-width: 60px;
 }

@@ -18,7 +18,7 @@ public class RankingHandler {
 
     private Dao dao;
     private MatchHandler matchHandler;
-    private IRankingStrategy rankingStrategy = new DefaultRankingStrategy();
+    private IRankingStrategy rankingStrategy = new IndividualTeamRankingStrategy();
 
     public RankingHandler(Dao dao, MatchHandler matchHandler) {
         this.matchHandler = matchHandler;
@@ -162,6 +162,93 @@ public class RankingHandler {
                 boolean isWin = redScore.getTotalScore() > blueScore.getTotalScore();
                 stat.setWin(isWin);
                 stat.setRankingPoints(isWin ? 3 : 1);
+                stats[index++] = stat;
+            }
+
+            return stats;
+        }
+    }
+
+    static class IndividualTeamRankingStrategy implements IRankingStrategy {
+        @Override
+        public RankingEntry[] sortRankingEntries(RankingEntry[] entries) {
+            // Sort by ranking points descending, then by total score descending, then by penalties ascending
+            Arrays.sort(entries, (a, b) -> {
+                if (b.getRankingPoints() != a.getRankingPoints()) {
+                    return Integer.compare(b.getRankingPoints(), a.getRankingPoints());
+                } else if (b.getTotalScore() != a.getTotalScore()) {
+                    return Integer.compare(b.getTotalScore(), a.getTotalScore());
+                } else {
+                    return Integer.compare(a.getTotalPenalties(), b.getTotalPenalties());
+                }
+            });
+            return entries;
+        }
+
+        @Override
+        public RankingStat[] setRankingStat(MatchDetailDto matchDetailDto, Score blueScore, Score redScore) {
+            Team[] redTeams = matchDetailDto.getRedTeams();
+            Team[] blueTeams = matchDetailDto.getBlueTeams();
+            RankingStat[] stats = new RankingStat[redTeams.length + blueTeams.length];
+
+            // Determine match outcome
+            boolean blueWins = blueScore.getTotalScore() > redScore.getTotalScore();
+            boolean redWins = redScore.getTotalScore() > blueScore.getTotalScore();
+            boolean isTie = blueScore.getTotalScore() == redScore.getTotalScore();
+
+            // Calculate individual team scores (divide alliance score equally among team members)
+            int blueScorePerTeam = blueTeams.length > 0 ? blueScore.getTotalScore() / blueTeams.length : 0;
+            int redScorePerTeam = redTeams.length > 0 ? redScore.getTotalScore() / redTeams.length : 0;
+
+            // Calculate penalties per team
+            int bluePenaltiesPerTeam = blueTeams.length > 0 ? blueScore.getPenaltiesScore() / blueTeams.length : 0;
+            int redPenaltiesPerTeam = redTeams.length > 0 ? redScore.getPenaltiesScore() / redTeams.length : 0;
+
+            int index = 0;
+
+            // Process blue alliance teams
+            for (int i = 0; i < blueTeams.length; i++) {
+                Team team = blueTeams[i];
+                RankingStat stat = new RankingStat();
+                stat.setTeamId(team.getTeamId());
+                stat.setScore(blueScorePerTeam);
+                stat.setPenalties(bluePenaltiesPerTeam);
+
+                // Win determination
+                if (blueWins) {
+                    stat.setWin(true);
+                    stat.setRankingPoints(3); // Win points
+                } else if (isTie) {
+                    stat.setWin(false);
+                    stat.setRankingPoints(2); // Tie points
+                } else {
+                    stat.setWin(false);
+                    stat.setRankingPoints(1); // Loss points
+                }
+
+                stats[index++] = stat;
+            }
+
+            // Process red alliance teams
+            for (int i = 0; i < redTeams.length; i++) {
+                Team team = redTeams[i];
+                RankingStat stat = new RankingStat();
+                stat.setTeamId(team.getTeamId());
+                stat.setScore(redScorePerTeam);
+                stat.setPenalties(redPenaltiesPerTeam);
+
+                // Win determination
+                if (redWins) {
+                    stat.setWin(true);
+                    stat.setRankingPoints(3); // Win points
+                } else if (isTie) {
+                    stat.setWin(false);
+                    stat.setRankingPoints(2); // Tie points
+                } else {
+                    stat.setWin(false);
+                    stat.setRankingPoints(1); // Loss points
+                }
+
                 stats[index++] = stat;
             }
 
