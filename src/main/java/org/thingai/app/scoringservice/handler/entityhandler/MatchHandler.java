@@ -84,27 +84,27 @@ public class MatchHandler {
         this.matchMakerHandler.setOutPath(outDir);
 
         // Get event match type from dao
-        try {
-            DbMapEntity eventMatchType = dao.query(DbMapEntity.class, new String[]{"key"}, new String[]{"event_match_type_key"})[0];
-            if (eventMatchType != null) {
-                currentEventMatchType = Integer.parseInt(eventMatchType.getValue());
-            } else {
-                currentEventMatchType = MatchType.QUALIFICATION;
-                dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
-            }
-        } catch (Exception e) {
-            currentEventMatchType = MatchType.QUALIFICATION;
-        }
+        // try {
+        //     DbMapEntity eventMatchType = dao.query(DbMapEntity.class, new String[]{"key"}, new String[]{"event_match_type_key"})[0];
+        //     if (eventMatchType != null) {
+        //         currentEventMatchType = Integer.parseInt(eventMatchType.getValue());
+        //     } else {
+        //         currentEventMatchType = MatchType.QUALIFICATION;
+        //         dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+        //     }
+        // } catch (Exception e) {
+        //     currentEventMatchType = MatchType.QUALIFICATION;
+        // }
     }
 
-    public void updateEventMatchType(int matchType) {
-        currentEventMatchType = matchType;
-        try {
-            dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
-        } catch (Exception e) {
-            ILog.e("MatchHandler", "Failed to update event match type in DB: " + e.getMessage());
-        }
-    }
+    // public void updateEventMatchType(int matchType) {
+    //     currentEventMatchType = matchType;
+    //     try {
+    //         dao.insertOrUpdate(new DbMapEntity("event_match_type_key", String.valueOf(currentEventMatchType)));
+    //     } catch (Exception e) {
+    //         ILog.e("MatchHandler", "Failed to update event match type in DB: " + e.getMessage());
+    //     }
+    // }
 
     // Methods use outside system implementation
     public void createMatch(int matchType, int matchNumber, String matchStartTime, String[] redTeamIds, String[] blueTeamIds, RequestCallback<Match> callback) {
