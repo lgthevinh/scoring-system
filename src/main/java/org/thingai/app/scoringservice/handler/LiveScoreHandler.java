@@ -33,6 +33,8 @@ public class LiveScoreHandler {
     private Score currentRedScoreHolder;
     private Score currentBlueScoreHolder;
 
+    private int typicalMatchDuration = 150; // seconds
+
     /* Flags */
     private boolean isRedCommitable = false;
     private boolean isBlueCommitable = false;
@@ -98,7 +100,7 @@ public class LiveScoreHandler {
             currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
             currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS);
+            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, typicalMatchDuration); // 2:30 -> 150 seconds
 
             broadcastHandler.broadcast(rootTopic + "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
             broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
@@ -113,30 +115,75 @@ public class LiveScoreHandler {
 
     public void handleLiveScoreUpdate(LiveScoreUpdateDto liveScoreUpdate, boolean isRedAlliance) {
         ILog.d(TAG, "Live Score Update Received: " + liveScoreUpdate);
-        if (liveScoreUpdate.payload.matchId == null || !liveScoreUpdate.payload.matchId.equals(currentMatch.getMatch().getId())) {
-            ILog.d(TAG, "Live score update match ID does not match current match ID");
-            return;
-        }
 
         try {
-            int fieldNumber = currentMatch.getMatch().getFieldNumber();
-            String rootTopic = "/topic/live/field/" + fieldNumber;
+            // Create score object for database persistence
+            Score liveScore = ScoreHandler.factoryScore();
 
-            if (isRedAlliance) {
-                currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
-                currentRedScoreHolder.calculateTotalScore();
-                broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            // Set alliance ID - use matchId if provided, otherwise use temporary ID
+            String allianceId;
+            if (liveScoreUpdate.payload.matchId != null && !liveScoreUpdate.payload.matchId.isEmpty()) {
+                allianceId = isRedAlliance ?
+                    liveScoreUpdate.payload.matchId + "_R" :
+                    liveScoreUpdate.payload.matchId + "_B";
             } else {
-                currentBlueScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
-                currentBlueScoreHolder.calculateTotalScore();
-                broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+                // Allow scoring without official match ID - use temporary IDs for logging
+                allianceId = isRedAlliance ? "temp_red" : "temp_blue";
+            }
+            liveScore.setAllianceId(allianceId);
+
+            // Populate score data
+            liveScore.fromJson(liveScoreUpdate.payload.state.toString());
+            liveScore.calculateTotalScore();
+            liveScore.setStatus(ScoreStatus.SCORED); // Mark as scored for live tracking
+
+            // Persist to database for logging/tracking
+            ILog.d(TAG, "Persisting live score update for alliance: " + allianceId + " with score: " + liveScore.getTotalScore());
+            scoreHandler.submitScore(liveScore, false, new RequestCallback<Score>() {
+                @Override
+                public void onSuccess(Score responseObject, String message) {
+                    ILog.d(TAG, "Live score persisted successfully for " + allianceId + ": Total=" + responseObject.getTotalScore() + " (" + message + ")");
+                }
+
+                @Override
+                public void onFailure(int errorCode, String errorMessage) {
+                    ILog.d(TAG, "Failed to persist live score for " + allianceId + ": " + errorMessage + " (error code: " + errorCode + ")");
+                }
+            });
+
+            // Now handle broadcasting to display components
+            // Try to broadcast to display components if we have a running match
+            if (currentMatch != null && liveScoreUpdate.payload.matchId != null &&
+                liveScoreUpdate.payload.matchId.equals(currentMatch.getMatch().getId())) {
+
+                int fieldNumber = currentMatch.getMatch().getFieldNumber();
+                String rootTopic = "/topic/live/field/" + fieldNumber;
+
+                if (isRedAlliance) {
+                    currentRedScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
+                    currentRedScoreHolder.calculateTotalScore();
+                    broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+                } else {
+                    currentBlueScoreHolder.fromJson(liveScoreUpdate.payload.state.toString());
+                    currentBlueScoreHolder.calculateTotalScore();
+                    broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+                }
+            } else {
+                // Always broadcast live updates regardless of match state
+                // This allows score display updates even without official match start
+                String broadcastColor = isRedAlliance ? "red" : "blue";
+
+                // Broadcast to any field that might be displaying (use field 1 as default/fallback)
+                String fallbackTopic = "/topic/live/field/1/score/" + broadcastColor;
+                liveScore.calculateTotalScore(); // Ensure score is calculated
+                broadcastHandler.broadcast(fallbackTopic, liveScore, BroadcastMessageType.SCORE_UPDATE);
+
+                ILog.d(TAG, "Live score update broadcasted to fallback topic: " + fallbackTopic + " (score=" + liveScore.getTotalScore() + ")");
             }
         } catch (Exception e) {
             e.printStackTrace();
             ILog.d(TAG, "Failed to process live score update: " + e.getMessage());
         }
-
-
     }
 
     public void commitFinalScore(RequestCallback<Score[]> callback) {
@@ -207,7 +254,6 @@ public class LiveScoreHandler {
      * Override the score for an alliance
      * @param allianceId
      * @param jsonScoreData format for this params should only contain the detail score element according to the season.
-     *                    <p>Example {"robotHanged": 2, "robotParked": 1, "ballCollected": 15}</p>
      * @param callback
      */
     public void overrideScore(String allianceId, String jsonScoreData, RequestCallback<Boolean> callback) {

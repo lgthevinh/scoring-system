@@ -164,11 +164,14 @@ export class MockMatchService extends MatchService {
             totalScore: 100,
             penaltiesScore: 0,
             rawScoreData: JSON.stringify({
-              robotParked: 2,
-              robotHanged: 1,
-              ballEntered: 10,
-              minorFault: 1,
-              majorFault: 0
+              whiteBallsScored: 5,
+              goldenBallsScored: 5,
+              barriersPushed: 1,
+              imbalanceCategory: 0,
+              partialParking: 1,
+              fullParking: 2,
+              minorPenalties: 1,
+              majorPenalties: 0
             })
           },
           blueScore: {
@@ -177,11 +180,14 @@ export class MockMatchService extends MatchService {
             totalScore: 80,
             penaltiesScore: 0,
             rawScoreData: JSON.stringify({
-              robotParked: 1,
-              robotHanged: 0,
-              ballEntered: 5,
-              minorFault: 0,
-              majorFault: 0
+              whiteBallsScored: 3,
+              goldenBallsScored: 2,
+              barriersPushed: 0,
+              imbalanceCategory: 1,
+              partialParking: 1,
+              fullParking: 1,
+              minorPenalties: 0,
+              majorPenalties: 0
             })
           }
         });
@@ -232,11 +238,14 @@ export class MockMatchService extends MatchService {
         penaltiesScore: RandomUtils.generateRandomNumber(0, 50),
         totalScore: RandomUtils.generateRandomNumber(100, 300),
         rawScoreData: JSON.stringify({
-          robotParked: 2,
-          robotHanged: 1,
-          ballEntered: 10,
-          minorFault: 1,
-          majorFault: 0
+          whiteBallsScored: RandomUtils.generateRandomNumber(0, 15),
+          goldenBallsScored: RandomUtils.generateRandomNumber(0, 15),
+          barriersPushed: RandomUtils.generateRandomNumber(0, 2),
+          imbalanceCategory: RandomUtils.generateRandomNumber(0, 2),
+          partialParking: RandomUtils.generateRandomNumber(0, 2),
+          fullParking: RandomUtils.generateRandomNumber(0, 2),
+          minorPenalties: RandomUtils.generateRandomNumber(0, 5),
+          majorPenalties: RandomUtils.generateRandomNumber(0, 3)
         })
       };
       observer.next(mockScore);

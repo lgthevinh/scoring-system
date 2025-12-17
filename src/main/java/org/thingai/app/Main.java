@@ -5,8 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.thingai.app.scoringservice.ScoringService;
-import org.thingai.app.seasondemo.ScoreSeasonDemo;
 import org.thingai.base.log.ILog;
+import org.thingai.app.fanroc.*;
 
 @SpringBootApplication
 public class Main {
@@ -18,7 +18,7 @@ public class Main {
         scoringService.version = "1.0.0";
 
         ILog.ENABLE_LOGGING = true;
-        ILog.logLevel = ILog.DEBUG;
+        ILog.logLevel = ILog.INFO;
 
         // 1. Start Spring and get its application context
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
@@ -30,7 +30,7 @@ public class Main {
         scoringService.setSimpMessagingTemplate(simpMessagingTemplate);
         scoringService.init();
 
-        scoringService.registerScoreClass(ScoreSeasonDemo.class); // Register the scoring class for the season specific logic
+        scoringService.registerScoreClass(FanrocScore.class); // Register the scoring class for the season specific logic
 
     }
 

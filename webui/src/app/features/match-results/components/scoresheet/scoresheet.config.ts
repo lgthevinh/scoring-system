@@ -20,6 +20,8 @@ export interface FieldConfig {
     key: string; // Path in JSON, e.g., "auto.samples.highBasket"
     label: string;
     type: 'number' | 'boolean' | 'text';
+    min?: number;
+    max?: number;
 }
 
 export interface ColumnConfig {
@@ -36,25 +38,43 @@ export const CUSTOM_SEASON_CONFIG: ScoresheetConfig = {
             title: 'Match Score',
             sections: [
                 {
-                    id: 'scoring',
-                    title: 'Scoring',
+                    id: 'ball-scoring',
+                    title: 'Ball Scoring',
                     type: 'fields',
                     fields: [
-                        { key: 'robotParked', label: 'Robots Parked', type: 'number' },
-                        { key: 'robotHanged', label: 'Robots Hanged', type: 'number' },
-                        { key: 'ballEntered', label: 'Balls Entered', type: 'number' }
+                        { key: 'whiteBallsScored', label: 'White Balls Scored by Human', type: 'number', min: 0, max: 50 },
+                        { key: 'goldenBallsScored', label: 'Golden Balls Scored by Robot', type: 'number', min: 0, max: 50 }
                     ]
                 },
                 {
-                    id: 'fouls',
-                    title: 'Fouls',
+                    id: 'barriers-movement',
+                    title: 'Barriers & Movement',
                     type: 'fields',
                     fields: [
-                        { key: 'minorFault', label: 'Minor Faults', type: 'number' },
-                        { key: 'majorFault', label: 'Major Faults', type: 'number' }
+                        { key: 'barriersPushed', label: 'Barriers Pushed Away', type: 'number', min: 0, max: 2 }
+                    ]
+                },
+                {
+                    id: 'end-game',
+                    title: 'End Game',
+                    type: 'fields',
+                    fields: [
+                        { key: 'partialParking', label: 'Partial Parking', type: 'number', min: 0 },
+                        { key: 'fullParking', label: 'Full Parking', type: 'number', min: 0 }
+                    ]
+                },
+                {
+                    id: 'imbalance-penalties',
+                    title: 'Imbalance & Penalties',
+                    type: 'fields',
+                    fields: [
+                        { key: 'imbalanceCategory', label: 'Ball Imbalance Category', type: 'number' },
+                        { key: 'penaltyCount', label: 'Minor Penalty Violations', type: 'number', min: 0 },
+                        { key: 'yellowCardCount', label: 'Yellow Card Violations', type: 'number', min: 0 },
+                        { key: 'redCard', label: 'Red Card', type: 'boolean' }
                     ]
                 }
             ]
         }
     ]
-};
+}

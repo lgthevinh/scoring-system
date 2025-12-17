@@ -19,13 +19,30 @@ public class RankingHandler {
 
     private Dao dao;
     private MatchHandler matchHandler;
-    private IRankingStrategy rankingStrategy = new DefaultRankingStrategy();
+    private IRankingStrategy rankingStrategy;
 
     public RankingHandler(Dao dao, MatchHandler matchHandler) {
-        this.matchHandler = matchHandler;
         this.dao = dao;
+        this.matchHandler = matchHandler;
+        this.rankingStrategy = new IndividualTeamRankingStrategy();
+
+        ILog.i(TAG, "RankingHandler initialized with IndividualTeamRankingStrategy");
     }
 
+    /**
+     * Updates ranking entries for all teams in a completed match.
+     *
+     * This method processes the match results and updates each team's ranking statistics:
+     * - Increments matches played
+     * - Adds ranking points based on win/loss/tie
+     * - Accumulates total score and penalties
+     * - Tracks highest individual match score
+     * - Updates win count
+     *
+     * @param matchDetailDto Complete match information including teams and scores
+     * @param blueScore Final score for blue alliance
+     * @param redScore Final score for red alliance
+     */
     public void updateRankingEntry(MatchDetailDto matchDetailDto, Score blueScore, Score redScore) {
         RankingStat[] stats = rankingStrategy.setRankingStat(matchDetailDto, blueScore, redScore);
         HashMap<String, Boolean> surrogateTeam = matchDetailDto.getSurrogateMap();
@@ -81,6 +98,18 @@ public class RankingHandler {
         }
         return sortedEntries;
     }
+    /**
+     * Recalculates rankings from scratch using all qualification match data.
+     *
+     * This operation:
+     * 1. Clears all existing ranking data
+     * 2. Re-processes every completed qualification match
+     * 3. Rebuilds rankings from historical data
+     *
+     * Useful when match scores have been corrected or ranking logic has changed.
+     *
+     * @param callback Optional callback for completion notification
+     */
     public void recalculateRankings(RequestCallback<Boolean> callback) {
         dao.deleteAll(RankingEntry.class);
         new Thread(() -> {
@@ -173,6 +202,119 @@ public class RankingHandler {
             }
 
             return stats;
+        }
+    }
+
+    /**
+     * Implements individual team ranking strategy for FRC events.
+     *
+     * Key features:
+     * - Each team gets their proportional share of alliance score
+     * - Win/loss/tie determined at alliance level but applied to all alliance members
+     * - Supports variable alliance sizes (typically 2-3 teams)
+     * - Accumulates statistics across all qualification matches
+     */
+    static class IndividualTeamRankingStrategy implements IRankingStrategy {
+        // FRC Official Ranking Points System:
+        // - Win: 3 points (beat opponent)
+        // - Tie: 2 points (tied with opponent)
+        // - Loss: 1 point (lost to opponent)
+        private static final int WIN_POINTS = 3;
+        private static final int TIE_POINTS = 2;
+        private static final int LOSS_POINTS = 1;
+
+
+        @Override
+        public RankingEntry[] sortRankingEntries(RankingEntry[] entries) {
+            // Official FRC ranking sort order:
+            // 1. Ranking Points (descending)
+            // 2. Total Qualification Score (descending)
+            // 3. Penalty Points (ascending - fewer penalties rank higher)
+            Arrays.sort(entries, (teamA, teamB) -> {
+                // Primary sort: ranking points
+                if (teamB.getRankingPoints() != teamA.getRankingPoints()) {
+                    return Integer.compare(teamB.getRankingPoints(), teamA.getRankingPoints());
+                }
+                // Secondary sort: total score across all matches
+                if (teamB.getTotalScore() != teamA.getTotalScore()) {
+                    return Integer.compare(teamB.getTotalScore(), teamA.getTotalScore());
+                }
+                // Tertiary sort: fewer penalties rank higher
+                return Integer.compare(teamA.getTotalPenalties(), teamB.getTotalPenalties());
+            });
+            return entries;
+        }
+
+        @Override
+        public RankingStat[] setRankingStat(MatchDetailDto matchDetailDto, Score blueScore, Score redScore) {
+            Team[] redAllianceTeams = matchDetailDto.getRedTeams();
+            Team[] blueAllianceTeams = matchDetailDto.getBlueTeams();
+
+            // Calculate total teams participating in this match
+            int totalTeamsInMatch = redAllianceTeams.length + blueAllianceTeams.length;
+            RankingStat[] teamMatchResults = new RankingStat[totalTeamsInMatch];
+
+            // Determine match outcome for alliance-based ranking
+            int blueAllianceScore = blueScore.getTotalScore();
+            int redAllianceScore = redScore.getTotalScore();
+
+            boolean blueAllianceWins = blueAllianceScore > redAllianceScore;
+            boolean redAllianceWins = redAllianceScore > blueAllianceScore;
+            boolean matchIsTied = blueAllianceScore == redAllianceScore;
+
+            int blueScorePerTeam = blueAllianceScore;
+            int redScorePerTeam = redAllianceScore;
+
+            int bluePenaltiesPerTeam = blueScore.getPenaltiesScore();
+            int redPenaltiesPerTeam = redScore.getPenaltiesScore();
+
+            int resultIndex = 0;
+
+            // Award ranking points to blue alliance teams
+            for (Team team : blueAllianceTeams) {
+                RankingStat teamResult = new RankingStat();
+                teamResult.setTeamId(team.getTeamId());
+                teamResult.setScore(blueScorePerTeam);
+                teamResult.setPenalties(bluePenaltiesPerTeam);
+
+                // Determine ranking points based on alliance performance
+                if (blueAllianceWins) {
+                    teamResult.setWin(true);
+                    teamResult.setRankingPoints(WIN_POINTS);
+                } else if (matchIsTied) {
+                    teamResult.setWin(false);
+                    teamResult.setRankingPoints(TIE_POINTS);
+                } else {
+                    teamResult.setWin(false);
+                    teamResult.setRankingPoints(LOSS_POINTS);
+                }
+
+                teamMatchResults[resultIndex++] = teamResult;
+            }
+
+            // Award ranking points to red alliance teams
+            for (Team team : redAllianceTeams) {
+                RankingStat teamResult = new RankingStat();
+                teamResult.setTeamId(team.getTeamId());
+                teamResult.setScore(redScorePerTeam);
+                teamResult.setPenalties(redPenaltiesPerTeam);
+
+                // Determine ranking points based on alliance performance
+                if (redAllianceWins) {
+                    teamResult.setWin(true);
+                    teamResult.setRankingPoints(WIN_POINTS);
+                } else if (matchIsTied) {
+                    teamResult.setWin(false);
+                    teamResult.setRankingPoints(TIE_POINTS);
+                } else {
+                    teamResult.setWin(false);
+                    teamResult.setRankingPoints(LOSS_POINTS);
+                }
+
+                teamMatchResults[resultIndex++] = teamResult;
+            }
+
+            return teamMatchResults;
         }
     }
 }

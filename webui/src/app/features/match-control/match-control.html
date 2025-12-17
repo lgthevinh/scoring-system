@@ -104,9 +104,9 @@
                   <div class="small text-muted">Not Started</div>
                 </div>
                 <div class="text-nowrap">
-                  <button class="btn btn-success btn-sm me-2" (click)="loadNextMatch()">Load Next</button>
-                  <button class="btn btn-outline-secondary btn-sm me-2" (click)="showPreview()">Show Preview</button>
-                  <button class="btn btn-outline-secondary btn-sm" (click)="showMatch()">Show Match</button>
+                  <button class="btn btn-success btn-sm me-2" (click)="loadNextMatch()" [disabled]="schedule().length === 0">Load Next</button>
+                  <button class="btn btn-outline-secondary btn-sm me-2" (click)="showPreview()" [disabled]="!loaded()">Show Preview</button>
+                  <button class="btn btn-outline-secondary btn-sm" (click)="showMatch()" [disabled]="!loaded()">Show Match</button>
                 </div>
               </div>
               <div class="row g-2">
@@ -139,7 +139,7 @@
                   <div class="small text-muted">{{ activeMatchTimerDisplay() }}</div>
                 </div>
                 <div class="text-nowrap">
-                  <button class="btn btn-primary btn-sm me-2" (click)="startMatch()">Start</button>
+                  <button class="btn btn-primary btn-sm me-2" (click)="startMatch()" [disabled]="!loaded()">Start</button>
                   <button class="btn btn-outline-danger btn-sm" (click)="abortMatch()">Abort</button>
                 </div>
               </div>
