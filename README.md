@@ -57,3 +57,45 @@ Most commonly used cofiguration is as follows:
 2. **Field display monitors**: These monitors are connected to the scoring server laptop and display real-time scores and match information to the audience.
 3. **Referee tablets**: These tablets are used by referees to input scores and update match information. They connect to the scoring server laptop via the local network, preferably using Wi-Fi.
 4. **Network switch/router**: A dedicated network switch or router is used to create a local network for the scoring system, ensuring secure and reliable communication between devices.
+
+### Download the Live Scoring System Software
+You can download the latest version of the Live Scoring System software from the releases section of this repository:
+[Releases - Live Scoring System](https://github.com/lgthevinh/scoring-system/releases)
+
+Be sure to download the version of the event you are organizing (e.g., FANROC, FARC, etc...). And read the release notes and download the latest stable version.
+
+**Important tips for running the system software**:
+- Ensure that Google Chrome is installed and is the default browser.
+- **Important**: Firefox browser is not supported!
+- Disable any firewall/virus protection on the computer running the server.
+- Disable any ad blocking software on devices that will interface with the server. The ad blocking
+software occasionally misinterprets server resources as ads.
+- Clear the browser cache.
+
+To run the Live Scoring System, follow these steps:
+1. Extract the downloaded ZIP file to a desired location on your computer.
+2. Navigate to the run file location, follow these folder path:
+```aiignore
+{extracted_folder}
+    /vrc-scoring-system/
+        run.bat (for Windows)
+        run.sh (for macOS)
+```
+3. Execute the appropriate run file for your operating system:
+   - For Windows: Double-click on `run.bat`
+   - For macOS: Open a terminal, navigate to the folder, and run `sh run.sh`
+4. The Live Scoring System server will start, and you should see a message indicating that the server is running.
+![Live Scoring System Running](docs/image/run-system.jpg)
+
+Accessing the Live Scoring System by entering the host machine's IP address in the browser's address bar. For example:
+```http://{your_host_machine_ip}``` or the url provided in the terminal output.
+
+### Log in to the Live Scoring System
+
+### User guide
+
+#### Event preparation
+#### During the event
+#### After the event
+
+### Troubleshooting
