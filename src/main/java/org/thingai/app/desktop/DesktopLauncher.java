@@ -97,11 +97,11 @@ public class DesktopLauncher {
         });
 
         center.add(createInfoPanel("Status", statusLabel));
-        center.add(Box.createVerticalStrut(10));
+        center.add(Box.createVerticalStrut(2));
         center.add(createInfoPanel("Server URL", urlLabel));
-        center.add(Box.createVerticalStrut(10));
+        center.add(Box.createVerticalStrut(2));
         center.add(createInfoPanel("Database Path", dbPathLabel));
-        center.add(Box.createVerticalStrut(10));
+        center.add(Box.createVerticalStrut(2));
         center.add(createInfoPanel("Logs Path", logPathLabel));
         center.add(Box.createVerticalStrut(20));
 
@@ -226,7 +226,7 @@ public class DesktopLauncher {
             appDir = new File(baseDir, "app");
             dataDir = new File(baseDir, "data");
             logsDir = new File(baseDir, "logs");
-            bootJar = new File(appDir, "scoring-system.jar");
+            bootJar = new File("scoring-system.jar");
         }
     }
 

@@ -92,10 +92,45 @@ Accessing the Live Scoring System by entering the host machine's IP address in t
 
 ### Log in to the Live Scoring System
 
+After accessing the Live Scoring System URL, you will be prompted to log in. Use the following default credentials if logging in from the host machine:
+- **Username**: local
+
+No password is required for local access.
+
+![Login Screen](docs/image/login-screen.jpg)
+
 ### User guide
 
+After logging in, you will be directed to the main page, here you will follow the steps below to set up and run the scoring system for your event.
+
 #### Event preparation
+
+Navigate to the `Event dashboard` section to set up your event details, including teams, matches, and scoring rules.
+
+![Event Dashboard](docs/image/event-dashboard-screen.jpg)
+
+In the Event Dashboard, you can:
+- Create and manage event information, and set active event for the system.
+- Navigate to the `Event Tools` tab to create account for scorekeepers and referees, add/import teams and generate match schedule.
+
+Set active the event for the system by clicking on the `Set Active` button.
+
 #### During the event
+
+After setting up the event, navigate to the Main screen, here you can view the information of the schedule, ranking, result with other options
+
+![Main Screen](docs/image/main-page.jpg)
+
 #### After the event
 
+After the event, you can export match results and rankings for record-keeping and analysis. To the folder that run file is located, you will find the database file of the event under `{EVENTCODE}.db` name, for the detailed score of each match, navigate to the `files` folder, you will find the JSON files of each match.
+
 ### Troubleshooting
+
+If you encounter any issues while using the Live Scoring System, refer to the troubleshooting section in the documentation or open an issue in the repository for assistance.
+
+Or contact the developer at
+- Email: `everwellmax@gmail.com` (Official live scoring system maintainer)
+
+Event specific software support contact:
+- Email: `truongcongminhquan09@gmail.com` (FANROC event live scoring system maintainer)

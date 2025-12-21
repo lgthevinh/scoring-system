@@ -1,16 +1,16 @@
 /* Exact-ish palette from the mock */
 :host {
-  --fd-yellow: #f6c62e;
-  --fd-black: #000000;
-  --fd-nice-white: #fefefe;
-  --fd-off-white: #f3f4f6;
-  --fd-nice-black: #0a0a0a;
+    --fd-yellow: #f6c62e;
+    --fd-black: #000000;
+    --fd-nice-white: #fefefe;
+    --fd-off-white: #f3f4f6;
+    --fd-nice-black: #0a0a0a;
 
-  --fd-red-dark: #b71c1c;
-  --fd-red: #c62828;
+    --fd-red-dark: #b71c1c;
+    --fd-red: #c62828;
 
-  --fd-blue: #5570ff;
-  --fd-blue-dark: #4656dc;
+    --fd-blue: #5570ff;
+    --fd-blue-dark: #4656dc;
 }
 
 /* 16:9 CANVAS
@@ -18,50 +18,50 @@
    - The inner .canvas keeps a 16:9 aspect ratio and centers the board
 */
 .frame {
-  position: fixed;
-  inset: 0;
-  background: var(--fd-nice-white); /* black bars if screen isn't 16:9 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: fixed;
+    inset: 0;
+    background: var(--fd-nice-white); /* black bars if screen isn't 16:9 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .canvas {
-  /* Strict 16:9 area */
-  aspect-ratio: 16 / 9;
-  width: min(100vw, calc(100vh * 16 / 9));
-  height: auto;
-  display: grid;
-  place-items: center;
+    /* Strict 16:9 area */
+    aspect-ratio: 16 / 9;
+    width: min(100vw, calc(100vh * 16 / 9));
+    height: auto;
+    display: grid;
+    place-items: center;
 }
 
 /* BOARD lays out timer + dock like your image */
 .board {
-  width: 95%;
-  height: 95%;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  align-items: end;
+    width: 95%;
+    height: 95%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    align-items: end;
 }
 
 /* TIMER */
 .timer-panel {
-  background: var(--fd-yellow);
-  border: clamp(6px, 1.1vw, 1px) solid var(--fd-black);
-  border-radius: clamp(18px, 2.2vw, 36px);
-  height: 100%;
-  display: grid;
-  place-items: center;
+    background: var(--fd-yellow);
+    border: clamp(6px, 1.1vw, 1px) solid var(--fd-black);
+    border-radius: clamp(18px, 2.2vw, 36px);
+    height: 100%;
+    display: grid;
+    place-items: center;
 }
 
 .timer-text {
-  font-weight: 700;
-  color: #0a0a0a;
-  line-height: 1;
-  text-align: center;
-  /* Big responsive type to mimic screenshot */
-  font-size: clamp(6rem, 20vw, 24rem);
-  font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    font-weight: 700;
+    color: #0a0a0a;
+    line-height: 1;
+    text-align: center;
+    /* Big responsive type to mimic screenshot */
+    font-size: clamp(6rem, 20vw, 24rem);
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
 }
 
 /* DOCK
@@ -69,112 +69,112 @@
    - Four cells: red list | red score | blue score | blue list
 */
 .dock {
-  width: 86%;
-  margin: clamp(-1px, -1.5vw, -24px) auto 0 auto; /* tuck under timer panel */
-  border: clamp(6px, 1.1vw, 1px) solid var(--fd-black);
-  border-top: 0;
-  border-radius: 0 0 clamp(18px, 2.2vw, 36px) clamp(18px, 2.2vw, 36px);
-  overflow: hidden;
+    width: 86%;
+    margin: clamp(-1px, -1.5vw, -24px) auto 0 auto; /* tuck under timer panel */
+    border: clamp(6px, 1.1vw, 1px) solid var(--fd-black);
+    border-top: 0;
+    border-radius: 0 0 clamp(18px, 2.2vw, 36px) clamp(18px, 2.2vw, 36px);
+    overflow: hidden;
 
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
-  align-items: stretch;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
+    align-items: stretch;
 }
 
 /* Inner dividers */
 .dock-cell {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  padding: clamp(6px, 0.8vw, 12px) clamp(6px, 0.8vw, 12px);
-  border-left: clamp(6px, 1.1vw, 1px) solid var(--fd-black);
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    padding: clamp(6px, 0.8vw, 12px) clamp(6px, 0.8vw, 12px);
+    border-left: clamp(6px, 1.1vw, 1px) solid var(--fd-black);
 }
 .dock-cell:first-child { border-left: 0; }
 
 /* Red team-list (left) */
 .dock-red-list {
-  background: var(--fd-red-dark);
-  color: #fff;
+    background: var(--fd-red-dark);
+    color: #fff;
 }
 .dock-red-list .team {
-  font-weight: 600;
-  letter-spacing: .3px;
-  line-height: 1.35;
-  font-size: clamp(0.9rem, 2vw, 1.4rem);
-  text-shadow: 0 1px 0 rgba(0,0,0,.2);
+    font-weight: 600;
+    letter-spacing: .3px;
+    line-height: 1.35;
+    font-size: clamp(0.9rem, 2vw, 1.4rem);
+    text-shadow: 0 1px 0 rgba(0,0,0,.2);
 }
 
 /* Red score (center-left) */
 .dock-red-score {
-  background: var(--fd-red);
-  color: #fff;
+    background: var(--fd-red);
+    color: #fff;
 }
 .dock-red-score .score,
 .dock-blue-score .score {
-  font-weight: 700;
-  font-size: clamp(1.5rem, 5vw, 4rem);
-  line-height: 1;
-  text-shadow: 0 1px 0 rgba(0,0,0,.2);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 5vw, 4rem);
+    line-height: 1;
+    text-shadow: 0 1px 0 rgba(0,0,0,.2);
 }
 
 /* Blue score (center-right) */
 .dock-blue-score {
-  background: var(--fd-blue);
-  color: #fff;
+    background: var(--fd-blue);
+    color: #fff;
 }
 
 /* Blue team-list (right) */
 .dock-blue-list {
-  background: var(--fd-blue-dark);
-  color: #fff;
+    background: var(--fd-blue-dark);
+    color: #fff;
 }
 .dock-blue-list .team {
-  font-weight: 600;
-  letter-spacing: .3px;
-  line-height: 1.35;
-  font-size: clamp(0.9rem, 2vw, 1.4rem);
-  text-shadow: 0 1px 0 rgba(0,0,0,.2);
+    font-weight: 600;
+    letter-spacing: .3px;
+    line-height: 1.35;
+    font-size: clamp(0.9rem, 2vw, 1.4rem);
+    text-shadow: 0 1px 0 rgba(0,0,0,.2);
 }
 
 /* SETTINGS CONTROLS (auto fade) */
 .controls {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 1040;
-  transition: opacity .25s ease, visibility .25s ease;
-  opacity: 1;
-  visibility: visible;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1040;
+    transition: opacity .25s ease, visibility .25s ease;
+    opacity: 1;
+    visibility: visible;
 }
 .controls-hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* Top-left hotspot to re-show controls */
 .reveal-hotspot {
-  position: fixed;
-  top: 0; left: 0;
-  width: 48px; height: 48px;
-  z-index: 1039;
-  /* Invisible but hoverable area */
+    position: fixed;
+    top: 0; left: 0;
+    width: 48px; height: 48px;
+    z-index: 1039;
+    /* Invisible but hoverable area */
 }
 
 /* Modal sections styling (FTC-like) */
 .fd-modal .fd-section + .fd-section { margin-top: 1rem; }
 .fd-section-title {
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
-  border-bottom: 0;
-  border-radius: .25rem .25rem 0 0;
-  padding: .5rem .75rem;
-  font-weight: 600;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-bottom: 0;
+    border-radius: .25rem .25rem 0 0;
+    padding: .5rem .75rem;
+    font-weight: 600;
 }
 .fd-section-body {
-  border: 1px solid #e5e7eb;
-  border-radius: 0 0 .25rem .25rem;
-  padding: .75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0 0 .25rem .25rem;
+    padding: .75rem;
 }
 
 /* Bootstrap modal minor polish */

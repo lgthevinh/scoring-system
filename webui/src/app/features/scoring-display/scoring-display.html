@@ -3,391 +3,215 @@
 
 <!-- Controls (fade after 5s) -->
 <div class="controls" [class.controls-hidden]="!controlsVisible()" (mousemove)="onAnyInteract()">
-  <button type="button"
-          class="btn btn-light btn-sm shadow-sm d-inline-flex align-items-center gap-1"
-          data-bs-toggle="modal" data-bs-target="#fdConfigModal">
-    <i class="bi bi-gear-fill"></i>
-    <span>Settings</span>
-  </button>
+    <button type="button"
+            class="btn btn-light btn-sm shadow-sm d-inline-flex align-items-center gap-1"
+            data-bs-toggle="modal" data-bs-target="#fdConfigModal">
+        <i class="bi bi-gear-fill"></i>
+        <span>Settings</span>
+    </button>
 </div>
 
 <!-- Full-screen black frame with a centered 16:9 canvas -->
 <div class="frame">
-  <div class="canvas">
-    <!-- Board area inside 16:9 (scaled to fit) -->
-    <div class="board">
-      <!-- Timer panel -->
-      <div class="timer-panel">
-        <div class="timer-text">{{ mmss() }}</div>
-      </div>
+    <div class="canvas">
+        <!-- Board area inside 16:9 (scaled to fit) -->
+        <div class="board">
+            <!-- Timer panel -->
+            <div class="timer-panel">
+                <div class="timer-text">{{ mmss() }}</div>
+            </div>
 
-<!-- Bottom dock (overlaps under timer) -->
-<div class="dock">
-  <div class="dock-cell dock-red-list">
-    <div class="d-flex flex-column h-100">
-      @for (team of redTeams(); track team.teamId) {
-        <div class="team">{{ team.teamId }}</div>
-      }
-      @if (redScoreBreakdown()?.isFanroc) {
-        <button class="btn btn-sm btn-outline-light mt-auto" data-bs-toggle="modal" data-bs-target="#redBreakdownModal">
-          <small>Breakdown</small>
-        </button>
-      }
+            <!-- Bottom dock (overlaps under timer) -->
+            <div class="dock">
+                <div class="dock-cell dock-red-list">
+                    @for (team of redTeams(); track team.teamId) {
+                        <div class="team" >{{ team.teamId }}</div>
+                    }
+                </div>
+                <div class="dock-cell dock-red-score">
+                    <div class="score">{{ redScore() }}</div>
+                </div>
+                <div class="dock-cell dock-blue-score">
+                    <div class="score">{{ blueScore() }}</div>
+                </div>
+                <div class="dock-cell dock-blue-list">
+                    @for (team of blueTeams(); track team.teamId) {
+                        <div class="team" >{{ team.teamId }}</div>
+                    }
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="dock-cell dock-red-score">
-    <div class="score">{{ redScore() }}</div>
-  </div>
-  <div class="dock-cell dock-blue-score">
-    <div class="score">{{ blueScore() }}</div>
-  </div>
-  <div class="dock-cell dock-blue-list">
-    <div class="d-flex flex-column h-100">
-      @for (team of blueTeams(); track team.teamId) {
-        <div class="team">{{ team.teamId }}</div>
-      }
-      @if (blueScoreBreakdown()?.isFanroc) {
-        <button class="btn btn-sm btn-outline-light mt-auto" data-bs-toggle="modal" data-bs-target="#blueBreakdownModal">
-          <small>Breakdown</small>
-        </button>
-      }
-    </div>
-  </div>
-
-    </div>
-  </div>
 </div>
-
-<!-- Red Alliance Score Breakdown Modal -->
-<div class="modal fade" id="redBreakdownModal" tabindex="-1" aria-labelledby="redBreakdownLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-danger text-white">
-      <div class="modal-header">
-        <h5 class="modal-title" id="redBreakdownLabel">
-          <i class="bi bi-graph-up me-2"></i>Red Alliance - Fanroc Score Breakdown
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (redScoreBreakdown()) {
-          <div class="row g-3">
-            <div class="col-md-6">
-              <h6 class="border-bottom pb-2">Biological Points ({{ redScoreBreakdown()!.biologicalPoints }})</h6>
-              <div class="small">
-                <div class="d-flex justify-content-between">
-                  <span>White Balls (1pt each):</span>
-                  <span>{{ redScoreBreakdown()!.whiteBalls }} × 1 = {{ redScoreBreakdown()!.whiteBalls }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span>Golden Balls (3pt each):</span>
-                  <span>{{ redScoreBreakdown()!.goldenBalls }} × 3 = {{ redScoreBreakdown()!.goldenBalls * 3 }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <h6 class="border-bottom pb-2">Barrier Points ({{ redScoreBreakdown()!.barrierPoints }})</h6>
-              <div class="small">
-                <div class="d-flex justify-content-between">
-                  <span>Barriers Pushed:</span>
-                  <span>{{ redScoreBreakdown()!.barriersPushed }} × 10 = {{ redScoreBreakdown()!.barrierPoints }}</span>
-                </div>
-              </div>
-              <h6 class="border-bottom pb-2 mt-3">End Game ({{ redScoreBreakdown()!.endGamePoints }})</h6>
-              <div class="small">
-                <div class="d-flex justify-content-between">
-                  <span>Partial Parking:</span>
-                  <span>{{ redScoreBreakdown()!.partialParking }} × 5 = {{ redScoreBreakdown()!.partialParking * 5 }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span>Full Parking:</span>
-                  <span>{{ redScoreBreakdown()!.fullParking }} × 10 = {{ redScoreBreakdown()!.fullParking * 10 }}</span>
-                </div>
-                @if (redScoreBreakdown()!.fullParking >= 2) {
-                  <div class="d-flex justify-content-between fw-bold">
-                    <span>Fleet Bonus:</span>
-                    <span>+10</span>
-                  </div>
-                }
-              </div>
-            </div>
-            <div class="col-12">
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="border rounded p-2 text-center">
-                    <div class="h5 mb-0">{{ redScoreBreakdown()!.balancingCoeff.toFixed(2) }}</div>
-                    <small>Balancing Coefficient</small>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="border rounded p-2 text-center">
-                    <div class="h5 mb-0 text-warning">-{{ redScoreBreakdown()!.penalties }}</div>
-                    <small>Penalties</small>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="border rounded p-2 text-center bg-white text-dark">
-                    <div class="h4 mb-0 fw-bold">{{ redScore() }}</div>
-                    <small>Final Score</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Blue Alliance Score Breakdown Modal -->
-<div class="modal fade" id="blueBreakdownModal" tabindex="-1" aria-labelledby="blueBreakdownLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content bg-primary text-white">
-      <div class="modal-header">
-        <h5 class="modal-title" id="blueBreakdownLabel">
-          <i class="bi bi-graph-up me-2"></i>Blue Alliance - Fanroc Score Breakdown
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        @if (blueScoreBreakdown()) {
-          <div class="row g-3">
-            <div class="col-md-6">
-              <h6 class="border-bottom pb-2">Biological Points ({{ blueScoreBreakdown()!.biologicalPoints }})</h6>
-              <div class="small">
-                <div class="d-flex justify-content-between">
-                  <span>White Balls (1pt each):</span>
-                  <span>{{ blueScoreBreakdown()!.whiteBalls }} × 1 = {{ blueScoreBreakdown()!.whiteBalls }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span>Golden Balls (3pt each):</span>
-                  <span>{{ blueScoreBreakdown()!.goldenBalls }} × 3 = {{ blueScoreBreakdown()!.goldenBalls * 3 }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <h6 class="border-bottom pb-2">Barrier Points ({{ blueScoreBreakdown()!.barrierPoints }})</h6>
-              <div class="small">
-                <div class="d-flex justify-content-between">
-                  <span>Barriers Pushed:</span>
-                  <span>{{ blueScoreBreakdown()!.barriersPushed }} × 10 = {{ blueScoreBreakdown()!.barrierPoints }}</span>
-                </div>
-              </div>
-              <h6 class="border-bottom pb-2 mt-3">End Game ({{ blueScoreBreakdown()!.endGamePoints }})</h6>
-              <div class="small">
-                <div class="d-flex justify-content-between">
-                  <span>Partial Parking:</span>
-                  <span>{{ blueScoreBreakdown()!.partialParking }} × 5 = {{ blueScoreBreakdown()!.partialParking * 5 }}</span>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <span>Full Parking:</span>
-                  <span>{{ blueScoreBreakdown()!.fullParking }} × 10 = {{ blueScoreBreakdown()!.fullParking * 10 }}</span>
-                </div>
-                @if (blueScoreBreakdown()!.fullParking >= 2) {
-                  <div class="d-flex justify-content-between fw-bold">
-                    <span>Fleet Bonus:</span>
-                    <span>+10</span>
-                  </div>
-                }
-              </div>
-            </div>
-            <div class="col-12">
-              <div class="row">
-                <div class="col-md-4">
-                  <div class="border rounded p-2 text-center">
-                    <div class="h5 mb-0">{{ blueScoreBreakdown()!.balancingCoeff.toFixed(2) }}</div>
-                    <small>Balancing Coefficient</small>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="border rounded p-2 text-center">
-                    <div class="h5 mb-0 text-warning">-{{ blueScoreBreakdown()!.penalties }}</div>
-                    <small>Penalties</small>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="border rounded p-2 text-center bg-white text-dark">
-                    <div class="h4 mb-0 fw-bold">{{ blueScore() }}</div>
-                    <small>Final Score</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  </div>
-
 
 <!-- Config Modal -->
 <div class="modal fade" id="fdConfigModal" tabindex="-1" aria-labelledby="fdConfigLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content fd-modal">
-      <div class="modal-header">
-        <h5 class="modal-title" id="fdConfigLabel">Display Options <small class="text-muted">[Event Name]</small></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <div class="modal-body">
-
-        <!-- Bootstrap Accordion -->
-        <div class="accordion" id="fdAccordion">
-
-          <!-- Audio Testing -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingAudio">
-              <button class="accordion-button" type="button"
-                      data-bs-toggle="collapse" data-bs-target="#collapseAudio"
-                      aria-expanded="true" aria-controls="collapseAudio">
-                Audio Testing
-              </button>
-            </h2>
-            <div id="collapseAudio" class="accordion-collapse collapse show"
-                 aria-labelledby="headingAudio" data-bs-parent="#fdAccordion">
-              <div class="accordion-body">
-                <div class="d-flex gap-2 flex-wrap">
-                  <button type="button" class="btn btn-outline-secondary btn-sm">Play Test Tone</button>
-                  <button type="button" class="btn btn-outline-secondary btn-sm">Stop Test Tone</button>
-                  <div class="ms-auto d-flex align-items-center gap-2">
-                    <label class="form-label mb-0 small">Output Device</label>
-                    <select class="form-select form-select-sm" style="min-width: 220px;">
-                      <option>System Default</option>
-                      <option>HDMI Output</option>
-                      <option>External Speaker</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content fd-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="fdConfigLabel">Display Options <small class="text-muted">[Event Name]</small></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-          </div>
 
-          <!-- Display Settings -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingDisplay">
-              <button class="accordion-button collapsed" type="button"
-                      data-bs-toggle="collapse" data-bs-target="#collapseDisplay"
-                      aria-expanded="false" aria-controls="collapseDisplay">
-                Display Settings
-              </button>
-            </h2>
-            <div id="collapseDisplay" class="accordion-collapse collapse"
-                 aria-labelledby="headingDisplay" data-bs-parent="#fdAccordion">
-              <div class="accordion-body">
-                <div class="row g-3 align-items-center">
-                  <div class="col-12 col-md-6">
-                    <label class="form-label">Display Name</label>
-                    <input type="text" class="form-control" placeholder="Audience Screen A">
-                  </div>
-                  <div class="col-12 col-md-3">
-                    <label class="form-label">Display Type</label>
-                    <select class="form-select">
-                      <option>Audience</option>
-                      <option selected>Field</option>
-                      <option>Overlay</option>
-                    </select>
-                  </div>
-                  <div class="col-12 col-md-3">
-                    <label class="form-label">Bind to Field</label>
-                    <select class="form-select" [(ngModel)]="fieldBindValue" (change)="onFieldBindChange($event)">
-                      <option selected value="0">(All)</option>
-                      <option value="1">Field 1</option>
-                      <option value="2">Field 2</option>
-                      <option value="3">Field 3</option>
-                      <option value="4">Field 4</option>
-                    </select>
-                  </div>
+            <div class="modal-body">
+
+                <!-- Bootstrap Accordion -->
+                <div class="accordion" id="fdAccordion">
+
+                    <!-- Audio Testing -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingAudio">
+                            <button class="accordion-button" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseAudio"
+                                    aria-expanded="true" aria-controls="collapseAudio">
+                                Audio Testing
+                            </button>
+                        </h2>
+                        <div id="collapseAudio" class="accordion-collapse collapse show"
+                             aria-labelledby="headingAudio" data-bs-parent="#fdAccordion">
+                            <div class="accordion-body">
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm">Play Test Tone</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm">Stop Test Tone</button>
+                                    <div class="ms-auto d-flex align-items-center gap-2">
+                                        <label class="form-label mb-0 small">Output Device</label>
+                                        <select class="form-select form-select-sm" style="min-width: 220px;">
+                                            <option>System Default</option>
+                                            <option>HDMI Output</option>
+                                            <option>External Speaker</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Display Settings -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingDisplay">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseDisplay"
+                                    aria-expanded="false" aria-controls="collapseDisplay">
+                                Display Settings
+                            </button>
+                        </h2>
+                        <div id="collapseDisplay" class="accordion-collapse collapse"
+                             aria-labelledby="headingDisplay" data-bs-parent="#fdAccordion">
+                            <div class="accordion-body">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label">Display Name</label>
+                                        <input type="text" class="form-control" placeholder="Audience Screen A">
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label">Display Type</label>
+                                        <select class="form-select">
+                                            <option>Audience</option>
+                                            <option selected>Field</option>
+                                            <option>Overlay</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-3">
+                                        <label class="form-label">Bind to Field</label>
+                                        <select class="form-select" [(ngModel)]="fieldBindValue" (change)="onFieldBindChange($event)">
+                                            <option selected value="0">(All)</option>
+                                            <option value="1">Field 1</option>
+                                            <option value="2">Field 2</option>
+                                            <option value="3">Field 3</option>
+                                            <option value="4">Field 4</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <hr>
+
+                                <div class="mb-2 fw-semibold small text-muted">Timer/Overlay Configuration</div>
+                                <div class="list-group list-group-flush">
+                                    <label class="list-group-item d-flex align-items-start gap-2">
+                                        <input class="form-check-input mt-1" type="radio" name="timerMode" checked>
+                                        <div>
+                                            <div class="fw-semibold">Use audience-style timer</div>
+                                            <div class="text-muted small">with a little timer in the scoring bar</div>
+                                        </div>
+                                    </label>
+                                    <label class="list-group-item d-flex align-items-start gap-2">
+                                        <input class="form-check-input mt-1" type="radio" name="timerMode">
+                                        <div>
+                                            <div class="fw-semibold">Use field-style timer</div>
+                                            <div class="text-muted small">with a big timer in the middle of the screen</div>
+                                        </div>
+                                    </label>
+                                    <label class="list-group-item d-flex align-items-start gap-2">
+                                        <input class="form-check-input mt-1" type="radio" name="timerMode">
+                                        <div>
+                                            <div class="fw-semibold">Use Overlay</div>
+                                            <div class="text-muted small">overlay graphics for broadcast/stream</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingAdvanced">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#collapseAdvanced"
+                                    aria-expanded="false" aria-controls="collapseAdvanced">
+                                Advanced Settings
+                            </button>
+                        </h2>
+                        <div id="collapseAdvanced" class="accordion-collapse collapse"
+                             aria-labelledby="headingAdvanced" data-bs-parent="#fdAccordion">
+                            <div class="accordion-body">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">Latency Compensation (ms)</label>
+                                        <input type="number" class="form-control" min="0" value="0">
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">Font Scale</label>
+                                        <input type="number" class="form-control" min="50" max="200" value="100">
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">Safe Area (%)</label>
+                                        <input type="number" class="form-control" min="0" max="10" value="0">
+                                    </div>
+                                </div>
+                                <div class="mt-3 d-flex flex-wrap gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="showTeamNums" checked>
+                                        <label class="form-check-label" for="showTeamNums">Show Team Numbers</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="showLogos">
+                                        <label class="form-check-label" for="showLogos">Show Event Logo</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="invertColors">
+                                        <label class="form-check-label" for="invertColors">High Contrast Mode</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- /accordion -->
+
+            </div> <!-- /modal-body -->
+
+            <div class="modal-footer w-100 d-flex justify-content-between">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" (click)="toggleFullscreen()">Fullscreen</button>
+                    <button type="button" class="btn btn-outline-secondary">Recenter</button>
                 </div>
-
-                <hr>
-
-                <div class="mb-2 fw-semibold small text-muted">Timer/Overlay Configuration</div>
-                <div class="list-group list-group-flush">
-                  <label class="list-group-item d-flex align-items-start gap-2">
-                    <input class="form-check-input mt-1" type="radio" name="timerMode" checked>
-                    <div>
-                      <div class="fw-semibold">Use audience-style timer</div>
-                      <div class="text-muted small">with a little timer in the scoring bar</div>
-                    </div>
-                  </label>
-                  <label class="list-group-item d-flex align-items-start gap-2">
-                    <input class="form-check-input mt-1" type="radio" name="timerMode">
-                    <div>
-                      <div class="fw-semibold">Use field-style timer</div>
-                      <div class="text-muted small">with a big timer in the middle of the screen</div>
-                    </div>
-                  </label>
-                  <label class="list-group-item d-flex align-items-start gap-2">
-                    <input class="form-check-input mt-1" type="radio" name="timerMode">
-                    <div>
-                      <div class="fw-semibold">Use Overlay</div>
-                      <div class="text-muted small">overlay graphics for broadcast/stream</div>
-                    </div>
-                  </label>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Save</button>
                 </div>
-              </div>
             </div>
-          </div>
 
-          <!-- Advanced Settings -->
-          <div class="accordion-item">
-            <h2 class="accordion-header" id="headingAdvanced">
-              <button class="accordion-button collapsed" type="button"
-                      data-bs-toggle="collapse" data-bs-target="#collapseAdvanced"
-                      aria-expanded="false" aria-controls="collapseAdvanced">
-                Advanced Settings
-              </button>
-            </h2>
-            <div id="collapseAdvanced" class="accordion-collapse collapse"
-                 aria-labelledby="headingAdvanced" data-bs-parent="#fdAccordion">
-              <div class="accordion-body">
-                <div class="row g-3">
-                  <div class="col-12 col-md-4">
-                    <label class="form-label">Latency Compensation (ms)</label>
-                    <input type="number" class="form-control" min="0" value="0">
-                  </div>
-                  <div class="col-12 col-md-4">
-                    <label class="form-label">Font Scale</label>
-                    <input type="number" class="form-control" min="50" max="200" value="100">
-                  </div>
-                  <div class="col-12 col-md-4">
-                    <label class="form-label">Safe Area (%)</label>
-                    <input type="number" class="form-control" min="0" max="10" value="0">
-                  </div>
-                </div>
-                <div class="mt-3 d-flex flex-wrap gap-3">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="showTeamNums" checked>
-                    <label class="form-check-label" for="showTeamNums">Show Team Numbers</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="showLogos">
-                    <label class="form-check-label" for="showLogos">Show Event Logo</label>
-                  </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="invertColors">
-                    <label class="form-check-label" for="invertColors">High Contrast Mode</label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div> <!-- /accordion -->
-
-      </div> <!-- /modal-body -->
-
-      <div class="modal-footer w-100 d-flex justify-content-between">
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-secondary" (click)="toggleFullscreen()">Fullscreen</button>
-          <button type="button" class="btn btn-outline-secondary">Recenter</button>
         </div>
-        <div class="d-flex gap-2">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary">Save</button>
-        </div>
-      </div>
-
     </div>
-  </div>
 </div>
