@@ -1,136 +1,129 @@
-# Live Scoring System Software for Robotics Competitions
+# Hệ thống Phần mềm Tính điểm Trực tiếp cho các Cuộc thi Robotics
 
-This repository contains the source code for a live scoring system designed for robotics competitions. The system allows real-time tracking and display of scores, team performance, and match statistics.
+Kho lưu trữ này chứa mã nguồn cho hệ thống tính điểm trực tiếp được thiết kế riêng cho các cuộc thi robotics. Hệ thống cho phép theo dõi và hiển thị điểm số, hiệu suất của các đội và số liệu thống kê trận đấu theo thời gian thực.
 
-## Setup Guide
+## Hướng dẫn Cài đặt
 
-### Live Scoring System introduction
-The Live Scoring System is a web-based application that provides real-time updates on scores and statistics during robotics competitions. It is designed to be user-friendly and accessible from various devices, including desktops, tablets, and smartphones.
+### Giới thiệu về Hệ thống Tính điểm Trực tiếp
 
-**Who uses the Live Scoring System?**
-- **Event Organizers:** To manage and display scores during competitions, ensuring smooth operation and engagement.
-- **Scorekeepers:** To input scores and update match information in real-time.
-- **Teams and Spectators:** To view live scores and match statistics as shown on large screens at the event.
+Hệ thống Tính điểm Trực tiếp là một ứng dụng web cung cấp các cập nhật thời gian thực về điểm số và số liệu thống kê trong suốt cuộc thi. Hệ thống được thiết kế thân thiện với người dùng và có thể truy cập từ nhiều thiết bị như máy tính để bàn, máy tính bảng và điện thoại thông minh.
 
-### Hardware Requirements
-To run the Live Scoring System effectively, the following hardware is recommended:
-**Displays**:
-- Large monitors or projectors for displaying scores to the audience, preferably with HDMI and 27-inch or larger screens for better visibility.
-- For this software version, at least one display for each field of the event is recommended for on-field live scoring and timer.
+**Ai sử dụng Hệ thống Tính điểm Trực tiếp?**
 
-**Tables**:
-- Android and iOS tablets are both compatible with the FTC-Live software. Recommended tablet specifications include:
-  - Screen Size: 9 inches or larger
-  - Operating System: Android 8.0+ or iOS 12.0+
-  - Connectivity: Wi-Fi capability for network access
-  - App: Using Chrome browser for best compatibility
-  
-**Network**:
-- Use a dedicated local network to connect your scoring devices, ensure a secure and stable connection.
-- To ensure security for the system, preventing outside access, it is recommended to use a local network and create policies to restrict access to only authorized devices.
-- Use a wired connection (Ethernet) whenever possible. Note: The real-time Scoring Referee
-  tablets are wireless devices.
+* **Ban tổ chức sự kiện:** Để quản lý và hiển thị điểm số, đảm bảo sự kiện vận hành trơn tru và thu hút khán giả.
+* **Người ghi điểm (Scorekeepers):** Để nhập điểm và cập nhật thông tin trận đấu trực tiếp.
+* **Các đội thi và Khán giả:** Để xem điểm số và số liệu thống kê trận đấu được hiển thị trên các màn hình lớn tại sự kiện.
 
-### System Requirements and Operation Architecture
-The Live Scoring System is designed to operate on Windows and macOS platforms. Below are the system requirements and operation architecture:
+### Yêu cầu Phần cứng
 
-**System Requirements**:
-- Operating System: Windows 10 or macOS 10.15 (Catalina) or later
-- Web Browser: Google Chrome (latest version recommended)
-- 4 GB RAM minimum (8 GB recommended)
-- 500 MB of free disk space
-- Ethernet adapter (recommended for wired connections)
+Để vận hành hệ thống hiệu quả, các thiết bị phần cứng sau được khuyến nghị:
 
-**Tablets Requirements**:
-- Operating System: Android 8.0+ or iOS 12.0+
-- Web Browser: Google Chrome (latest version recommended)
-- Wi-Fi capability for network access
+**Màn hình hiển thị:**
 
-The Live Scoring System in real-life could be operated flexibly in different architectures based on the event's scale and requirements. These above-mentioned hardware and system requirements ensure optimal performance and reliability during competitions.
+* Màn hình lớn hoặc máy chiếu để hiển thị điểm cho khán giả, ưu tiên kết nối HDMI và kích thước từ 27 inch trở lên.
+* Khuyến nghị có ít nhất một màn hình cho mỗi sân thi đấu để hiển thị điểm và bộ đếm giờ tại chỗ.
 
-**Operation Architecture**:
+**Máy tính bảng:**
 
-Most commonly used cofiguration is as follows:
-![Operation Architecture](docs/image/operation-archtecture.jpg)
+* Tương thích với cả Android và iOS. Cấu hình khuyến nghị:
+* Kích thước màn hình: 9 inch trở lên.
+* Hệ điều hành: Android 8.0+ hoặc iOS 12.0+.
+* Kết nối: Có Wi-Fi.
+* Ứng dụng: Sử dụng trình duyệt **Google Chrome** để đạt độ tương thích tốt nhất.
 
-1. **Scoring server laptop**: This laptop hosts the Live Scoring System application and manages all scoring data. It should be connected to the local network via Ethernet for stability.
-2. **Field display monitors**: These monitors are connected to the scoring server laptop and display real-time scores and match information to the audience.
-3. **Referee tablets**: These tablets are used by referees to input scores and update match information. They connect to the scoring server laptop via the local network, preferably using Wi-Fi.
-4. **Network switch/router**: A dedicated network switch or router is used to create a local network for the scoring system, ensuring secure and reliable communication between devices.
 
-### Download the Live Scoring System Software
-You can download the latest version of the Live Scoring System software from the releases section of this repository:
+
+**Mạng nội bộ:**
+
+* Sử dụng một mạng cục bộ (LAN) riêng biệt, ổn định và bảo mật.
+* Nên thiết lập các chính sách hạn chế truy cập, chỉ cho phép các thiết bị được ủy quyền để đảm bảo an toàn hệ thống.
+* Sử dụng kết nối có dây (Ethernet) cho máy chủ bất cứ khi nào có thể. *Lưu ý: Máy tính bảng của Trọng tài là thiết bị không dây.*
+
+### Yêu cầu Hệ thống và Kiến trúc Vận hành
+
+Phần mềm hoạt động trên Windows và macOS với các yêu cầu sau:
+
+**Yêu cầu máy chủ:**
+
+* Hệ điều hành: Windows 10 hoặc macOS 10.15 (Catalina) trở lên.
+* Trình duyệt: Google Chrome (phiên bản mới nhất).
+* RAM: Tối thiểu 4 GB (khuyến nghị 8 GB).
+* Dung lượng đĩa trống: 500 MB.
+* Cổng Ethernet (khuyến nghị).
+
+**Yêu cầu máy tính bảng:**
+
+* Hệ điều hành: Android 8.0+ hoặc iOS 12.0+.
+* Trình duyệt: Google Chrome (phiên bản mới nhất).
+
+**Kiến trúc Vận hành phổ biến:**
+
+1. **Laptop Server:** Lưu trữ ứng dụng và quản lý dữ liệu điểm số. Kết nối mạng qua cáp Ethernet.
+2. **Màn hình hiển thị tại sân:** Kết nối với laptop server để hiển thị điểm số thời gian thực.
+3. **Máy tính bảng của Trọng tài:** Kết nối với server qua Wi-Fi để nhập điểm.
+4. **Router/Switch mạng:** Tạo mạng cục bộ riêng cho hệ thống.
+
+### Tải xuống Phần mềm
+
+Tải phiên bản mới nhất tại:
 [Releases - Live Scoring System](https://github.com/lgthevinh/scoring-system/releases)
 
-Be sure to download the version of the event you are organizing (e.g., FANROC, FARC, etc...). And read the release notes and download the latest stable version.
+> **Lưu ý:** Hãy tải đúng phiên bản dành cho sự kiện của bạn (ví dụ: FANROC, FARC,...) và đọc kỹ ghi chú phát hành (release notes).
 
-**Important tips for running the system software**:
-- Ensure that Google Chrome is installed and is the default browser.
-- **Important**: Firefox browser is not supported!
-- Disable any firewall/virus protection on the computer running the server.
-- Disable any ad blocking software on devices that will interface with the server. The ad blocking
-software occasionally misinterprets server resources as ads.
-- Clear the browser cache.
+**Mẹo quan trọng khi khởi chạy:**
 
-To run the Live Scoring System, follow these steps:
-1. Extract the downloaded ZIP file to a desired location on your computer.
-2. Navigate to the run file location, follow these folder path:
-```aiignore
-{extracted_folder}
-    /vrc-scoring-system/
-        run.bat (for Windows)
-        run.sh (for macOS)
+* Sử dụng Google Chrome làm trình duyệt mặc định.
+* **Không hỗ trợ trình duyệt Firefox!**
+* Tắt tường lửa/phần mềm diệt virus trên máy tính chạy server.
+* Tắt các trình chặn quảng cáo trên tất cả các thiết bị.
+* Xóa bộ nhớ đệm (cache) trình duyệt trước khi dùng.
+
+### Hướng dẫn Khởi chạy
+
+1. Giải nén tệp ZIP đã tải về.
+2. Truy cập vào thư mục chứa tệp chạy:
+```text
+{thư_mục_giải_nén}/vrc-scoring-system/run.bat (Windows)
+{thư_mục_giải_nén}/vrc-scoring-system/run.sh (macOS)
 ```
-3. Execute the appropriate run file for your operating system:
-   - For Windows: Double-click on `run.bat`
-   - For macOS: Open a terminal, navigate to the folder, and run `sh run.sh`
-4. The Live Scoring System server will start, and you should see a message indicating that the server is running.
-![Live Scoring System Running](docs/image/run-system.jpg)
 
-Accessing the Live Scoring System by entering the host machine's IP address in the browser's address bar. For example:
-```http://{your_host_machine_ip}``` or the url provided in the terminal output.
 
-### Log in to the Live Scoring System
+3. Chạy tệp tương ứng với hệ điều hành:
+* **Windows:** Nhấp đúp vào `run.bat`.
+* **macOS:** Mở terminal và chạy lệnh `sh run.sh`.
 
-After accessing the Live Scoring System URL, you will be prompted to log in. Use the following default credentials if logging in from the host machine:
-- **Username**: local
 
-No password is required for local access.
+4. Truy cập hệ thống bằng địa chỉ IP của máy chủ trên trình duyệt (ví dụ: `http://192.168.1.10`).
 
-![Login Screen](docs/image/login-screen.jpg)
+### Đăng nhập
 
-### User guide
+Sử dụng thông tin mặc định khi truy cập từ máy chủ:
 
-After logging in, you will be directed to the main page, here you will follow the steps below to set up and run the scoring system for your event.
+* **Username:** `local`
+* *(Không cần mật khẩu đối với truy cập nội bộ)*
 
-#### Event preparation
+### Hướng dẫn Sử dụng
 
-Navigate to the `Event dashboard` section to set up your event details, including teams, matches, and scoring rules.
+#### Chuẩn bị sự kiện
 
-![Event Dashboard](docs/image/event-dashboard-screen.jpg)
+Vào mục **Event Dashboard** để thiết lập:
 
-In the Event Dashboard, you can:
-- Create and manage event information, and set active event for the system.
-- Navigate to the `Event Tools` tab to create account for scorekeepers and referees, add/import teams and generate match schedule.
+* Tạo thông tin sự kiện và nhấn **Set Active**.
+* Trong tab **Event Tools**: Tạo tài khoản trọng tài, nhập danh sách đội thi và tạo lịch thi đấu.
 
-Set active the event for the system by clicking on the `Set Active` button.
+#### Trong khi diễn ra sự kiện
 
-#### During the event
+Tại **Main screen**, bạn có thể theo dõi lịch đấu, bảng xếp hạng và kết quả các trận.
 
-After setting up the event, navigate to the Main screen, here you can view the information of the schedule, ranking, result with other options
+#### Sau sự kiện
 
-![Main Screen](docs/image/main-page.jpg)
+* Kết quả và xếp hạng có thể được xuất để lưu trữ.
+* Tệp cơ sở dữ liệu có định dạng `{MÃ_SỰ_KIỆN}.db`.
+* Điểm chi tiết từng trận nằm trong thư mục `files` dưới dạng tệp JSON.
 
-#### After the event
+---
 
-After the event, you can export match results and rankings for record-keeping and analysis. To the folder that run file is located, you will find the database file of the event under `{EVENTCODE}.db` name, for the detailed score of each match, navigate to the `files` folder, you will find the JSON files of each match.
+### Liên hệ Hỗ trợ
 
-### Troubleshooting
-
-If you encounter any issues while using the Live Scoring System, refer to the troubleshooting section in the documentation or open an issue in the repository for assistance.
-
-Or contact the developer at
-- Email: `everwellmax@gmail.com` (Official live scoring system maintainer)
-
-Event specific software support contact:
-- Email: `truongcongminhquan09@gmail.com` (FANROC event live scoring system maintainer)
+* **Email bảo trì chính thức:** `everwellmax@gmail.com`
+* **Email hỗ trợ sự kiện FANROC:** `truongcongminhquan09@gmail.com`

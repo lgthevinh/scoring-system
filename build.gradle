@@ -162,7 +162,7 @@ distributions {
             from('bin') { into 'bin' }   // includes bin/MatchMaker.exe
             from('data') { into 'data' } // includes data/match_schedule.txt
             from('scripts') { into '' }  // run.bat / run.sh (optional)
-            from('README.md') { into '' }
+            from('README-en.md') { into '' }
         }
     }
 }
