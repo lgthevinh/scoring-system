@@ -110,11 +110,15 @@ node {
     version = '24.9.0'
     download = true
     // Workaround for Windows path length issues if needed:
-     workDir = file("${project.buildDir}/nodejs")
-     npmWorkDir = file("${project.buildDir}/npm")
+    workDir = file("${project.buildDir}/nodejs")
+    npmWorkDir = file("${project.buildDir}/npm")
 }
 
-tasks.register('npmBuild', com.github.gradle.node.npm.task.NpmTask) {
+tasks.named('npmInstall', NpmInstallTask) {
+    workingDir.set(file(webUiDir))
+}
+
+tasks.register('npmBuild', NpmTask) {
     enabled = hasWebUi && !skipWebuiBuild
     dependsOn 'npmInstall'
     workingDir.set(file(webUiDir))
@@ -170,6 +174,9 @@ distributions {
 
 tasks.named('distZip') { dependsOn 'bootJar' }
 
+
+import com.github.gradle.node.npm.task.NpmInstallTask
+import com.github.gradle.node.npm.task.NpmTask
 import proguard.gradle.ProGuardTask
 
 tasks.register('proguard', ProGuardTask) {
