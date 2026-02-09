@@ -49,13 +49,13 @@ public class MatchHandler {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("win")) {
             ILog.d("MatchHandler", "Detected Windows OS for MatchMakerHandler.");
-            this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath() + "/MatchMaker.exe");
+            this.matchMakerHandler.setBinPath(Paths.get("binary").toAbsolutePath() + "/MatchMaker.exe");
         } else if (osName.contains("mac")) {
             ILog.d("MatchHandler", "Detected macOS for MatchMakerHandler.");
-            this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath() + "/MatchMaker_mac");
+            this.matchMakerHandler.setBinPath(Paths.get("binary").toAbsolutePath() + "/MatchMaker_mac");
         } else {
             ILog.d("MatchHandler", "Assuming Linux OS for MatchMakerHandler.");
-            this.matchMakerHandler.setBinPath(Paths.get("bin").toAbsolutePath() + "/MatchMaker");
+            this.matchMakerHandler.setBinPath(Paths.get("binary").toAbsolutePath() + "/MatchMaker");
         }
 
 
