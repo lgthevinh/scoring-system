@@ -20,11 +20,11 @@ import java.time.format.DateTimeFormatter;
 public class LiveScoreHandler {
     private static final String TAG = "ScorekeeperHandler";
     private static final MatchTimerHandler matchTimerHandler = new MatchTimerHandler();
-    private static final int MATCH_DURATION_SECONDS = 150; // modify this based on season rules
+    private static final int MATCH_DURATION_SECONDS = 180; // modify this based on season rules
 
-    private MatchHandler matchHandler;
-    private ScoreHandler scoreHandler;
-    private RankingHandler rankingHandler;
+    private final MatchHandler matchHandler;
+    private final ScoreHandler scoreHandler;
+    private final RankingHandler rankingHandler;
 
     private BroadcastHandler broadcastHandler;
 
@@ -32,8 +32,6 @@ public class LiveScoreHandler {
     private MatchDetailDto nextMatch;
     private Score currentRedScoreHolder;
     private Score currentBlueScoreHolder;
-
-    private int typicalMatchDuration = 150; // seconds
 
     /* Flags */
     private boolean isRedCommitable = false;
@@ -100,7 +98,7 @@ public class LiveScoreHandler {
             currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
             currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
 
-            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, typicalMatchDuration); // 2:30 -> 150 seconds
+            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS); // 3:00 -> 180 seconds
 
             broadcastHandler.broadcast(rootTopic + "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
             broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);

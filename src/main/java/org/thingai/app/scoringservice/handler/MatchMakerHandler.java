@@ -33,87 +33,113 @@ public class MatchMakerHandler {
     }
 
     /**
-     * Generate match schedule using Java implementation instead of external executable.
-     * This replaces the missing MatchMaker.exe with a Java-based scheduler.
+     * Run the external match maker tool and write its stdout directly to a file if outPath points to a file.
+     * Returns the process exit code (0 = success).
      */
     public int generateMatchSchedule(int rounds, int numberOfTeams, int allianceSize) {
-        if (outPath == null || outPath.isBlank()) {
-            ILog.e(TAG, "Output path is not set.");
+        if (binPath == null || binPath.isBlank() || outPath == null || outPath.isBlank()) {
+            ILog.e(TAG, "Binary path or output path is not set.");
             return -1;
         }
 
         try {
+            Path bin = Paths.get(binPath).toAbsolutePath().normalize();
+            if (!Files.exists(bin) || !Files.isRegularFile(bin)) {
+                ILog.e(TAG, "Binary not found or not a file: " + bin);
+                return -2;
+            }
+            tryEnsureExecutable(bin);
+
             Path out = Paths.get(outPath).toAbsolutePath().normalize();
 
+            Path workingDir;
+            Path stdoutFile = null;
+
             if (Files.exists(out) && Files.isDirectory(out)) {
-                ILog.e(TAG, "Output path points to a directory. Please set outPath to a file.");
-                return -3;
+                workingDir = out;
+            } else {
+                String fileName = out.getFileName() != null ? out.getFileName().toString() : "";
+                boolean looksLikeFile = fileName.contains("."); // treat as file if it has an extension
+                if (looksLikeFile) {
+                    Path parent = out.getParent();
+                    if (parent == null) {
+                        ILog.e(TAG, "Output path looks like a file but has no parent directory: " + out);
+                        return -3;
+                    }
+                    Files.createDirectories(parent);
+                    workingDir = parent;
+                    stdoutFile = out; // write stdout directly to this file
+                } else {
+                    Files.createDirectories(out);
+                    workingDir = out;
+                }
             }
 
-            // Create parent directories if needed
-            Path parent = out.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
+            List<String> cmd = new ArrayList<>();
+            cmd.add(bin.toString());
+            cmd.add("-t"); cmd.add(String.valueOf(numberOfTeams));
+            cmd.add("-r"); cmd.add(String.valueOf(rounds));
+            cmd.add("-a"); cmd.add(String.valueOf(allianceSize));
+
+            ILog.d(TAG, "Working directory: " + workingDir);
+            ILog.d(TAG, "Executing: " + String.join(" ", cmd));
+            if (stdoutFile != null) {
+                ILog.d(TAG, "Stdout will be written to: " + stdoutFile);
             }
 
-            // Generate the schedule
-            List<String> schedule = generateSchedule(rounds, numberOfTeams, allianceSize);
+            ProcessBuilder pb = new ProcessBuilder(cmd);
+            pb.directory(workingDir.toFile());
+            pb.redirectErrorStream(true);
 
-            // Write to file
-            Files.write(out, schedule, StandardCharsets.UTF_8);
+            // Critical change: redirect stdout directly to the target file so it's complete when process exits.
+            if (stdoutFile != null) {
+                pb.redirectOutput(stdoutFile.toFile());
+            }
 
-            ILog.d(TAG, "Match schedule generated successfully with " + schedule.size() + " matches");
+            Process process = pb.start();
 
-            return 0; // success
+            // If not writing to a file, stream logs (rare case)
+            Thread logThread = null;
+            if (stdoutFile == null) {
+                logThread = new Thread(() -> streamToLogOnly(process.getInputStream()));
+                logThread.setName("matchmaker-stdout");
+                logThread.start();
+            }
 
+            boolean finished = process.waitFor(300, TimeUnit.SECONDS);
+            if (!finished) {
+                process.destroyForcibly();
+                ILog.e(TAG, "Match maker timed out and was terminated.");
+                return -4;
+            }
+
+            int exitCode = process.exitValue();
+            ILog.d(TAG, "Match maker finished with exit code: " + exitCode);
+
+            if (logThread != null) {
+                try { logThread.join(5000); } catch (InterruptedException ignored) {}
+            }
+
+            return exitCode;
         } catch (IOException e) {
-            ILog.e(TAG, "IO error generating match schedule: " + e.getMessage());
+            ILog.e(TAG, "IO error running match maker: " + e.getMessage());
             return -5;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            ILog.e(TAG, "Interrupted while waiting for match maker: " + e.getMessage());
+            return -6;
         }
     }
 
-    /**
-     * Generate a simple round-robin tournament schedule.
-     */
-    private List<String> generateSchedule(int rounds, int numberOfTeams, int allianceSize) {
-        List<String> schedule = new ArrayList<>();
-
-        // Add header
-        schedule.add("Match Schedule");
-        schedule.add("");
-
-        // Simple round-robin: rotate teams through positions
-        List<Integer> teams = new ArrayList<>();
-        for (int i = 1; i <= numberOfTeams; i++) {
-            teams.add(i);
-        }
-
-        int matchNumber = 1;
-
-        for (int round = 0; round < rounds; round++) {
-            // Shuffle teams for this round (but keep some determinism)
-            Collections.shuffle(teams, new Random(round));
-
-            // Create matches from the shuffled teams
-            for (int i = 0; i < teams.size(); i += (allianceSize * 2)) {
-                if (i + (allianceSize * 2) <= teams.size()) {
-                    // Take 4 teams for a 2v2 match (allianceSize=2)
-                    List<Integer> matchTeams = teams.subList(i, i + (allianceSize * 2));
-                    String line = String.format("%3d: %4d %4d %4d %4d",
-                            matchNumber,
-                            matchTeams.get(0), matchTeams.get(1),  // red alliance
-                            matchTeams.get(2), matchTeams.get(3)); // blue alliance
-                    schedule.add(line);
-                    matchNumber++;
-                }
+    private void streamToLogOnly(InputStream inputStream) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                ILog.d(TAG, "[proc] " + line);
             }
+        } catch (IOException e) {
+            ILog.w(TAG, "Failed to stream process output: " + e.getMessage());
         }
-
-        schedule.add("");
-        schedule.add("Schedule Statistics");
-        schedule.add("Total Matches: " + (matchNumber - 1));
-
-        return schedule;
     }
 
     private void tryEnsureExecutable(Path bin) {
@@ -129,5 +155,4 @@ public class MatchMakerHandler {
             ILog.w(TAG, "Unable to adjust executable permissions: " + ex.getMessage());
         }
     }
-
 }
