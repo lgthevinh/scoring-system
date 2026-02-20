@@ -19,9 +19,9 @@ import java.time.format.DateTimeFormatter;
 
 public class LiveScoreHandler {
     private static final String TAG = "ScorekeeperHandler";
-    private static final MatchTimerHandler matchTimerHandler = new MatchTimerHandler();
     private static final int MATCH_DURATION_SECONDS = 180; // modify this based on season rules
 
+    private final MatchTimerHandler matchTimerHandler;
     private final MatchHandler matchHandler;
     private final ScoreHandler scoreHandler;
     private final RankingHandler rankingHandler;
@@ -42,6 +42,7 @@ public class LiveScoreHandler {
         this.scoreHandler = scoreHandler;
         this.rankingHandler = rankingHandler;
 
+        matchTimerHandler = new MatchTimerHandler(MATCH_DURATION_SECONDS);
         matchTimerHandler.setCallback(new MatchTimerHandler.TimerCallback() {
             @Override
             public void onTimerEnded(String matchId) {
@@ -76,13 +77,23 @@ public class LiveScoreHandler {
     }
 
     public void startCurrentMatch(RequestCallback<Boolean> callback) {
-        if (nextMatch == null) {
-            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No match found");
-        }
-
         try {
-            currentMatch = nextMatch;
-            nextMatch = null;
+            // If no active match yet, try to activate from nextMatch for backward compatibility
+            if (currentMatch == null && nextMatch != null) {
+                currentMatch = nextMatch;
+                nextMatch = null;
+
+                currentRedScoreHolder = ScoreHandler.factoryScore();
+                currentBlueScoreHolder = ScoreHandler.factoryScore();
+
+                currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
+                currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
+            }
+
+            if (currentMatch == null) {
+                callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No active match to start");
+                return;
+            }
 
             int fieldNumber = currentMatch.getMatch().getFieldNumber();
             String rootTopic = "/topic/display/field/" + fieldNumber;
@@ -92,13 +103,7 @@ public class LiveScoreHandler {
 
             currentMatch.getMatch().setActualStartTime(currentTime.format(timeFormatter));
 
-            currentRedScoreHolder = ScoreHandler.factoryScore();
-            currentBlueScoreHolder = ScoreHandler.factoryScore();
-
-            currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
-            currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
-
-            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS); // 3:00 -> 180 seconds
+            matchTimerHandler.startTimer(currentMatch.getMatch().getId(), fieldNumber, MATCH_DURATION_SECONDS);
 
             broadcastHandler.broadcast(rootTopic + "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
             broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
@@ -108,6 +113,40 @@ public class LiveScoreHandler {
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to start match: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Activate the loaded match into the active match buffer without starting the match timer.
+     * This moves nextMatch to currentMatch, initializes score holders, and broadcasts to displays.
+     */
+    public void activateMatch(RequestCallback<Boolean> callback) {
+        if (nextMatch == null) {
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "No loaded match to activate");
+            return;
+        }
+
+        try {
+            currentMatch = nextMatch;
+            nextMatch = null;
+
+            int fieldNumber = currentMatch.getMatch().getFieldNumber();
+            String rootTopic = "/topic/display/field/" + fieldNumber;
+
+            currentRedScoreHolder = ScoreHandler.factoryScore();
+            currentBlueScoreHolder = ScoreHandler.factoryScore();
+
+            currentBlueScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_B");
+            currentRedScoreHolder.setAllianceId(currentMatch.getMatch().getId() + "_R");
+
+            broadcastHandler.broadcast(rootTopic + "/command", currentMatch, BroadcastMessageType.SHOW_TIMER);
+            broadcastHandler.broadcast(rootTopic + "/score/red", currentRedScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+            broadcastHandler.broadcast(rootTopic + "/score/blue", currentBlueScoreHolder, BroadcastMessageType.SCORE_UPDATE);
+
+            callback.onSuccess(true, "Match activated without starting timer");
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to activate match: " + e.getMessage());
         }
     }
 
@@ -284,7 +323,7 @@ public class LiveScoreHandler {
     }
 
     public void abortCurrentMatch(RequestCallback<Boolean> callback) {
-        matchTimerHandler.stopTimer();
+        matchTimerHandler.resetTimer();
         callback.onSuccess(true, "Match aborted");
     }
 
@@ -358,6 +397,49 @@ public class LiveScoreHandler {
         } catch (Exception e) {
             e.printStackTrace();
             callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to process score submission: " + e.getMessage());
+        }
+    }
+
+    public void getUpNextMatch(RequestCallback<MatchDetailDto> callback) {
+        try {
+            if (nextMatch != null) {
+                callback.onSuccess(nextMatch, "Up next match retrieved successfully");
+            } else {
+                callback.onFailure(ErrorCode.NOT_FOUND, "No upcoming match set");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.RETRIEVE_FAILED, "Failed to get up next match: " + e.getMessage());
+        }
+    }
+
+    public void showUpNext(RequestCallback<Boolean> callback) {
+        try {
+            if (nextMatch == null) {
+                callback.onFailure(ErrorCode.NOT_FOUND, "No upcoming match set");
+                return;
+            }
+            int fieldNumber = nextMatch.getMatch().getFieldNumber();
+            broadcastHandler.broadcast("/topic/display/field/" + fieldNumber + "/command", nextMatch, BroadcastMessageType.SHOW_UPNEXT);
+            callback.onSuccess(true, "Show up next command sent");
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to show up next: " + e.getMessage());
+        }
+    }
+
+    public void showCurrentMatch(RequestCallback<Boolean> callback) {
+        try {
+            if (currentMatch == null) {
+                callback.onFailure(ErrorCode.NOT_FOUND, "No current match active");
+                return;
+            }
+            int fieldNumber = currentMatch.getMatch().getFieldNumber();
+            broadcastHandler.broadcast("/topic/display/field/" + fieldNumber + "/command", currentMatch, BroadcastMessageType.SHOW_MATCH);
+            callback.onSuccess(true, "Show current match command sent");
+        } catch (Exception e) {
+            e.printStackTrace();
+            callback.onFailure(ErrorCode.CUSTOM_ERR, "Failed to show current match: " + e.getMessage());
         }
     }
 

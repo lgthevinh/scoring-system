@@ -1,0 +1,207 @@
+:host {
+    --fd-yellow: #f6c62e;
+    --fd-black: #000000;
+    --fd-nice-white: #fefefe;
+    --fd-off-white: #f3f4f6;
+    --fd-nice-black: #0a0a0a;
+
+    --fd-red-dark: #b71c1c;
+    --fd-red: #c62828;
+
+    --fd-blue: #5570ff;
+    --fd-blue-dark: #4656dc;
+}
+
+/* 16:9 CANVAS */
+.frame {
+    position: fixed;
+    inset: 0;
+    background: var(--fd-nice-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas {
+    aspect-ratio: 16 / 9;
+    width: min(100vw, calc(100vh * 16 / 9));
+    height: auto;
+    display: grid;
+    place-items: center;
+}
+
+/* BOARD */
+.board {
+    width: 95%;
+    height: 95%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: clamp(8px, 1.5vw, 24px);
+}
+
+/* HEADER PANEL */
+.header-panel {
+    background: var(--fd-yellow);
+    border: clamp(4px, 0.8vw, 8px) solid var(--fd-black);
+    border-radius: clamp(14px, 1.8vw, 28px);
+    padding: clamp(12px, 2vw, 32px) clamp(16px, 3vw, 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px, 0.6vw, 12px);
+}
+
+.header-label {
+    font-weight: 800;
+    font-size: clamp(2.5rem, 8vw, 8rem);
+    color: var(--fd-nice-black);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.match-info {
+    display: flex;
+    align-items: center;
+    gap: clamp(8px, 1.5vw, 20px);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.match-code {
+    font-weight: 700;
+    font-size: clamp(1.2rem, 3.5vw, 3rem);
+    color: var(--fd-nice-black);
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.field-badge,
+.time-badge {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: clamp(6px, 0.8vw, 12px);
+    padding: clamp(2px, 0.3vw, 6px) clamp(8px, 1vw, 16px);
+    font-weight: 600;
+    font-size: clamp(0.8rem, 2vw, 1.6rem);
+    color: var(--fd-nice-black);
+}
+
+/* TEAMS DOCK */
+.dock {
+    width: 100%;
+    border: clamp(4px, 0.8vw, 8px) solid var(--fd-black);
+    border-radius: clamp(14px, 1.8vw, 28px);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+}
+
+.dock-divider {
+    width: clamp(4px, 0.8vw, 8px);
+    background: var(--fd-black);
+}
+
+.dock-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 2vw, 32px) clamp(8px, 1.5vw, 24px);
+    gap: clamp(4px, 0.8vw, 12px);
+}
+
+.dock-red {
+    background: var(--fd-red-dark);
+    color: #fff;
+}
+
+.dock-blue {
+    background: var(--fd-blue-dark);
+    color: #fff;
+}
+
+.alliance-label {
+    font-weight: 800;
+    font-size: clamp(0.9rem, 2.2vw, 2rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: clamp(4px, 0.5vw, 8px);
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.team-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.team-id {
+    font-weight: 700;
+    font-size: clamp(1.4rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.team-name {
+    font-weight: 400;
+    font-size: clamp(0.7rem, 1.5vw, 1.2rem);
+    opacity: 0.8;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* NO MATCH STATE */
+.no-match-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: clamp(8px, 1vw, 16px);
+}
+
+.no-match-text {
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 5rem);
+    color: var(--fd-off-white);
+    opacity: 0.6;
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.no-match-sub {
+    font-weight: 400;
+    font-size: clamp(0.9rem, 2vw, 1.5rem);
+    color: var(--fd-off-white);
+    opacity: 0.4;
+}
+
+/* CONTROLS (auto-fade) */
+.controls {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1040;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    opacity: 1;
+    visibility: visible;
+}
+
+.controls-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* Top-left hotspot to re-show controls */
+.reveal-hotspot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 48px;
+    height: 48px;
+    z-index: 1039;
+}

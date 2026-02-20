@@ -17,6 +17,10 @@ export class ScorekeeperService {
     return this.http.post(`${this.apiUrl}/start-current-match`, {});
   }
 
+  activateMatch(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/activate-match`, {});
+  }
+
   commitFinalScore(): Observable<any> {
     return this.http.post(`${this.apiUrl}/commit-final-score`, {});
   }
@@ -27,5 +31,13 @@ export class ScorekeeperService {
 
   abortCurrentMatch(): Observable<any> {
     return this.http.post(`${this.apiUrl}/abort-current-match`, {});
+  }
+
+  showUpNext(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/show-upnext`, {});
+  }
+
+  showCurrentMatch(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/show-current-match`, {});
   }
 }

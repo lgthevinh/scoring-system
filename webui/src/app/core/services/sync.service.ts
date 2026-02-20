@@ -17,4 +17,8 @@ export class SyncService {
   getCurrentMatchField(fieldNumber: number): Observable<MatchDetailDto> {
     return this.http.get<MatchDetailDto>(`${this.apiUrl}/current-match/field/${fieldNumber}`);
   }
+
+  getUpNextMatch(): Observable<MatchDetailDto> {
+    return this.http.get<MatchDetailDto>(`${this.apiUrl}/up-next-match`);
+  }
 }

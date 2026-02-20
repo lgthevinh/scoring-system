@@ -1,0 +1,65 @@
+<!-- Hotspot to reveal controls on hover (top-left) -->
+<div class="reveal-hotspot" (mouseenter)="revealControls()"></div>
+
+<!-- Controls (fade after 5s) -->
+<div class="controls" [class.controls-hidden]="!controlsVisible()" (mousemove)="onAnyInteract()">
+    <button type="button"
+            class="btn btn-light btn-sm shadow-sm d-inline-flex align-items-center gap-1"
+            (click)="toggleFullscreen()">
+        <i class="bi bi-arrows-fullscreen"></i>
+        <span>Fullscreen</span>
+    </button>
+</div>
+
+<!-- Full-screen frame with centered 16:9 canvas -->
+<div class="frame">
+    <div class="canvas">
+        @if (hasUpNext()) {
+            <div class="board">
+                <!-- Header -->
+                <div class="header-panel">
+                    <div class="header-label">UP NEXT</div>
+                    <div class="match-info">
+                        <span class="match-code">{{ matchCode() }}</span>
+                        @if (fieldNumber()) {
+                            <span class="field-badge">Field {{ fieldNumber() }}</span>
+                        }
+                        @if (formatScheduledTime()) {
+                            <span class="time-badge">{{ formatScheduledTime() }}</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- Teams dock -->
+                <div class="dock">
+                    <div class="dock-cell dock-red">
+                        <div class="alliance-label">RED ALLIANCE</div>
+                        @for (team of redTeams(); track team.teamId) {
+                            <div class="team-entry">
+                                <span class="team-id">{{ team.teamId }}</span>
+                                <span class="team-name">{{ team.teamName }}</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="dock-divider"></div>
+                    <div class="dock-cell dock-blue">
+                        <div class="alliance-label">BLUE ALLIANCE</div>
+                        @for (team of blueTeams(); track team.teamId) {
+                            <div class="team-entry">
+                                <span class="team-id">{{ team.teamId }}</span>
+                                <span class="team-name">{{ team.teamName }}</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        } @else {
+            <div class="board">
+                <div class="no-match-panel">
+                    <div class="no-match-text">No Upcoming Match</div>
+                    <div class="no-match-sub">Waiting for the next match to be queued...</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

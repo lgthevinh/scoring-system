@@ -52,4 +52,21 @@ public class SyncController {
         });
         return ResponseEntityUtil.getObjectResponse(future);
     }
+
+    @GetMapping("/up-next-match")
+    public ResponseEntity<Object> getUpNextMatch() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.liveScoreHandler().getUpNextMatch(new RequestCallback<MatchDetailDto>() {
+            @Override
+            public void onSuccess(MatchDetailDto result, String message) {
+                future.complete(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(result));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(createErrorResponse(errorCode, "No upcoming match: " + errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
 }

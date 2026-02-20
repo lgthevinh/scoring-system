@@ -32,6 +32,23 @@ public class ScorekeeperController {
         return ResponseEntityUtil.getObjectResponse(future);
     }
 
+    @PostMapping("/activate-match")
+    public ResponseEntity<Object> activateMatch() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.liveScoreHandler().activateMatch(new RequestCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean responseObject, String message) {
+                future.complete(ResponseEntity.ok().body(responseObject));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(ResponseEntity.badRequest().body(errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
     @PostMapping("/set-next-match/{id}")
     public ResponseEntity<Object> setNextMatch(@PathVariable("id") String nextMatchId) {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
@@ -87,6 +104,40 @@ public class ScorekeeperController {
     public ResponseEntity<Object> abortCurrentMatch() {
         CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
         ScoringService.liveScoreHandler().abortCurrentMatch(new RequestCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean responseObject, String message) {
+                future.complete(ResponseEntity.ok().body(responseObject));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(ResponseEntity.badRequest().body(errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @PostMapping("/show-upnext")
+    public ResponseEntity<Object> showUpNext() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.liveScoreHandler().showUpNext(new RequestCallback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean responseObject, String message) {
+                future.complete(ResponseEntity.ok().body(responseObject));
+            }
+
+            @Override
+            public void onFailure(int errorCode, String errorMessage) {
+                future.complete(ResponseEntity.badRequest().body(errorMessage));
+            }
+        });
+        return ResponseEntityUtil.getObjectResponse(future);
+    }
+
+    @PostMapping("/show-current-match")
+    public ResponseEntity<Object> showCurrentMatch() {
+        CompletableFuture<ResponseEntity<Object>> future = new CompletableFuture<>();
+        ScoringService.liveScoreHandler().showCurrentMatch(new RequestCallback<Boolean>() {
             @Override
             public void onSuccess(Boolean responseObject, String message) {
                 future.complete(ResponseEntity.ok().body(responseObject));

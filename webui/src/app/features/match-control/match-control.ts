@@ -277,40 +277,77 @@ export class MatchControl implements OnInit {
     });
   }
 
-  showPreview() {
-    // TODO: Integrate with display/preview system
-    console.debug('Show preview clicked');
+  showUpNext() {
+    this.scorekeeper.showUpNext().subscribe({
+      next: () => console.debug('Show up next command sent'),
+      error: (e) => {
+        console.error('Failed to show up next', e);
+        alert('Failed to show up next on display');
+      }
+    });
   }
 
-  showMatch() {
-    // TODO: Integrate with audience/field display
-    console.debug('Show match clicked');
+  showCurrentMatch() {
+    this.scorekeeper.showCurrentMatch().subscribe({
+      next: () => console.debug('Show current match command sent'),
+      error: (e) => {
+        console.error('Failed to show current match', e);
+        alert('Failed to show current match on display');
+      }
+    });
   }
 
   // ---- Top buttons (Active section) ----
+  activateMatch() {
+    const toActivate = this.loaded();
+    if (!toActivate) {
+      console.warn('No loaded match to activate.');
+      return;
+    }
+    this.scorekeeper.activateMatch().subscribe({
+      next: () => {
+        this.active.set(toActivate);
+        this.loaded.set(null);
+      },
+      error: (e) => {
+        console.error('Failed to activate match', e);
+        alert('Failed to activate match');
+      }
+    });
+  }
+
   startMatch() {
-    const toStart = this.loaded();
-    if (!toStart) {
-      console.warn('No loaded match to start.');
+    if (!this.active()) {
+      console.warn('No active match to start.');
       return;
     }
     this.scorekeeper.startCurrentMatch().subscribe({
       next: () => {
-        this.active.set(toStart);
-        this.loaded.set(null); // Clear loaded match after starting
+        console.debug('Match timer started for active match');
       },
       error: (e) => {
         console.error('Failed to start current match', e);
-        // Fallback for UI
-        this.active.set(toStart);
+        alert('Failed to start match timer');
       }
     });
 
   }
 
   abortMatch() {
-    // TODO: Implement backend abort endpoint if/when available
-    console.debug('Abort match clicked');
+    if (!this.active()) {
+      console.warn('No active match to abort.');
+      return;
+    }
+    this.scorekeeper.abortCurrentMatch().subscribe({
+      next: () => {
+        console.debug('Match aborted successfully');
+        this.activeMatchTimer.set(null);
+      },
+      error: (e) => {
+        console.error('Failed to abort match', e);
+        alert('Failed to abort match');
+      }
+    });
   }
 
   commitAndPostLastMatch() {

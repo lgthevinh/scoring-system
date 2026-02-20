@@ -14,33 +14,84 @@
 <!-- Full-screen black frame with a centered 16:9 canvas -->
 <div class="frame">
     <div class="canvas">
-        <!-- Board area inside 16:9 (scaled to fit) -->
-        <div class="board">
-            <!-- Timer panel -->
-            <div class="timer-panel">
-                <div class="timer-text">{{ mmss() }}</div>
-            </div>
+        @if (displayMode() === 'match') {
+            <!-- MATCH VIEW: Timer + Scores -->
+            <div class="board">
+                <!-- Timer panel -->
+                <div class="timer-panel">
+                    <div class="timer-text">{{ mmss() }}</div>
+                </div>
 
-            <!-- Bottom dock (overlaps under timer) -->
-            <div class="dock">
-                <div class="dock-cell dock-red-list">
-                    @for (team of redTeams(); track team.teamId) {
-                        <div class="team" >{{ team.teamId }}</div>
-                    }
-                </div>
-                <div class="dock-cell dock-red-score">
-                    <div class="score">{{ redScore() }}</div>
-                </div>
-                <div class="dock-cell dock-blue-score">
-                    <div class="score">{{ blueScore() }}</div>
-                </div>
-                <div class="dock-cell dock-blue-list">
-                    @for (team of blueTeams(); track team.teamId) {
-                        <div class="team" >{{ team.teamId }}</div>
-                    }
+                <!-- Bottom dock (overlaps under timer) -->
+                <div class="dock">
+                    <div class="dock-cell dock-red-list">
+                        @for (team of redTeams(); track team.teamId) {
+                            <div class="team" >{{ team.teamId }}</div>
+                        }
+                    </div>
+                    <div class="dock-cell dock-red-score">
+                        <div class="score">{{ redScore() }}</div>
+                    </div>
+                    <div class="dock-cell dock-blue-score">
+                        <div class="score">{{ blueScore() }}</div>
+                    </div>
+                    <div class="dock-cell dock-blue-list">
+                        @for (team of blueTeams(); track team.teamId) {
+                            <div class="team" >{{ team.teamId }}</div>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
+        } @else if (displayMode() === 'upnext') {
+            <!-- UP NEXT VIEW -->
+            @if (hasUpNext()) {
+                <div class="upnext-board">
+                    <!-- Header -->
+                    <div class="upnext-header-panel">
+                        <div class="upnext-header-label">Up Next</div>
+                        <div class="upnext-match-info">
+                            <span class="upnext-match-code">{{ upNextMatchCode() }}</span>
+                            @if (upNextFieldNumber()) {
+                                <span class="upnext-badge">Field {{ upNextFieldNumber() }}</span>
+                            }
+                            @if (formatScheduledTime()) {
+                                <span class="upnext-badge">{{ formatScheduledTime() }}</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Teams dock -->
+                    <div class="upnext-dock">
+                        <div class="upnext-dock-cell upnext-dock-red">
+                            <div class="upnext-alliance-label">Red Alliance</div>
+                            @for (team of upNextRedTeams(); track team.teamId) {
+                                <div class="upnext-team-entry">
+                                    <span class="upnext-team-id">{{ team.teamId }}</span>
+                                    <span class="upnext-team-name">{{ team.teamName }}</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="upnext-dock-divider"></div>
+                        <div class="upnext-dock-cell upnext-dock-blue">
+                            <div class="upnext-alliance-label">Blue Alliance</div>
+                            @for (team of upNextBlueTeams(); track team.teamId) {
+                                <div class="upnext-team-entry">
+                                    <span class="upnext-team-id">{{ team.teamId }}</span>
+                                    <span class="upnext-team-name">{{ team.teamName }}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            } @else {
+                <div class="board upnext-board">
+                    <div class="upnext-no-match-panel">
+                        <div class="upnext-no-match-text">No Upcoming Match</div>
+                        <div class="upnext-no-match-sub">Waiting for the next match to be queued...</div>
+                    </div>
+                </div>
+            }
+        }
     </div>
 </div>
 

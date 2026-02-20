@@ -179,3 +179,144 @@
 
 /* Bootstrap modal minor polish */
 .modal .form-label { font-weight: 600; }
+
+/* ========== UP NEXT VIEW ========== */
+.upnext-board {
+    width: 95%;
+    height: 95%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: clamp(12px, 2vw, 32px);
+}
+
+.upnext-header-panel {
+    background: var(--fd-yellow);
+    border: clamp(4px, 0.8vw, 8px) solid var(--fd-black);
+    border-radius: clamp(14px, 1.8vw, 28px);
+    padding: clamp(12px, 2vw, 32px) clamp(16px, 3vw, 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(4px, 0.6vw, 12px);
+}
+
+.upnext-header-label {
+    font-weight: 800;
+    font-size: clamp(2.5rem, 8vw, 8rem);
+    color: var(--fd-nice-black);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.upnext-match-info {
+    display: flex;
+    align-items: center;
+    gap: clamp(8px, 1.5vw, 20px);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.upnext-match-code {
+    font-weight: 700;
+    font-size: clamp(1.2rem, 3.5vw, 3rem);
+    color: var(--fd-nice-black);
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.upnext-badge {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: clamp(6px, 0.8vw, 12px);
+    padding: clamp(2px, 0.3vw, 6px) clamp(8px, 1vw, 16px);
+    font-weight: 600;
+    font-size: clamp(0.8rem, 2vw, 1.6rem);
+    color: var(--fd-nice-black);
+}
+
+.upnext-dock {
+    width: 100%;
+    border: clamp(4px, 0.8vw, 8px) solid var(--fd-black);
+    border-radius: clamp(14px, 1.8vw, 28px);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+}
+
+.upnext-dock-divider {
+    width: clamp(4px, 0.8vw, 8px);
+    background: var(--fd-black);
+}
+
+.upnext-dock-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(12px, 2vw, 32px) clamp(8px, 1.5vw, 24px);
+    gap: clamp(4px, 0.8vw, 12px);
+}
+
+.upnext-dock-red {
+    background: var(--fd-red-dark);
+    color: #fff;
+}
+
+.upnext-dock-blue {
+    background: var(--fd-blue-dark);
+    color: #fff;
+}
+
+.upnext-alliance-label {
+    font-weight: 800;
+    font-size: 2rem;
+    margin-bottom: clamp(4px, 0.5vw, 8px);
+}
+
+.upnext-team-entry {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.upnext-team-id {
+    font-weight: 700;
+    font-size: clamp(1.4rem, 4vw, 3.5rem);
+    line-height: 1.15;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.upnext-team-name {
+    font-weight: 400;
+    font-size: clamp(0.7rem, 1.5vw, 1.2rem);
+    opacity: 0.8;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.upnext-no-match-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: clamp(8px, 1vw, 16px);
+}
+
+.upnext-no-match-text {
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 5rem);
+    color: var(--fd-off-white);
+    opacity: 0.6;
+    font-family: Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.upnext-no-match-sub {
+    font-weight: 400;
+    font-size: clamp(0.9rem, 2vw, 1.5rem);
+    color: var(--fd-off-white);
+    opacity: 0.4;
+}
+

@@ -5,6 +5,7 @@ import {BroadcastService} from "../../core/services/broadcast.service";
 import {FieldDisplayCommand} from '../../core/define/FieldDisplayCommand';
 import {SyncService} from '../../core/services/sync.service';
 import {Team} from '../../core/models/team.model';
+import {MatchDetailDto} from '../../core/models/match.model';
 
 @Component({
     selector: 'app-field-display',
@@ -14,8 +15,11 @@ import {Team} from '../../core/models/team.model';
     styleUrl: './scoring-display.css'
 })
 export class ScoringDisplay implements OnInit, OnDestroy {
+    // Display mode: 'match' shows scoring timer, 'upnext' shows up-next preview
+    displayMode: WritableSignal<string> = signal('match');
+
     // Display state
-    durationSec: WritableSignal<number> = signal(150);
+    durationSec: WritableSignal<number> = signal(180);
     timeLeft: WritableSignal<number> = signal(this.durationSec());
     running: WritableSignal<boolean> = signal(false);
 
@@ -24,6 +28,14 @@ export class ScoringDisplay implements OnInit, OnDestroy {
     blueTeams: WritableSignal<Team[]> = signal([]);
     redScore: WritableSignal<number> = signal(0);
     blueScore: WritableSignal<number> = signal(0);
+
+    // Up Next data
+    upNextMatchCode: WritableSignal<string> = signal('');
+    upNextFieldNumber: WritableSignal<number> = signal(0);
+    upNextScheduledTime: WritableSignal<string> = signal('');
+    upNextRedTeams: WritableSignal<Team[]> = signal([]);
+    upNextBlueTeams: WritableSignal<Team[]> = signal([]);
+    hasUpNext: WritableSignal<boolean> = signal(false);
 
     // Fullscreen state
     isFullscreen: WritableSignal<boolean> = signal(false);
@@ -257,20 +269,58 @@ export class ScoringDisplay implements OnInit, OnDestroy {
         this.broadcastService.subscribeToTopic(commandTopic).subscribe({
             next: (msg) => {
                 console.log("FieldDisplay received message:", msg);
-                if (msg.type === FieldDisplayCommand.SHOW_TIMER ) {
+                if (msg.type === FieldDisplayCommand.SHOW_TIMER) {
                     console.log("FieldDisplay SHOW_TIMER command received");
+                    this.displayMode.set('match');
 
                     this.redTeams.set(msg.payload.redTeams);
                     this.blueTeams.set(msg.payload.blueTeams);
 
                     this.redScore.set(0);
                     this.blueScore.set(0);
+                } else if (msg.type === FieldDisplayCommand.SHOW_UPNEXT) {
+                    console.log("FieldDisplay SHOW_UPNEXT command received");
+                    this.applyUpNextData(msg.payload);
+                    this.displayMode.set('upnext');
+                } else if (msg.type === FieldDisplayCommand.SHOW_MATCH) {
+                    console.log("FieldDisplay SHOW_MATCH command received");
+                    if (msg.payload) {
+                        this.redTeams.set(msg.payload.redTeams);
+                        this.blueTeams.set(msg.payload.blueTeams);
+                        this.redScore.set(msg.payload.redScore?.totalScore || 0);
+                        this.blueScore.set(msg.payload.blueScore?.totalScore || 0);
+                    }
+                    this.displayMode.set('match');
                 }
             },
             error: (err) => {
                 console.error("FieldDisplay message error:", err);
             }
         });
+
+        // Also subscribe to the broadcast-all command topic for display commands from match-control
+        if (fieldId !== 0) {
+            this.broadcastService.subscribeToTopic('/topic/display/field/0/command').subscribe({
+                next: (msg) => {
+                    console.log("FieldDisplay received broadcast-all command:", msg);
+                    if (msg.type === FieldDisplayCommand.SHOW_UPNEXT) {
+                        this.applyUpNextData(msg.payload);
+                        this.displayMode.set('upnext');
+                    } else if (msg.type === FieldDisplayCommand.SHOW_MATCH) {
+                        if (msg.payload) {
+                            this.redTeams.set(msg.payload.redTeams);
+                            this.blueTeams.set(msg.payload.blueTeams);
+                            this.redScore.set(msg.payload.redScore?.totalScore || 0);
+                            this.blueScore.set(msg.payload.blueScore?.totalScore || 0);
+                        }
+                        this.displayMode.set('match');
+                    }
+                },
+                error: (err) => {
+                    console.error("FieldDisplay broadcast-all command error:", err);
+                }
+            });
+        }
 
         this.broadcastService.subscribeToTopic(timerTopic).subscribe({
             next: (msg) => {
@@ -325,5 +375,29 @@ export class ScoringDisplay implements OnInit, OnDestroy {
         this.broadcastService.unsubscribeFromTopic(`/topic/display/field/${fieldId}/timer`);
         this.broadcastService.unsubscribeFromTopic(`/topic/live/field/${fieldId}/score/red`);
         this.broadcastService.unsubscribeFromTopic(`/topic/live/field/${fieldId}/score/blue`);
+    }
+
+    // ========== Up Next Helpers ==========
+    private applyUpNextData(match: MatchDetailDto): void {
+        if (!match) {
+            this.hasUpNext.set(false);
+            return;
+        }
+        this.upNextMatchCode.set(match.match?.matchCode || '');
+        this.upNextFieldNumber.set(match.match?.fieldNumber || 0);
+        this.upNextScheduledTime.set(match.match?.matchStartTime || '');
+        this.upNextRedTeams.set(match.redTeams || []);
+        this.upNextBlueTeams.set(match.blueTeams || []);
+        this.hasUpNext.set(true);
+    }
+
+    formatScheduledTime(): string {
+        if (!this.upNextScheduledTime()) return '';
+        try {
+            const date = new Date(this.upNextScheduledTime());
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch {
+            return this.upNextScheduledTime();
+        }
     }
 }

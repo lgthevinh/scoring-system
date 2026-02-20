@@ -12,12 +12,18 @@ public class MatchTimerHandler {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private ScheduledFuture<?> timerTask;
 
+    private final int startSeconds;
     private int remainingSeconds;
     private String matchId;
     private int fieldNumber;
     private boolean isRunning;
 
     private TimerCallback callback;
+
+    public MatchTimerHandler(int startSeconds) {
+        this.startSeconds = startSeconds;
+
+    }
 
     public void startTimer(String matchId, int fieldNumber, int totalSeconds) {
         stopTimer();
@@ -53,6 +59,12 @@ public class MatchTimerHandler {
             stopTimer();
             callback.onTimerEnded(matchId);
         }
+    }
+
+    public void resetTimer() {
+        stopTimer();
+        remainingSeconds = startSeconds;
+        callback.onTimerUpdated(matchId, String.valueOf(fieldNumber), remainingSeconds);
     }
 
     public void setCallback(TimerCallback callback) {
