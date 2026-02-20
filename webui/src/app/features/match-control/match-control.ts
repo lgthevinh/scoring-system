@@ -501,6 +501,6 @@ export class MatchControl implements OnInit {
     if (!match || !match.surrogateMap || !teamId) {
       return false;
     }
-    return !!match.surrogateMap[teamId];
+    return match.surrogateMap[teamId];
   }
 }
